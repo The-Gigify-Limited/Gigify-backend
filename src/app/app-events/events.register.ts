@@ -11,6 +11,5 @@ export function registerEvents(bus: AppEventManager) {
     });
     bus.onEvent('cache:connection:established', () => logger.info(`Cache connection established`));
     bus.onEvent('event:registration:successful', () => logger.info('Events listeners registered'));
-
-
+    bus.onEvent('event:return-name', (name: string) => name);
 }

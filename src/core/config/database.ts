@@ -1,22 +1,9 @@
-import * as pg from 'pg';
-import { Sequelize } from 'sequelize';
+import { createClient, SupabaseClient as CustomSupabaseClient } from '@supabase/supabase-js';
+import { Database } from '../types/common/database.interface';
 import { config } from './config';
 
-const { dbHost, dbName, dbPassword, dbType, dbUser } = config.db;
+const { supabaseKey, supabaseUrl } = config.db;
 
-export const sequelize = new Sequelize(dbName, dbUser, dbPassword, {
-    host: dbHost,
-    dialect: dbType,
-    dialectModule: pg,
-    omitNull: false,
-    logging: false,
-    pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000,
-    },
-    sync: { alter: { drop: true } },
-    dialectOptions: { ssl: { require: true } },
-    ssl: true,
-});
+export type SupabaseClient = CustomSupabaseClient<Database>;
+
+export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseKey);

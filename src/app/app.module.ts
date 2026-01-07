@@ -1,6 +1,6 @@
-import { createServer } from 'http';
-import { dispatch, app } from '@/app';
+import { app, dispatch } from '@/app';
 import { config } from '@/core';
+import { createServer } from 'http';
 
 export const startApp = async () => {
     const server = createServer(app);

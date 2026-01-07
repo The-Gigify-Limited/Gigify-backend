@@ -1,7 +1,6 @@
 import { appRouter } from '@/app';
 import { corsOptions, errorHandler, notFoundHandler } from '@/core';
 import { API_SUFFIX } from '@/core/common';
-// import { passport } from '@auth/services/passport';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
@@ -43,14 +42,8 @@ app.use(
     }),
 );
 
-// app.use(passport.initialize());
-
-// app.use(passport.authenticate('session'));
-
 // Mount the API routes under '/api/v1'. All routes inside appRouter will be prefixed with '/api/v1'.
 app.use(API_SUFFIX, appRouter);
-
-// passport.initialisePassportAuthentication(app);
 
 app.set('trust proxy', true);
 

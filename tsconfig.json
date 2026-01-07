@@ -13,7 +13,7 @@
         "baseUrl": "src",
         "paths": {
             "@/*": ["*"],
-            "@auth/*": ["./api/auth/*"]
+            "@user/*": ["./api/v1/user/*"]
         }
     },
     "include": ["src"]

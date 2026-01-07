@@ -1,4 +1,5 @@
-import type { AnyFunction, AuthorizationRoles } from '@/core/types';
+import type { AnyFunction } from '@/core/types';
+import { UserRoleEnum } from '@user/interfaces';
 import { ControllerHandler } from './index.handler';
 import { ControllerHandlerOptions, ValidationSchema } from './index.interface';
 
@@ -59,7 +60,7 @@ export class ControlBuilder {
      * @param {...IAuthRole[]} allowed - An array of allowed roles.
      * @returns {ControlBuilder} The instance of this builder for chaining.
      */
-    only(...allowed: AuthorizationRoles[]) {
+    only(...allowed: UserRoleEnum[]) {
         this.options = { isPrivate: true, allowedRoles: allowed };
 
         return this;

@@ -13,4 +13,5 @@ export interface AppEventsInterface {
     'app:up': EventDefinition<void, void>;
     'cache:connection:established': EventDefinition<void, winston.Logger>;
     'event:registration:successful': EventDefinition<void, winston.Logger>;
+    'event:return-name': EventDefinition<string, string>;
 }

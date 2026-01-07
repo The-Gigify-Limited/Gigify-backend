@@ -1,8 +1,9 @@
-import { UnProcessableError, joiValidate } from '@/core';
+import { ForbiddenError, UnAuthorizedError, UnProcessableError, joiValidate, supabaseAdmin } from '@/core';
 import type { FileObject, FileObjects } from '@/core/types';
+import { UserRoleEnum } from '@user/interfaces';
 import type { Request } from 'express';
 import type { FileArray } from 'express-fileupload';
-import { ControllerArgsTypes, ValidationSchema } from './index.interface';
+import { ControllerArgsTypes, ControllerHandlerOptions, ValidationSchema } from './index.interface';
 
 export const parseIncomingRequest = (req: Request): ControllerArgsTypes => {
     return {
@@ -47,5 +48,35 @@ export const validateIncomingRequest = (schema: ValidationSchema, controllerArgs
         if (paramsSchema) joiValidate(paramsSchema, params);
     } catch (error: any) {
         throw new UnProcessableError(error.message.replaceAll('"', ''));
+    }
+};
+
+export const handlePrivateRequest = async (req: Request, options: ControllerHandlerOptions) => {
+    if (!req.user || !req?.user?.id || !req?.user?.role) {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
+            throw new UnAuthorizedError('Authorization header missing or invalid');
+        }
+
+        const token = authHeader.split(' ')[1];
+
+        const {
+            data: { user },
+        } = await supabaseAdmin.auth.getUser(token);
+
+        if (!user) {
+            throw new UnAuthorizedError('Invalid or expired token');
+        }
+
+        if (options.allowedRoles && options.allowedRoles.length > 0) {
+            if (!user.role) throw new UnAuthorizedError('User role missing');
+
+            const isRequestAuthorized = options.allowedRoles?.includes(user?.role.toLocaleUpperCase() as UserRoleEnum);
+
+            if (!isRequestAuthorized) throw new ForbiddenError('You do not have access to the requested resource');
+        }
+
+        req.user = user;
     }
 };

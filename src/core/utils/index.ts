@@ -1,4 +1,3 @@
-export * from './bcrypt';
 export * from './database.connection';
 export * from './gracefullyShutdown';
 export * from './imageUpload';

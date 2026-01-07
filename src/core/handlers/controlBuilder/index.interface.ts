@@ -1,4 +1,5 @@
-import { AuthorizationRoles, FileObjects, ITokenSignedPayload } from '@/core/types';
+import { FileObjects, User } from '@/core/types';
+import { UserRoleEnum } from '@user/interfaces';
 import type { Request } from 'express';
 import type { IncomingHttpHeaders } from 'http';
 import { Schema } from 'joi';
@@ -14,7 +15,7 @@ export type ControllerArgsTypes = Partial<{
     params: Record<string, any>;
     query: Record<string, any>;
     input: Record<string, any>;
-    user: ITokenSignedPayload | undefined | null;
+    user: User | undefined | null;
     files: FileObjects | null;
 }> & {
     headers: IncomingHttpHeaders;
@@ -35,6 +36,5 @@ export interface ValidationSchema {
 // Controller Handler Options
 export type ControllerHandlerOptions = {
     isPrivate: boolean;
-
-    allowedRoles?: AuthorizationRoles[];
+    allowedRoles?: UserRoleEnum[];
 };
