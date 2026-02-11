@@ -1,0 +1,10 @@
+Talent
+Gigs near you
+Recommended Gigs
+Active Gig
+Upcoming Gig
+Search for Gig
+ - Location
+ - Event Type
+ - Budget
+View Gig 
