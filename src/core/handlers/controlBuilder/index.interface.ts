@@ -1,8 +1,9 @@
-import { FileObjects, User } from '@/core/types';
-import { UserRoleEnum } from '@user/interfaces';
+import { FileObjects } from '@/core/types';
 import type { Request } from 'express';
 import type { IncomingHttpHeaders } from 'http';
 import { Schema } from 'joi';
+import { Permission, ResourceAuthorizationOptions } from '~/auth/interface';
+import { User, UserRoleEnum } from '~/user/interfaces';
 
 // Controller Handler Callback Function Arguments
 type ExtractPayloadKeys<T> = {
@@ -15,7 +16,7 @@ export type ControllerArgsTypes = Partial<{
     params: Record<string, any>;
     query: Record<string, any>;
     input: Record<string, any>;
-    user: User | undefined | null;
+    user: Partial<User> | undefined | null;
     files: FileObjects | null;
 }> & {
     headers: IncomingHttpHeaders;
@@ -37,4 +38,6 @@ export interface ValidationSchema {
 export type ControllerHandlerOptions = {
     isPrivate: boolean;
     allowedRoles?: UserRoleEnum[];
+    requiredPermissions?: Permission[];
+    checkResourceOwnership?: ResourceAuthorizationOptions
 };

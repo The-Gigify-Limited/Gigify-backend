@@ -49,9 +49,60 @@ export type Database = {
           },
         ]
       }
+      audit_logs: {
+        Row: {
+          action: string
+          changes: Json | null
+          created_at: string
+          error_message: string | null
+          id: string
+          ip_address: string | null
+          resource_id: string
+          resource_type: string
+          result: Database["public"]["Enums"]["audit_result"]
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          changes?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id: string
+          resource_type: string
+          result?: Database["public"]["Enums"]["audit_result"]
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          changes?: Json | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          ip_address?: string | null
+          resource_id?: string
+          resource_type?: string
+          result?: Database["public"]["Enums"]["audit_result"]
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employer_profiles: {
         Row: {
           company_website: string | null
+          id: string
           industry: string | null
           organization_name: string | null
           total_gigs_posted: number | null
@@ -61,6 +112,7 @@ export type Database = {
         }
         Insert: {
           company_website?: string | null
+          id?: string
           industry?: string | null
           organization_name?: string | null
           total_gigs_posted?: number | null
@@ -70,6 +122,7 @@ export type Database = {
         }
         Update: {
           company_website?: string | null
+          id?: string
           industry?: string | null
           organization_name?: string | null
           total_gigs_posted?: number | null
@@ -81,7 +134,7 @@ export type Database = {
           {
             foreignKeyName: "employer_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -150,60 +203,29 @@ export type Database = {
           },
         ]
       }
-      reviews: {
+      role_permissions: {
         Row: {
-          comment: string | null
-          created_at: string | null
-          gig_id: string | null
+          created_at: string
           id: string
-          rating: number
-          reviewee_id: string | null
-          reviewer_id: string | null
-          updated_at: string | null
+          permission: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at: string
         }
         Insert: {
-          comment?: string | null
-          created_at?: string | null
-          gig_id?: string | null
+          created_at?: string
           id?: string
-          rating: number
-          reviewee_id?: string | null
-          reviewer_id?: string | null
-          updated_at?: string | null
+          permission: string
+          role: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
         }
         Update: {
-          comment?: string | null
-          created_at?: string | null
-          gig_id?: string | null
+          created_at?: string
           id?: string
-          rating?: number
-          reviewee_id?: string | null
-          reviewer_id?: string | null
-          updated_at?: string | null
+          permission?: string
+          role?: Database["public"]["Enums"]["user_role"]
+          updated_at?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "reviews_gig_id_fkey"
-            columns: ["gig_id"]
-            isOneToOne: false
-            referencedRelation: "gigs"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewee_id_fkey"
-            columns: ["reviewee_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "reviews_reviewer_id_fkey"
-            columns: ["reviewer_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       services_catalog: {
         Row: {
@@ -232,33 +254,83 @@ export type Database = {
         }
         Relationships: []
       }
+      talent_portfolios: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          portfolio_url: string
+          talent_id: string
+          view_count: number
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          portfolio_url: string
+          talent_id: string
+          view_count?: number
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          portfolio_url?: string
+          talent_id?: string
+          view_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talent_portfolios_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "talent_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       talent_profiles: {
         Row: {
-          avg_rating: number | null
-          gigs_completed: number | null
-          portfolio_urls: string[] | null
-          professional_title: string | null
-          skills: string[] | null
+          banner_url: string | null
+          biography: string | null
+          date_of_birth: string | null
+          id: string
+          max_rate: number | null
+          min_rate: number
+          primary_role: string | null
+          rate_currency: string
+          skills: Json[] | null
+          stage_name: string | null
           updated_at: string | null
           user_id: string
           years_experience: number | null
         }
         Insert: {
-          avg_rating?: number | null
-          gigs_completed?: number | null
-          portfolio_urls?: string[] | null
-          professional_title?: string | null
-          skills?: string[] | null
+          banner_url?: string | null
+          biography?: string | null
+          date_of_birth?: string | null
+          id?: string
+          max_rate?: number | null
+          min_rate?: number
+          primary_role?: string | null
+          rate_currency?: string
+          skills?: Json[] | null
+          stage_name?: string | null
           updated_at?: string | null
           user_id: string
           years_experience?: number | null
         }
         Update: {
-          avg_rating?: number | null
-          gigs_completed?: number | null
-          portfolio_urls?: string[] | null
-          professional_title?: string | null
-          skills?: string[] | null
+          banner_url?: string | null
+          biography?: string | null
+          date_of_birth?: string | null
+          id?: string
+          max_rate?: number | null
+          min_rate?: number
+          primary_role?: string | null
+          rate_currency?: string
+          skills?: Json[] | null
+          stage_name?: string | null
           updated_at?: string | null
           user_id?: string
           years_experience?: number | null
@@ -267,7 +339,62 @@ export type Database = {
           {
             foreignKeyName: "talent_profiles_user_id_fkey"
             columns: ["user_id"]
-            isOneToOne: true
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      talent_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          gig_id: string | null
+          id: string
+          rating: number
+          reviewer_id: string | null
+          talent_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          gig_id?: string | null
+          id?: string
+          rating: number
+          reviewer_id?: string | null
+          talent_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          gig_id?: string | null
+          id?: string
+          rating?: number
+          reviewer_id?: string | null
+          talent_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "talent_reviews_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -308,10 +435,10 @@ export type Database = {
       }
       users: {
         Row: {
-          bio: string | null
           created_at: string | null
           email: string | null
           first_name: string | null
+          full_address: string | null
           id: string
           is_verified: boolean | null
           last_name: string | null
@@ -319,18 +446,17 @@ export type Database = {
           location_country: string | null
           onboarding_step: number | null
           phone_number: string | null
+          post_code: number | null
           profile_image_url: string | null
-          role: Database["public"]["Enums"]["user_role"]
+          role: Database["public"]["Enums"]["user_role"] | null
           status: Database["public"]["Enums"]["user_status"]
           updated_at: string | null
-          username: string | null
-          verified: boolean
         }
         Insert: {
-          bio?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
+          full_address?: string | null
           id: string
           is_verified?: boolean | null
           last_name?: string | null
@@ -338,18 +464,17 @@ export type Database = {
           location_country?: string | null
           onboarding_step?: number | null
           phone_number?: string | null
+          post_code?: number | null
           profile_image_url?: string | null
-          role: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"] | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string | null
-          username?: string | null
-          verified?: boolean
         }
         Update: {
-          bio?: string | null
           created_at?: string | null
           email?: string | null
           first_name?: string | null
+          full_address?: string | null
           id?: string
           is_verified?: boolean | null
           last_name?: string | null
@@ -357,12 +482,38 @@ export type Database = {
           location_country?: string | null
           onboarding_step?: number | null
           phone_number?: string | null
+          post_code?: number | null
           profile_image_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"]
+          role?: Database["public"]["Enums"]["user_role"] | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string | null
-          username?: string | null
-          verified?: boolean
+        }
+        Relationships: []
+      }
+      waitlist_users: {
+        Row: {
+          created_at: string
+          email: string
+          first_name: string | null
+          id: number
+          last_name: string | null
+          location: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          first_name?: string | null
+          id?: number
+          last_name?: string | null
+          location?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          first_name?: string | null
+          id?: number
+          last_name?: string | null
+          location?: string | null
         }
         Relationships: []
       }
@@ -371,7 +522,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_talent_avg_rating: { Args: { tid: string }; Returns: number }
+      get_talent_rating_summary_full: {
+        Args: { tid: string }
+        Returns: {
+          count: number
+          rating: number
+        }[]
+      }
     }
     Enums: {
       activity_type:
@@ -383,8 +541,9 @@ export type Database = {
         | "payment_received"
         | "payout_requested"
         | "review_posted"
+      audit_result: "success" | "failure"
       gig_status: "draft" | "open" | "in_progress" | "completed" | "cancelled"
-      user_role: "talent" | "employer"
+      user_role: "talent" | "employer" | "admin"
       user_status: "active" | "suspended"
     }
     CompositeTypes: {
@@ -523,8 +682,9 @@ export const Constants = {
         "payout_requested",
         "review_posted",
       ],
+      audit_result: ["success", "failure"],
       gig_status: ["draft", "open", "in_progress", "completed", "cancelled"],
-      user_role: ["talent", "employer"],
+      user_role: ["talent", "employer", "admin"],
       user_status: ["active", "suspended"],
     },
   },

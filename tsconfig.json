@@ -12,8 +12,8 @@
         "resolveJsonModule": true,
         "baseUrl": "src",
         "paths": {
+            "~/*": ["./api/v1/*"],
             "@/*": ["*"],
-            "@user/*": ["./api/v1/user/*"]
         }
     },
     "include": ["src"]

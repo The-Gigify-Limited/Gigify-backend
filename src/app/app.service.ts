@@ -1,5 +1,5 @@
 import { appRouter } from '@/app';
-import { corsOptions, errorHandler, notFoundHandler } from '@/core';
+import { config, corsOptions, errorHandler, notFoundHandler } from '@/core';
 import { API_SUFFIX } from '@/core/common';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -41,6 +41,8 @@ app.use(
         saveUninitialized: true,
     }),
 );
+
+
 
 // Mount the API routes under '/api/v1'. All routes inside appRouter will be prefixed with '/api/v1'.
 app.use(API_SUFFIX, appRouter);

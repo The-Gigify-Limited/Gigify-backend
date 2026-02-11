@@ -17,8 +17,9 @@ export const userRouter = Router();
 userRouter
     /**
      * @swagger
-     * /users/{id}:
+     * /user/{id}:
      *   get:
+     *     tags: [User Profile]
      *     summary: Get user by ID
      *     security:
      *       - bearerAuth: []
@@ -43,11 +44,13 @@ userRouter
             .setHandler(getUserById.handle)
             .handle(),
     )
+  
     /**
      * @swagger
-     * /users:
+     * /user:
      *   get:
      *     summary: List users
+     *     tags: [User Profile]
      *     security:
      *       - bearerAuth: []
      *     parameters:
@@ -77,15 +80,17 @@ userRouter
     .get(
         '/',
         ControlBuilder.builder()
-            // .isPrivate()
+            .isPrivate()
             .setValidator(getUsersQuerySchema)
             .setHandler(getAllUsers.handle)
+            // .only('admin')
             .handle(),
     )
     /**
      * @swagger
-     * /users/{id}:
+     * /user/{id}:
      *   patch:
+     *     tags: [User Profile]
      *     summary: Update user profile by ID
      *     security:
      *       - bearerAuth: []
@@ -114,12 +119,14 @@ userRouter
             .isPrivate()
             .setValidator(updateUserSchema)
             .setHandler(updateUserById.handle)
+            .checkResourceOwnership('user', 'id')
             .handle(),
     )
     /**
      * @swagger
-     * /users/{id}:
+     * /user/{id}:
      *   delete:
+     *     tags: [User Profile]
      *     summary: Soft delete user account by ID
      *     security:
      *       - bearerAuth: []
@@ -143,4 +150,125 @@ userRouter
             .setValidator(getUserParamsSchema)
             .setHandler(deleteUserById.handle)
             .handle(),
+    )
+
+    /**
+     * @swagger
+     * /user/reviews:
+     *   post:
+     *     tags: [User Reviews]
+     *     summary: Submit a new review
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               reviewee_id: { type: string, format: uuid }
+     *               gig_id: { type: string, format: uuid }
+     *               rating: { type: number, minimum: 1, maximum: 5 }
+     *               comment: { type: string }
+     *     responses:
+     *       201:
+     *         description: Review submitted successfully
+     */
+    .post(
+        '/reviews',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setHandler(deleteUserById.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /user/me/timeline:
+     *   get:
+     *     tags: [User Activity]
+     *     summary: Get user activity timeline
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: List of user activities (joined, paid, etc.)
+     */
+    .get(
+        '/me/timeline',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setHandler(deleteUserById.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /user/{id}/reviews:
+     *   get:
+     *     tags: [User Reviews]
+     *     summary: Get reviews for a specific user
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *     responses:
+     *       200:
+     *         description: List of reviews and average rating
+     */
+    .get(
+        '/:id/reviews',
+        ControlBuilder.builder().setHandler(deleteUserById.handle).handle(),
+    )
+    /**
+     * @swagger
+     * /user/onboarding/liveness:
+     *   post:
+     *     tags: [User Identity]
+     *     summary: Upload liveness video/photo for identity verification
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               media_url: { type: string }
+     *               id_type: { type: string, enum: [passport, drivers_license] }
+     *     responses:
+     *       200:
+     *         description: Verification submitted for review
+     */
+    .post('/onboarding/liveness', ControlBuilder.builder().isPrivate().handle())
+
+    /**
+     * @swagger
+     * /user/settings/notifications:
+     *   patch:
+     *     tags: [User Settings]
+     *     summary: Update push/email notification preferences
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               push_enabled: { type: boolean }
+     *               payout_alerts: { type: boolean }
+     *     responses:
+     *       200:
+     *         description: Settings updated
+     */
+    .patch(
+        '/settings/notifications',
+        ControlBuilder.builder().isPrivate().handle(),
     );

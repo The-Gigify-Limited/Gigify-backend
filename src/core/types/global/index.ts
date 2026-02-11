@@ -1,5 +1,5 @@
 import type { FileArray } from 'express-fileupload';
-import { User as AppUser } from '../common';
+import { User } from '~/user/interfaces';
 declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace Express {
@@ -7,7 +7,7 @@ declare global {
 
         export interface Request {
             file: FileArray | null | undefined;
-            user?: AppUser | null;
+            user?: Partial<User> | null;
         }
     }
 }

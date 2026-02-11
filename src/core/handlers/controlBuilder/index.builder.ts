@@ -1,5 +1,5 @@
 import type { AnyFunction } from '@/core/types';
-import { UserRoleEnum } from '@user/interfaces';
+import { Permission, ResourceAuthorizationOptions, Resources, Role } from '~/auth/interface';
 import { ControllerHandler } from './index.handler';
 import { ControllerHandlerOptions, ValidationSchema } from './index.interface';
 
@@ -15,6 +15,10 @@ export class ControlBuilder {
     private options: ControllerHandlerOptions = {
         isPrivate: false,
     };
+
+    private requiredPermissions: Permission[] = [];
+
+    private resourceOwnershipCheck?: ResourceAuthorizationOptions;
 
     /**
      * Initializes and returns a new instance of ControlBuilder.
@@ -56,11 +60,38 @@ export class ControlBuilder {
     }
 
     /**
-     * Specifies roles allowed to access the route. Automatically marks the route as private.
-     * @param {...IAuthRole[]} allowed - An array of allowed roles.
+     * Requires specific permissions to access the route.
+     * @param {...Permission[]} permissions - The permissions required.
      * @returns {ControlBuilder} The instance of this builder for chaining.
      */
-    only(...allowed: UserRoleEnum[]) {
+    requirePermissions(...permissions: Permission[]) {
+        this.requiredPermissions = permissions;
+        return this;
+    }
+
+    /**
+     * Checks if user owns the resource before allowing access
+     * @param resourceType - Type of resource (user, gig, review, payment)
+     * @param paramName - The param name containing resource ID (default: 'id')
+     * @param adminCanBypass - Allow admins to bypass ownership check (default: true)
+     * @returns {ControlBuilder} The instance of this builder for chaining
+     */
+    checkResourceOwnership(resourceType: Resources, paramName: string = 'id', adminCanBypass: boolean = true) {
+        this.resourceOwnershipCheck = {
+            resourceType,
+            paramName,
+            adminCanBypass,
+        };
+
+        return this;
+    }
+
+    /**
+     * Specifies roles allowed to access the route. Automatically marks the route as private.
+     * @param {...Role[]} allowed - An array of allowed roles.
+     * @returns {ControlBuilder} The instance of this builder for chaining.
+     */
+    only(...allowed: Role[]) {
         this.options = { isPrivate: true, allowedRoles: allowed };
 
         return this;
@@ -71,6 +102,10 @@ export class ControlBuilder {
      * @returns {ExpressCallbackFunction} The middleware function that handles the request.
      */
     handle() {
-        return new ControllerHandler().handle(this.handler, this.schema, this.options);
+        return new ControllerHandler().handle(this.handler, this.schema, {
+            ...this.options,
+            requiredPermissions: this.requiredPermissions,
+            checkResourceOwnership: this.resourceOwnershipCheck,
+        });
     }
 }

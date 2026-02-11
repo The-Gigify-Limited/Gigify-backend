@@ -1,6 +1,6 @@
 import { BadRequestError, ControllerArgs, HttpStatus, imageUploadService } from '@/core';
-import { UpdateUserDto } from '@user/interfaces';
-import { UserRepository } from '@user/repository';
+import { UpdateUserDto } from '~/user/interfaces';
+import { UserRepository } from '~/user/repository';
 
 export class UpdateUserById {
     constructor(private readonly userRepository: UserRepository) {}

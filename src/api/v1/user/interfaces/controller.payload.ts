@@ -14,6 +14,9 @@ export interface GetUserParamsDto extends ControllerArgsTypes {
     params: {
         id: string;
     };
+    query: {
+        full_profile?: boolean;
+    };
 }
 
 export interface UpdateUserDto {

@@ -1,9 +1,6 @@
 import { BadRequestError, BaseRepository, supabaseAdmin } from '@/core';
-import { DatabaseTable } from '@/core/types';
 import { normalizePagination } from '@/core/utils/pagination';
-import { User, UserRoleEnum } from '../interfaces';
-
-export type DatabaseUser = DatabaseTable['users']['Row'];
+import { DatabaseUser, User, UserRoleEnum } from '../interfaces';
 
 export class UserRepository extends BaseRepository<DatabaseUser, User> {
     protected readonly table = 'users';
@@ -41,6 +38,37 @@ export class UserRepository extends BaseRepository<DatabaseUser, User> {
         if (error) throw new Error(error.message);
 
         return null;
+    }
+
+    async findByEmail(email: string): Promise<User | null> {
+        const { data, error } = await supabaseAdmin.from('users').select('*').eq('email', email).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data) : null;
+    }
+
+    async createUserPreSignup(id: string, email: string): Promise<User> {
+        const { data, error } = await supabaseAdmin
+            .from('users')
+            .upsert(
+                {
+                    id,
+                    email,
+                },
+                {
+                    onConflict: 'id',
+                    ignoreDuplicates: false,
+                },
+            )
+            .select()
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return this.mapToCamelCase(data);
     }
 }
 

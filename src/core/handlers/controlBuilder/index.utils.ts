@@ -1,8 +1,10 @@
-import { ForbiddenError, UnAuthorizedError, UnProcessableError, joiValidate, supabaseAdmin } from '@/core';
+import { dispatch } from '@/app';
+import { BadRequestError, ForbiddenError, UnAuthorizedError, UnProcessableError, joiValidate, supabaseAdmin } from '@/core';
 import type { FileObject, FileObjects } from '@/core/types';
-import { UserRoleEnum } from '@user/interfaces';
 import type { Request } from 'express';
 import type { FileArray } from 'express-fileupload';
+import { checkPermissions, verifyResourceOwnership } from '~/auth/utils';
+import { UserRoleEnum } from '~/user/interfaces';
 import { ControllerArgsTypes, ControllerHandlerOptions, ValidationSchema } from './index.interface';
 
 export const parseIncomingRequest = (req: Request): ControllerArgsTypes => {
@@ -52,7 +54,9 @@ export const validateIncomingRequest = (schema: ValidationSchema, controllerArgs
 };
 
 export const handlePrivateRequest = async (req: Request, options: ControllerHandlerOptions) => {
-    if (!req.user || !req?.user?.id || !req?.user?.role) {
+    let user = req.user;
+
+    if (!user) {
         const authHeader = req.headers.authorization;
 
         if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -62,21 +66,45 @@ export const handlePrivateRequest = async (req: Request, options: ControllerHand
         const token = authHeader.split(' ')[1];
 
         const {
-            data: { user },
+            data: { user: supabaseUser },
         } = await supabaseAdmin.auth.getUser(token);
 
-        if (!user) {
+        if (!supabaseUser) {
             throw new UnAuthorizedError('Invalid or expired token');
         }
 
-        if (options.allowedRoles && options.allowedRoles.length > 0) {
-            if (!user.role) throw new UnAuthorizedError('User role missing');
+        const [dbUser] = await dispatch('user:get-by-id', { id: supabaseUser.id });
+        if (!dbUser) throw new UnAuthorizedError('Profile not found');
 
-            const isRequestAuthorized = options.allowedRoles?.includes(user?.role.toLocaleUpperCase() as UserRoleEnum);
+        req.user = dbUser;
+        user = dbUser;
+    }
 
-            if (!isRequestAuthorized) throw new ForbiddenError('You do not have access to the requested resource');
+    if (options.allowedRoles && options.allowedRoles.length > 0) {
+        if (!user.role) throw new UnAuthorizedError('User role missing');
+
+        const isRequestAuthorized = options.allowedRoles?.includes(user.role.toLocaleUpperCase() as UserRoleEnum);
+
+        if (!isRequestAuthorized) throw new ForbiddenError('You do not have access to the requested resource');
+    }
+
+    if (options.requiredPermissions && options.requiredPermissions.length > 0) {
+        await checkPermissions(user.id!, options.requiredPermissions);
+    }
+
+    if (options.checkResourceOwnership) {
+        const { resourceType, adminCanBypass = true, paramName = 'id' } = options.checkResourceOwnership;
+
+        const resourceId = req.params[paramName];
+
+        if (!resourceId) {
+            throw new BadRequestError(`Resource ID not found in request parameters: ${paramName}`);
         }
 
-        req.user = user;
+        if (!user.id) {
+            throw new BadRequestError('User ID not found in request parameters');
+        }
+
+        await verifyResourceOwnership(user, resourceType, resourceId, adminCanBypass);
     }
 };

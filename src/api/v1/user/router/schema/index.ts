@@ -13,6 +13,9 @@ const getUserParamsSchema = {
     paramsSchema: Joi.object({
         id: Joi.string().uuid().required(),
     }),
+    querySchema: Joi.object({
+        full_profile: Joi.boolean().optional(),
+    }),
 };
 
 const updateUserSchema = {
@@ -22,12 +25,11 @@ const updateUserSchema = {
     inputSchema: Joi.object({
         firstName: Joi.string().min(1).max(60).allow(null),
         lastName: Joi.string().min(1).max(60).allow(null),
-        username: Joi.string().alphanum().min(3).max(30).allow(null),
         phoneNumber: Joi.string().max(30).allow(null),
-        bio: Joi.string().max(500).allow(null),
         locationCountry: Joi.string().max(80).allow(null),
         locationCity: Joi.string().max(80).allow(null),
         profileImageUrl: Joi.string().uri().allow(null),
+        gender: Joi.string().valid('male', 'female').allow(null),
     }),
 };
 

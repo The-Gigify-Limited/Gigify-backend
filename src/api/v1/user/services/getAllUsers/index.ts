@@ -1,6 +1,6 @@
 import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
-import { GetUsersQueryDto } from '@user/interfaces';
-import { UserRepository } from '@user/repository';
+import { GetUsersQueryDto } from '~/user/interfaces';
+import { UserRepository } from '~/user/repository';
 
 export class GetAllUsers {
     constructor(private readonly userRepository: UserRepository) {}

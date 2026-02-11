@@ -1,6 +1,6 @@
 import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
-import { GetUserParamsDto } from '@user/interfaces';
-import { UserRepository } from '@user/repository';
+import { GetUserParamsDto } from '~/user/interfaces';
+import { UserRepository } from '~/user/repository';
 
 export class DeleteUser {
     constructor(private readonly userRepository: UserRepository) {}

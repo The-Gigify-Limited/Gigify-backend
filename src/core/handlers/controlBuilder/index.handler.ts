@@ -26,11 +26,11 @@ export class ControllerHandler {
     handle = (controllerFn: AnyFunction, schema: ValidationSchema | undefined = {}, options: ControllerHandlerOptions): ExpressCallbackFunction => {
         return async (req: Request, res: Response, next: NextFunction) => {
             try {
-                const controllerArgs = parseIncomingRequest(req);
-
                 if (options.isPrivate) {
                     await handlePrivateRequest(req, options);
                 }
+
+                const controllerArgs = parseIncomingRequest(req);
 
                 if (schema) validateIncomingRequest(schema, controllerArgs);
 

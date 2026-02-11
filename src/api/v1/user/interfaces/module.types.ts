@@ -7,14 +7,15 @@ export type UserStatusEnum = DatabaseEnum['user_status'];
 export type User = {
     id: string;
     email: string | null;
-    username: string | null;
     firstName: string | null;
     lastName: string | null;
-    bio: string | null;
+    gender: string | null;
     phoneNumber: string | null;
     profileImageUrl: string | null;
+    fullAddress: string | null
     locationCity: string | null;
     locationCountry: string | null;
+    postCode: number | null
     onboardingStep: number | null;
     role: UserRoleEnum;
     status: UserStatusEnum;
@@ -23,3 +24,27 @@ export type User = {
     createdAt: string | null;
     updatedAt: string | null;
 };
+
+
+/**
+ * Users
+ * first name
+ * last name
+ * gender
+ *  locationCity: string | null;
+    locationCountry: string | null;
+    post code
+    address
+    phoneNumber
+ * 
+ * Talents
+ * date of birth
+ * expertise
+ * stage name
+ * bio
+ * 
+ * Employers
+ * company name
+ * website link
+ * 
+ */
