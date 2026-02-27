@@ -13,11 +13,12 @@ export class UpdateTalentById {
         const { id } = params;
 
         const updatedTalent = await this.talentRepository.updateById(id, input);
+        const convertedTalent = this.talentRepository.mapToCamelCase(updatedTalent);
 
         return {
             code: HttpStatus.OK,
             message: 'Talent Updated Successfully',
-            data: updatedTalent,
+            data: convertedTalent,
         };
     };
 }
