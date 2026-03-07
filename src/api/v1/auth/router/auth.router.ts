@@ -4,13 +4,14 @@ import {
     // forgotPassword,
     login,
     logout,
-    // refreshToken,
+    refreshToken,
     register,
     setUserRole,
     verifyEmail,
 } from '../services';
 import {
     loginSchema,
+    refreshTokenSchema,
     resendVerifyEmailMessageSchema,
     setUserRoleSchema,
     signUpSchema,
@@ -227,18 +228,55 @@ authRouter
     //         .handle(),
     // )
 
-    // .post(
-    //     '/refresh-token',
-    //     ControlBuilder.builder()
-    //         .isPrivate()
-    //         .setHandler(refreshToken.handle)
-    //         .setValidator(refreshTokenSchema)
-    //         .handle(),
-    // )
+    /**
+     * @swagger
+     * /auth/refresh-token:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Refresh access token using refresh token
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - refreshToken
+     *             properties:
+     *               refreshToken:
+     *                 type: string
+     *                 description: Valid refresh token from previous login
+     *     responses:
+     *       200:
+     *         description: Token refreshed successfully
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 accessToken:
+     *                   type: string
+     *                 refreshToken:
+     *                   type: string
+     *                 user:
+     *                   type: object
+     *       400:
+     *         description: Refresh token is required
+     *       401:
+     *         description: Invalid or expired refresh token
+     */
+    .post(
+        '/refresh-token',
+        ControlBuilder.builder()
+            .setValidator(refreshTokenSchema)
+            .setHandler(refreshToken.handle)
+            .handle(),
+    )
+
     /**
      * @swagger
      * /auth/logout:
-     *   get:
+     *   post:
      *     tags: [Authentication]
      *     summary: Logout current user
      *     security:
@@ -249,4 +287,4 @@ authRouter
      *       401:
      *         description: Unauthorized
      */
-    .get('/logout', logout.handle);
+    .post('/logout', logout.handle);

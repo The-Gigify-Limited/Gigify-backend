@@ -9,8 +9,8 @@ import swaggerUi from 'swagger-ui-express';
 export const appRouter = Router();
 
 appRouter.use('/auth', authRouter);
-appRouter.use('/user', userRouter);
-appRouter.use('/gig', gigRouter);
+// appRouter.use('/user', userRouter);
+// appRouter.use('/gig', gigRouter);
 
 const swaggerOptions = {
     definition: {
@@ -22,7 +22,7 @@ const swaggerOptions = {
         },
         servers: [
             {
-                url: `http://localhost:${config.port}/api/v1`,
+                url: `https://gigify-api.fly.dev/api/v1`,
                 description: 'Local development server',
             },
         ],
@@ -36,7 +36,7 @@ const swaggerOptions = {
             },
         },
     },
-    apis: ['./src/**/*.ts'],
+    apis: ['./src/api/v1/auth/**/*.ts'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

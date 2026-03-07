@@ -10,7 +10,7 @@ export class PermissionRepository extends BaseRepository<any, any> {
         const { data } = await supabaseAdmin.from(this.table).select('permission').eq('role', role);
 
         if (data && data.length > 0) {
-            return data.map((r) => r.permission as Permission);
+            return data.map((r: { permission: string }) => r.permission as Permission);
         }
 
         return rolePermissions[role] || [];

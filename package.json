@@ -25,6 +25,7 @@
         "generate-types": "supabase gen types typescript --project-id rvgyipsmkzupwpscwtmp --schema public > src/core/types/common/database.interface.ts"
     },
     "dependencies": {
+        "@supabase/supabase-js": "^2.39.0",
         "axios": "^1.6.2",
         "compression": "^1.7.4",
         "cookie-parser": "^1.4.6",
