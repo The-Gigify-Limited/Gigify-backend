@@ -1,18 +1,36 @@
 import rateLimit from 'express-rate-limit';
-import moment from 'moment';
+
+const MINUTE = 60 * 1000;
+const HOUR = 60 * MINUTE;
 
 export const globalRateLimiter = rateLimit({
-    windowMs: moment().add(12, 'hours').unix(), // 24 hrs in milliseconds
+    windowMs: 12 * HOUR,
     max: 400,
-    message: 'You have exceeded the 100 requests in 24 hrs limit!',
+    message: 'You have exceeded the allowed request limit for this period.',
     standardHeaders: true,
     legacyHeaders: false,
 });
 
 export const authRateLimiter = rateLimit({
-    windowMs: moment().add(6, 'hours').unix(), // 24 hrs in milliseconds
-    max: 10,
-    message: 'You have exceeded the 10 requests in 24 hrs limit!',
+    windowMs: 15 * MINUTE,
+    max: 5,
+    message: 'Too many authentication attempts. Please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const passwordResetRateLimiter = rateLimit({
+    windowMs: HOUR,
+    max: 3,
+    message: 'Too many password reset requests. Please try again in an hour.',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+
+export const paymentReleaseOtpRateLimiter = rateLimit({
+    windowMs: HOUR,
+    max: 5,
+    message: 'Too many payment release verification requests. Please try again later.',
     standardHeaders: true,
     legacyHeaders: false,
 });

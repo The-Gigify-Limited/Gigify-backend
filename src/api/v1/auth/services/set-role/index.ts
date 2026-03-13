@@ -25,6 +25,12 @@ export class SetUserRole extends BaseService {
 
         await this.userRepository.updateById(userId, { role });
 
+        if (role == 'employer') {
+            const [employerProfile] = await dispatch('employer:create-profile', { user_id: userId });
+
+            if (!employerProfile) throw new Error('Failed to create employer profile');
+        }
+
         if (role == 'talent') {
             const [talent] = await dispatch('talent:create-talent', { user_id: userId });
 

@@ -83,7 +83,7 @@ export const handlePrivateRequest = async (req: Request, options: ControllerHand
     if (options.allowedRoles && options.allowedRoles.length > 0) {
         if (!user.role) throw new UnAuthorizedError('User role missing');
 
-        const isRequestAuthorized = options.allowedRoles?.includes(user.role.toLocaleUpperCase() as UserRoleEnum);
+        const isRequestAuthorized = options.allowedRoles?.includes(user.role as UserRoleEnum);
 
         if (!isRequestAuthorized) throw new ForbiddenError('You do not have access to the requested resource');
     }

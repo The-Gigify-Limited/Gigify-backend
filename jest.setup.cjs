@@ -1,0 +1,13 @@
+process.env.NODE_ENV = 'development';
+process.env.PORT = process.env.PORT || '8000';
+process.env.SUPABASE_URL = process.env.SUPABASE_URL || 'https://example.supabase.co';
+process.env.SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || 'service-role-key';
+process.env.SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'anon-key';
+process.env.REDIS_HOST = process.env.REDIS_HOST || '127.0.0.1';
+process.env.REDIS_PORT = process.env.REDIS_PORT || '6379';
+process.env.REDIS_PASSWORD = process.env.REDIS_PASSWORD || '';
+process.env.SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || 'sendgrid-key';
+process.env.SENDGRID_EMAIL = process.env.SENDGRID_EMAIL || 'support@gigify.com';
+process.env.TWILIO_SID = process.env.TWILIO_SID || 'twilio-sid';
+process.env.TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN || 'twilio-auth-token';
+process.env.TWILIO_PHONE_NUMBER = process.env.TWILIO_PHONE_NUMBER || '1234567890';

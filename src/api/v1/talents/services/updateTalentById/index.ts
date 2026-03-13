@@ -1,4 +1,4 @@
-import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
+import { BadRequestError, ControllerArgs, HttpStatus, RouteNotFoundError } from '@/core';
 import { UpdateTalentDto } from '~/talents/interfaces';
 import { TalentRepository } from '~/talents/repository';
 
@@ -10,9 +10,11 @@ export class UpdateTalentById {
 
         if (!params?.id) throw new BadRequestError(`No Talent ID Found!`);
 
-        const { id } = params;
+        const existingTalent = await this.talentRepository.findByUserId(params.id);
 
-        const updatedTalent = await this.talentRepository.updateById(id, input);
+        if (!existingTalent?.id) throw new RouteNotFoundError('Talent profile not found');
+
+        const updatedTalent = await this.talentRepository.updateById(existingTalent.id, input);
         const convertedTalent = this.talentRepository.mapToCamelCase(updatedTalent);
 
         return {

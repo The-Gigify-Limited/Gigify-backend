@@ -1,18 +1,20 @@
 import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
 import { TalentParamDTO } from '~/talents/interfaces';
-import { TalentPortfolioRepository } from '~/talents/repository';
+import { TalentPortfolioRepository, TalentRepository } from '~/talents/repository';
 
 export class GetTalentPortfolios {
-    constructor(private readonly talentPortfolioRepository: TalentPortfolioRepository) {}
+    constructor(private readonly talentPortfolioRepository: TalentPortfolioRepository, private readonly talentRepository: TalentRepository) {}
 
     handle = async (payload: ControllerArgs<TalentParamDTO>) => {
         const { params } = payload;
 
         if (!params?.id) throw new BadRequestError(`No User ID Found!`);
 
-        const { id } = params;
+        const talent = await this.talentRepository.findByUserId(params.id);
 
-        const talentPortfolio = await this.talentPortfolioRepository.findByTalentId(id);
+        if (!talent?.id) throw new BadRequestError('Talent not found');
+
+        const talentPortfolio = await this.talentPortfolioRepository.findByTalentId(talent.id);
 
         return {
             code: HttpStatus.OK,
@@ -22,6 +24,6 @@ export class GetTalentPortfolios {
     };
 }
 
-const getTalentPortfolios = new GetTalentPortfolios(new TalentPortfolioRepository());
+const getTalentPortfolios = new GetTalentPortfolios(new TalentPortfolioRepository(), new TalentRepository());
 
 export default getTalentPortfolios;

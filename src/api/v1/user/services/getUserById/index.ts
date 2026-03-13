@@ -1,10 +1,11 @@
 import { dispatch } from '@/app';
 import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
+import { EmployerRepository } from '~/employers/repository';
 import { GetUserParamsDto, User } from '~/user/interfaces';
 import { UserRepository } from '~/user/repository';
 
 export class GetUserById {
-    constructor(private readonly userRepository: UserRepository) {}
+    constructor(private readonly userRepository: UserRepository, private readonly employerRepository: EmployerRepository) {}
 
     handle = async (payload: ControllerArgs<GetUserParamsDto>) => {
         const { params, query } = payload;
@@ -24,12 +25,17 @@ export class GetUserById {
         if (convertedUser) user = convertedUser;
 
         let talentProfile = undefined;
+        let employerProfile = undefined;
 
         if (query?.full_profile && user) {
             if (user.role === 'talent') {
                 const [talent] = await dispatch('talent:get-talent-profile', { user_id: id });
 
                 if (talent) talentProfile = talent;
+            }
+
+            if (user.role === 'employer') {
+                employerProfile = await this.employerRepository.findByUserId(id);
             }
         }
 
@@ -38,12 +44,13 @@ export class GetUserById {
             message: 'User Fetched Successfully',
             data: {
                 user,
+                employerProfile,
                 talentProfile,
             },
         };
     };
 }
 
-const getUserById = new GetUserById(new UserRepository());
+const getUserById = new GetUserById(new UserRepository(), new EmployerRepository());
 
 export default getUserById;

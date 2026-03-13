@@ -33,9 +33,9 @@ export class ResourceRepository extends BaseRepository<any, any> {
     private getTableConfig(resourceType: Resources): TableConfig {
         const tableMap: Record<Resources, TableConfig> = {
             user: { table: 'users', ownerColumn: 'id' },
-            gig: { table: 'gigs', ownerColumn: 'user_id' },
-            review: { table: 'talent_reviews', ownerColumn: 'user_id' },
-            payment: { table: 'users', ownerColumn: 'user_id' },
+            gig: { table: 'gigs', ownerColumn: 'employer_id' },
+            review: { table: 'talent_reviews', ownerColumn: 'reviewer_id' },
+            payment: { table: 'payments', ownerColumn: 'employer_id' },
             talent: { table: 'talent_profiles', ownerColumn: 'user_id' },
         };
 

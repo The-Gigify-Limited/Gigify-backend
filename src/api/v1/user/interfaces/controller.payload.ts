@@ -1,5 +1,5 @@
 import type { ControllerArgsTypes } from '@/core';
-import { User } from './module.types';
+import { IdentityDocumentTypeEnum, NotificationPreferences, User } from './module.types';
 
 export interface GetUsersQueryDto extends ControllerArgsTypes {
     query: {
@@ -24,4 +24,47 @@ export interface UpdateUserDto {
         id: string;
     };
     input: Partial<User>;
+}
+
+export interface CreateUserReviewDto extends ControllerArgsTypes {
+    input: {
+        revieweeId: string;
+        gigId?: string;
+        comment?: string;
+        rating: number;
+    };
+}
+
+export interface GetUserReviewsDto extends ControllerArgsTypes {
+    params: {
+        id: string;
+    };
+    query: {
+        page?: number;
+        pageSize?: number;
+    };
+}
+
+export interface GetUserTimelineDto extends ControllerArgsTypes {
+    query: {
+        page?: number;
+        pageSize?: number;
+    };
+}
+
+export interface UpdateNotificationPreferencesDto extends ControllerArgsTypes {
+    input: Partial<
+        Pick<
+            NotificationPreferences,
+            'emailEnabled' | 'pushEnabled' | 'smsEnabled' | 'marketingEnabled' | 'gigUpdates' | 'paymentUpdates' | 'messageUpdates' | 'securityAlerts'
+        >
+    >;
+}
+
+export interface SubmitLivenessDto extends ControllerArgsTypes {
+    input: {
+        idType: IdentityDocumentTypeEnum;
+        mediaUrl: string;
+        selfieUrl?: string | null;
+    };
 }

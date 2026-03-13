@@ -1,4 +1,6 @@
 import { BaseService, ControllerArgs, HttpStatus, logger, UnAuthorizedError } from '@/core';
+import { createClient } from '@supabase/supabase-js';
+import { config } from '@/core/config';
 
 export class Logout extends BaseService {
     handle = async ({ user, request }: ControllerArgs) => {
@@ -6,7 +8,18 @@ export class Logout extends BaseService {
             throw new UnAuthorizedError('User not authenticated');
         }
 
-        const { error } = await this.supabase.auth.admin.signOut(user.id);
+        const token = request.headers.authorization?.split(' ')[1];
+
+        if (!token) {
+            throw new UnAuthorizedError('No access token provided');
+        }
+
+        // Create a client scoped to this user's session so signOut revokes their token
+        const userClient = createClient(config.db.supabaseUrl, config.db.supabaseAnonKey, {
+            global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+
+        const { error } = await userClient.auth.signOut();
 
         if (error) {
             logger.error('Supabase logout failed', {

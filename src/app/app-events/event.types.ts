@@ -1,3 +1,4 @@
+import { EmployerProfile } from '~/employers/interfaces';
 import winston from 'winston';
 import { Talent, TalentProfile } from '~/talents/interfaces';
 import { User } from '~/user/interfaces';
@@ -19,6 +20,7 @@ export interface AppEventsInterface {
     'user:get-by-id': EventDefinition<{ id: string; fields?: (keyof User)[] }, Partial<User> | null>;
 
     // TALENTS
+    'employer:create-profile': EventDefinition<{ user_id: string }, EmployerProfile | null>;
     'talent:create-talent': EventDefinition<{ user_id: string }, Talent | null>;
     'talent:get-talent-profile': EventDefinition<{ user_id: string }, TalentProfile | null>;
 }

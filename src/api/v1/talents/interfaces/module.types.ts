@@ -7,10 +7,17 @@ export type DatabaseTalentReview = DatabaseTable['talent_reviews']['Row'];
 export type Talent = {
     id: string;
     userId: string;
-    dateOfBirth: string | null;
-    skills: string[];
-    stageName: string | null;
+    bannerUrl: string | null;
     biography: string | null;
+    dateOfBirth: string | null;
+    maxRate: number | null;
+    minRate: number;
+    primaryRole: string | null;
+    rateCurrency: string;
+    skills: string[] | null;
+    stageName: string | null;
+    updatedAt: string | null;
+    yearsExperience: number | null;
 };
 
 export type TalentPortfolio = {

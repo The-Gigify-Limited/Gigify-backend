@@ -20,7 +20,7 @@ export async function getTalentProfileByUserId(user_id: string): Promise<TalentP
     const talentPortfolios = await talentPortfolioRepository.findByTalentId(existingTalent?.id ?? '');
     const talentReviews = await talentReviewRepository.findMany({
         filters: {
-            talent_id: existingTalent?.id,
+            talent_id: user_id,
         },
         pagination: {
             page: 1,
@@ -30,7 +30,7 @@ export async function getTalentProfileByUserId(user_id: string): Promise<TalentP
 
     const convertedReviews = talentReviews?.map(talentReviewRepository.mapToCamelCase) ?? [];
 
-    const averageRating = await talentReviewRepository.findTalentAverageRating(existingTalent?.id ?? '');
+    const averageRating = await talentReviewRepository.findTalentAverageRating(user_id);
 
     return {
         ...existingTalent,

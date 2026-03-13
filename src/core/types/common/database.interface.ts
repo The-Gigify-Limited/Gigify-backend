@@ -150,7 +150,10 @@ export type Database = {
           gig_date: string
           id: string
           is_remote: boolean | null
+          location_latitude: number | null
+          location_longitude: number | null
           location_name: string | null
+          required_talent_count: number
           service_id: string | null
           status: Database["public"]["Enums"]["gig_status"] | null
           title: string
@@ -165,7 +168,10 @@ export type Database = {
           gig_date: string
           id?: string
           is_remote?: boolean | null
+          location_latitude?: number | null
+          location_longitude?: number | null
           location_name?: string | null
+          required_talent_count?: number
           service_id?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
           title: string
@@ -180,7 +186,10 @@ export type Database = {
           gig_date?: string
           id?: string
           is_remote?: boolean | null
+          location_latitude?: number | null
+          location_longitude?: number | null
           location_name?: string | null
+          required_talent_count?: number
           service_id?: string | null
           status?: Database["public"]["Enums"]["gig_status"] | null
           title?: string
@@ -199,6 +208,662 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "services_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gig_applications: {
+        Row: {
+          applied_at: string
+          cover_message: string | null
+          employer_notes: string | null
+          gig_id: string
+          hired_at: string | null
+          id: string
+          proposed_rate: number | null
+          status: Database["public"]["Enums"]["application_status"]
+          talent_id: string
+          updated_at: string
+        }
+        Insert: {
+          applied_at?: string
+          cover_message?: string | null
+          employer_notes?: string | null
+          gig_id: string
+          hired_at?: string | null
+          id?: string
+          proposed_rate?: number | null
+          status?: Database["public"]["Enums"]["application_status"]
+          talent_id: string
+          updated_at?: string
+        }
+        Update: {
+          applied_at?: string
+          cover_message?: string | null
+          employer_notes?: string | null
+          gig_id?: string
+          hired_at?: string | null
+          id?: string
+          proposed_rate?: number | null
+          status?: Database["public"]["Enums"]["application_status"]
+          talent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_applications_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_applications_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conversations: {
+        Row: {
+          created_at: string
+          employer_id: string
+          gig_id: string | null
+          id: string
+          last_message_at: string | null
+          talent_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          employer_id: string
+          gig_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          talent_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          employer_id?: string
+          gig_id?: string | null
+          id?: string
+          last_message_at?: string | null
+          talent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gig_offers: {
+        Row: {
+          created_at: string
+          currency: string
+          employer_id: string
+          expires_at: string | null
+          gig_id: string
+          id: string
+          message: string | null
+          proposed_rate: number | null
+          responded_at: string | null
+          status: Database["public"]["Enums"]["offer_status"]
+          talent_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          employer_id: string
+          expires_at?: string | null
+          gig_id: string
+          id?: string
+          message?: string | null
+          proposed_rate?: number | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          talent_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          employer_id?: string
+          expires_at?: string | null
+          gig_id?: string
+          id?: string
+          message?: string | null
+          proposed_rate?: number | null
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["offer_status"]
+          talent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gig_offers_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_offers_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "gig_offers_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      identity_verifications: {
+        Row: {
+          created_at: string
+          id: string
+          id_type: Database["public"]["Enums"]["identity_document_type"]
+          media_url: string
+          notes: string | null
+          reviewed_at: string | null
+          selfie_url: string | null
+          status: Database["public"]["Enums"]["verification_status"]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          id_type: Database["public"]["Enums"]["identity_document_type"]
+          media_url: string
+          notes?: string | null
+          reviewed_at?: string | null
+          selfie_url?: string | null
+          status?: Database["public"]["Enums"]["verification_status"]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          id_type?: Database["public"]["Enums"]["identity_document_type"]
+          media_url?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          selfie_url?: string | null
+          status?: Database["public"]["Enums"]["verification_status"]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "identity_verifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          attachment_url: string | null
+          body: string
+          conversation_id: string
+          created_at: string
+          id: string
+          read_at: string | null
+          sender_id: string
+        }
+        Insert: {
+          attachment_url?: string | null
+          body: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id: string
+        }
+        Update: {
+          attachment_url?: string | null
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          read_at?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email_enabled: boolean
+          gig_updates: boolean
+          marketing_enabled: boolean
+          message_updates: boolean
+          payment_updates: boolean
+          push_enabled: boolean
+          security_alerts: boolean
+          sms_enabled: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email_enabled?: boolean
+          gig_updates?: boolean
+          marketing_enabled?: boolean
+          message_updates?: boolean
+          payment_updates?: boolean
+          push_enabled?: boolean
+          security_alerts?: boolean
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email_enabled?: boolean
+          gig_updates?: boolean
+          marketing_enabled?: boolean
+          message_updates?: boolean
+          payment_updates?: boolean
+          push_enabled?: boolean
+          security_alerts?: boolean
+          sms_enabled?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          channel: Database["public"]["Enums"]["notification_channel"]
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          payload: Json
+          read_at: string | null
+          sent_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          payload?: Json
+          read_at?: string | null
+          sent_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          channel?: Database["public"]["Enums"]["notification_channel"]
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          payload?: Json
+          read_at?: string | null
+          sent_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          application_id: string | null
+          created_at: string
+          currency: string
+          employer_id: string
+          gig_id: string | null
+          id: string
+          metadata: Json
+          paid_at: string | null
+          payment_reference: string | null
+          platform_fee: number
+          provider: Database["public"]["Enums"]["payment_provider"]
+          status: Database["public"]["Enums"]["payment_status"]
+          talent_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          application_id?: string | null
+          created_at?: string
+          currency?: string
+          employer_id: string
+          gig_id?: string | null
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          payment_reference?: string | null
+          platform_fee?: number
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          status?: Database["public"]["Enums"]["payment_status"]
+          talent_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          application_id?: string | null
+          created_at?: string
+          currency?: string
+          employer_id?: string
+          gig_id?: string | null
+          id?: string
+          metadata?: Json
+          paid_at?: string | null
+          payment_reference?: string | null
+          platform_fee?: number
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          status?: Database["public"]["Enums"]["payment_status"]
+          talent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "gig_applications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payout_requests: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          note: string | null
+          processed_at: string | null
+          status: Database["public"]["Enums"]["payout_status"]
+          talent_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          note?: string | null
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          talent_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          note?: string | null
+          processed_at?: string | null
+          status?: Database["public"]["Enums"]["payout_status"]
+          talent_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payout_requests_talent_id_fkey"
+            columns: ["talent_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payment_release_otps: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          employer_id: string
+          expires_at: string
+          id: string
+          last_sent_at: string
+          payment_id: string
+          updated_at: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          employer_id: string
+          expires_at: string
+          id?: string
+          last_sent_at?: string
+          payment_id: string
+          updated_at?: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          employer_id?: string
+          expires_at?: string
+          id?: string
+          last_sent_at?: string
+          payment_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_release_otps_employer_id_fkey"
+            columns: ["employer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_release_otps_payment_id_fkey"
+            columns: ["payment_id"]
+            isOneToOne: false
+            referencedRelation: "payments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reports: {
+        Row: {
+          category: string | null
+          created_at: string
+          gig_id: string | null
+          id: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          resolution_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["report_status"]
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          gig_id?: string | null
+          id?: string
+          reason: string
+          reported_user_id: string
+          reporter_id: string
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          gig_id?: string | null
+          id?: string
+          reason?: string
+          reported_user_id?: string
+          reporter_id?: string
+          resolution_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["report_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reports_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reported_user_id_fkey"
+            columns: ["reported_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reporter_id_fkey"
+            columns: ["reporter_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reports_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      saved_gigs: {
+        Row: {
+          created_at: string
+          gig_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          gig_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          gig_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_gigs_gig_id_fkey"
+            columns: ["gig_id"]
+            isOneToOne: false
+            referencedRelation: "gigs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_gigs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
@@ -439,11 +1104,14 @@ export type Database = {
           email: string | null
           first_name: string | null
           full_address: string | null
+          gender: string | null
           id: string
           is_verified: boolean | null
           last_name: string | null
           location_city: string | null
           location_country: string | null
+          location_latitude: number | null
+          location_longitude: number | null
           onboarding_step: number | null
           phone_number: string | null
           post_code: number | null
@@ -451,17 +1119,21 @@ export type Database = {
           role: Database["public"]["Enums"]["user_role"] | null
           status: Database["public"]["Enums"]["user_status"]
           updated_at: string | null
+          username: string | null
         }
         Insert: {
           created_at?: string | null
           email?: string | null
           first_name?: string | null
           full_address?: string | null
+          gender?: string | null
           id: string
           is_verified?: boolean | null
           last_name?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_latitude?: number | null
+          location_longitude?: number | null
           onboarding_step?: number | null
           phone_number?: string | null
           post_code?: number | null
@@ -469,17 +1141,21 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string | null
+          username?: string | null
         }
         Update: {
           created_at?: string | null
           email?: string | null
           first_name?: string | null
           full_address?: string | null
+          gender?: string | null
           id?: string
           is_verified?: boolean | null
           last_name?: string | null
           location_city?: string | null
           location_country?: string | null
+          location_latitude?: number | null
+          location_longitude?: number | null
           onboarding_step?: number | null
           phone_number?: string | null
           post_code?: number | null
@@ -487,6 +1163,7 @@ export type Database = {
           role?: Database["public"]["Enums"]["user_role"] | null
           status?: Database["public"]["Enums"]["user_status"]
           updated_at?: string | null
+          username?: string | null
         }
         Relationships: []
       }
@@ -532,6 +1209,13 @@ export type Database = {
       }
     }
     Enums: {
+      application_status:
+        | "submitted"
+        | "reviewing"
+        | "shortlisted"
+        | "hired"
+        | "rejected"
+        | "withdrawn"
       activity_type:
         | "user_joined"
         | "gig_posted"
@@ -543,8 +1227,17 @@ export type Database = {
         | "review_posted"
       audit_result: "success" | "failure"
       gig_status: "draft" | "open" | "in_progress" | "completed" | "cancelled"
+      identity_document_type: "passport" | "drivers_license" | "national_id" | "selfie_video"
+      notification_channel: "in_app" | "email" | "push" | "sms"
+      notification_type: "gig_update" | "application_update" | "payment_update" | "message_received" | "security_alert" | "marketing"
+      offer_status: "pending" | "accepted" | "declined" | "withdrawn" | "expired"
+      payment_provider: "manual" | "paystack" | "flutterwave" | "stripe"
+      payment_status: "pending" | "processing" | "paid" | "failed" | "refunded" | "cancelled"
+      payout_status: "requested" | "approved" | "paid" | "rejected"
+      report_status: "open" | "in_review" | "resolved" | "dismissed"
       user_role: "talent" | "employer" | "admin"
       user_status: "active" | "suspended"
+      verification_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -672,6 +1365,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      application_status: ["submitted", "reviewing", "shortlisted", "hired", "rejected", "withdrawn"],
       activity_type: [
         "user_joined",
         "gig_posted",
@@ -684,8 +1378,17 @@ export const Constants = {
       ],
       audit_result: ["success", "failure"],
       gig_status: ["draft", "open", "in_progress", "completed", "cancelled"],
+      identity_document_type: ["passport", "drivers_license", "national_id", "selfie_video"],
+      notification_channel: ["in_app", "email", "push", "sms"],
+      notification_type: ["gig_update", "application_update", "payment_update", "message_received", "security_alert", "marketing"],
+      offer_status: ["pending", "accepted", "declined", "withdrawn", "expired"],
+      payment_provider: ["manual", "paystack", "flutterwave", "stripe"],
+      payment_status: ["pending", "processing", "paid", "failed", "refunded", "cancelled"],
+      payout_status: ["requested", "approved", "paid", "rejected"],
+      report_status: ["open", "in_review", "resolved", "dismissed"],
       user_role: ["talent", "employer", "admin"],
       user_status: ["active", "suspended"],
+      verification_status: ["pending", "approved", "rejected"],
     },
   },
 } as const

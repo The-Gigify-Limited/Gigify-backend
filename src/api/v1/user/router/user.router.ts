@@ -1,15 +1,26 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    createUserReview,
     deleteUserById,
     getAllUsers,
+    getNotificationPreferences,
     getUserById,
+    getUserReviews,
+    getUserTimeline,
+    submitLivenessCheck,
+    updateNotificationPreferences,
     updateUserById,
 } from '../services';
 import {
+    createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
+    livenessSchema,
+    notificationPreferencesSchema,
+    timelineQuerySchema,
     updateUserSchema,
+    userReviewsSchema,
 } from './schema';
 
 export const userRouter = Router();
@@ -33,6 +44,16 @@ userRouter
      *     responses:
      *       200:
      *         description: User profile
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User Retrieved Successfully
+     *               data:
+     *                 id: 20000000-0000-0000-0000-000000000001
+     *                 firstName: Maxwell
+     *                 lastName: Adeyemi
+     *                 role: talent
+     *                 locationCity: Lagos
      *       401:
      *         description: Unauthorized
      */
@@ -74,6 +95,17 @@ userRouter
      *     responses:
      *       200:
      *         description: Users list
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Users Retrieved Successfully
+     *               data:
+     *                 - id: 20000000-0000-0000-0000-000000000001
+     *                   username: djmaxell
+     *                   role: talent
+     *                 - id: 10000000-0000-0000-0000-000000000002
+     *                   username: pulselive
+     *                   role: employer
      *       401:
      *         description: Unauthorized
      */
@@ -107,9 +139,28 @@ userRouter
      *         application/json:
      *           schema:
      *             type: object
+     *           example:
+     *             firstName: Maxwell
+     *             lastName: Adeyemi
+     *             phoneNumber: "+234810000001"
+     *             locationCountry: Nigeria
+     *             locationCity: Lagos
+     *             locationLatitude: 6.5244
+     *             locationLongitude: 3.3792
+     *             fullAddress: 24 Allen Avenue, Ikeja
+     *             postCode: 100282
+     *             username: djmaxell
      *     responses:
      *       200:
      *         description: Updated profile
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User Updated Successfully
+     *               data:
+     *                 id: 20000000-0000-0000-0000-000000000001
+     *                 username: djmaxell
+     *                 locationCity: Lagos
      *       401:
      *         description: Unauthorized
      */
@@ -140,6 +191,10 @@ userRouter
      *     responses:
      *       200:
      *         description: Account soft deleted
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User Deleted Successfully
      *       401:
      *         description: Unauthorized
      */
@@ -149,6 +204,7 @@ userRouter
             .isPrivate()
             .setValidator(getUserParamsSchema)
             .setHandler(deleteUserById.handle)
+            .checkResourceOwnership('user', 'id')
             .handle(),
     )
 
@@ -171,15 +227,29 @@ userRouter
      *               gig_id: { type: string, format: uuid }
      *               rating: { type: number, minimum: 1, maximum: 5 }
      *               comment: { type: string }
+     *           example:
+     *             revieweeId: 20000000-0000-0000-0000-000000000002
+     *             gigId: 50000000-0000-0000-0000-000000000002
+     *             rating: 5
+     *             comment: Ada was polished and easy to work with throughout the event.
      *     responses:
      *       201:
      *         description: Review submitted successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Review Created Successfully
+     *               data:
+     *                 id: 32000000-0000-0000-0000-000000000001
+     *                 rating: 5
+     *                 comment: Ada was polished and easy to work with throughout the event.
      */
     .post(
         '/reviews',
         ControlBuilder.builder()
             .isPrivate()
-            .setHandler(deleteUserById.handle)
+            .setValidator(createUserReviewSchema)
+            .setHandler(createUserReview.handle)
             .handle(),
     )
 
@@ -194,12 +264,21 @@ userRouter
      *     responses:
      *       200:
      *         description: List of user activities (joined, paid, etc.)
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User Timeline Retrieved Successfully
+     *               data:
+     *                 - id: 91000000-0000-0000-0000-000000000002
+     *                   eventType: gig_started
+     *                   referenceId: 50000000-0000-0000-0000-000000000002
      */
     .get(
         '/me/timeline',
         ControlBuilder.builder()
             .isPrivate()
-            .setHandler(deleteUserById.handle)
+            .setValidator(timelineQuerySchema)
+            .setHandler(getUserTimeline.handle)
             .handle(),
     )
 
@@ -219,10 +298,20 @@ userRouter
      *     responses:
      *       200:
      *         description: List of reviews and average rating
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: User Reviews Retrieved Successfully
+     *               data:
+     *                 averageRating: 4.8
+     *                 reviews:
+     *                   - id: 32000000-0000-0000-0000-000000000001
+     *                     rating: 5
+     *                     comment: Ada was polished and easy to work with throughout the event.
      */
     .get(
         '/:id/reviews',
-        ControlBuilder.builder().setHandler(deleteUserById.handle).handle(),
+        ControlBuilder.builder().setValidator(userReviewsSchema).setHandler(getUserReviews.handle).handle(),
     )
     /**
      * @swagger
@@ -241,11 +330,44 @@ userRouter
      *             properties:
      *               media_url: { type: string }
      *               id_type: { type: string, enum: [passport, drivers_license] }
+     *           example:
+     *             mediaUrl: https://storage.gigify.app/id/maxell-id.jpg
+     *             selfieUrl: https://storage.gigify.app/id/maxell-selfie.mp4
+     *             idType: national_id
      *     responses:
      *       200:
      *         description: Verification submitted for review
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Liveness Check Submitted Successfully
+     *               data:
+     *                 id: 92000000-0000-0000-0000-000000000001
+     *                 status: pending
      */
-    .post('/onboarding/liveness', ControlBuilder.builder().isPrivate().handle())
+    .post('/onboarding/liveness', ControlBuilder.builder().isPrivate().setValidator(livenessSchema).setHandler(submitLivenessCheck.handle).handle())
+
+    /**
+     * @swagger
+     * /user/settings/notifications:
+     *   get:
+     *     tags: [User Settings]
+     *     summary: Get current notification preferences
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Notification preferences
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Notification Preferences Retrieved Successfully
+     *               data:
+     *                 emailEnabled: true
+     *                 pushEnabled: true
+     *                 marketingEnabled: false
+     */
+    .get('/settings/notifications', ControlBuilder.builder().isPrivate().setHandler(getNotificationPreferences.handle).handle())
 
     /**
      * @swagger
@@ -264,11 +386,24 @@ userRouter
      *             properties:
      *               push_enabled: { type: boolean }
      *               payout_alerts: { type: boolean }
+     *           example:
+     *             emailEnabled: true
+     *             pushEnabled: true
+     *             marketingEnabled: false
+     *             gigUpdates: true
      *     responses:
      *       200:
      *         description: Settings updated
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Notification Preferences Updated Successfully
+     *               data:
+     *                 emailEnabled: true
+     *                 pushEnabled: true
+     *                 marketingEnabled: false
      */
     .patch(
         '/settings/notifications',
-        ControlBuilder.builder().isPrivate().handle(),
+        ControlBuilder.builder().isPrivate().setValidator(notificationPreferencesSchema).setHandler(updateNotificationPreferences.handle).handle(),
     );

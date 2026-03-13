@@ -31,7 +31,7 @@ export class UpdateUserById {
         return {
             code: HttpStatus.OK,
             message: 'User Updated Successfully',
-            data: updatedUser,
+            data: this.userRepository.mapToCamelCase(updatedUser),
         };
     };
 }
