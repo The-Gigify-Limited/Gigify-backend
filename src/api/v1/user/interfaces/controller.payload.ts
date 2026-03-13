@@ -68,3 +68,9 @@ export interface SubmitLivenessDto extends ControllerArgsTypes {
         selfieUrl?: string | null;
     };
 }
+
+export interface CreateKycSessionDto extends ControllerArgsTypes {
+    input: {
+        levelName?: string | null;
+    };
+}

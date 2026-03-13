@@ -1,6 +1,7 @@
 import { BaseService, ControllerArgs, HttpStatus, logger, UnAuthorizedError } from '@/core';
 import { createClient } from '@supabase/supabase-js';
 import { config } from '@/core/config';
+import { blacklistToken } from '~/auth/utils';
 
 export class Logout extends BaseService {
     handle = async ({ user, request }: ControllerArgs) => {
@@ -14,7 +15,7 @@ export class Logout extends BaseService {
             throw new UnAuthorizedError('No access token provided');
         }
 
-        // Create a client scoped to this user's session so signOut revokes their token
+        // Revoke the refresh token on Supabase's side
         const userClient = createClient(config.db.supabaseUrl, config.db.supabaseAnonKey, {
             global: { headers: { Authorization: `Bearer ${token}` } },
         });
@@ -29,6 +30,9 @@ export class Logout extends BaseService {
 
             throw new Error('Logout failed. Please try again.');
         }
+
+        // Blacklist the access token so it can't be reused until it naturally expires
+        await blacklistToken(token);
 
         request.user = null;
 

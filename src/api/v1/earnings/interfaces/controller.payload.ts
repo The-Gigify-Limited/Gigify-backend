@@ -16,6 +16,20 @@ export interface ProcessPaymentDto extends ControllerArgsTypes {
     };
 }
 
+export interface CreateStripeCheckoutSessionDto extends ControllerArgsTypes {
+    input: {
+        paymentId?: string;
+        gigId?: string;
+        applicationId?: string;
+        talentId: string;
+        amount: number;
+        currency?: string;
+        platformFee?: number;
+        successUrl?: string;
+        cancelUrl?: string;
+    };
+}
+
 export interface RequestPayoutDto extends ControllerArgsTypes {
     input: {
         amount: number;

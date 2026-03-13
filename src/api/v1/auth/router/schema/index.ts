@@ -31,6 +31,37 @@ const loginSchema = {
     }),
 };
 
+const phoneOtpRequestSchema = {
+    inputSchema: Joi.object().keys({
+        phoneNumber: Joi.string()
+            .pattern(/^\+[1-9]\d{7,14}$/)
+            .required()
+            .label('Phone number is required in E.164 format, for example +2348012345678.'),
+    }),
+};
+
+const phoneOtpVerifySchema = {
+    inputSchema: Joi.object().keys({
+        phoneNumber: Joi.string()
+            .pattern(/^\+[1-9]\d{7,14}$/)
+            .required()
+            .label('Phone number is required in E.164 format, for example +2348012345678.'),
+        otp: Joi.string().pattern(/^\d{6}$/).required().label('A valid 6-digit OTP code is required'),
+    }),
+};
+
+const googleAuthUrlSchema = {
+    inputSchema: Joi.object().keys({
+        redirectTo: Joi.string().uri().optional(),
+    }),
+};
+
+const googleAuthCodeExchangeSchema = {
+    inputSchema: Joi.object().keys({
+        code: Joi.string().min(10).required(),
+    }),
+};
+
 const resendVerifyEmailMessageSchema = {
     inputSchema: Joi.object().keys({
         email: Joi.string()
@@ -75,7 +106,11 @@ const refreshTokenSchema = {
 
 export {
     forgotPasswordSchema,
+    googleAuthCodeExchangeSchema,
+    googleAuthUrlSchema,
     loginSchema,
+    phoneOtpRequestSchema,
+    phoneOtpVerifySchema,
     refreshTokenSchema,
     resendVerifyEmailMessageSchema,
     resetPasswordSchema,

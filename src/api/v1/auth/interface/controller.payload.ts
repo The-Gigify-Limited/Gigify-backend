@@ -15,6 +15,31 @@ export interface SignupPayload extends ControllerArgsTypes {
     };
 }
 
+export interface RequestPhoneOtpPayload extends ControllerArgsTypes {
+    input: {
+        phoneNumber: string;
+    };
+}
+
+export interface VerifyPhoneOtpPayload extends ControllerArgsTypes {
+    input: {
+        phoneNumber: string;
+        otp: string;
+    };
+}
+
+export interface GoogleAuthUrlPayload extends ControllerArgsTypes {
+    input: {
+        redirectTo?: string;
+    };
+}
+
+export interface GoogleAuthCodeExchangePayload extends ControllerArgsTypes {
+    input: {
+        code: string;
+    };
+}
+
 export interface SetUserRolePayload extends ControllerArgsTypes {
     input: {
         userId: string;

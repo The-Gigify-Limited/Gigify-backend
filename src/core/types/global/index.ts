@@ -7,6 +7,7 @@ declare global {
 
         export interface Request {
             file: FileArray | null | undefined;
+            rawBody?: string;
             user?: Partial<User> | null;
         }
     }

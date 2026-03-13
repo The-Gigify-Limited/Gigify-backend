@@ -3,7 +3,7 @@ import { BadRequestError, ForbiddenError, UnAuthorizedError, UnProcessableError,
 import type { FileObject, FileObjects } from '@/core/types';
 import type { Request } from 'express';
 import type { FileArray } from 'express-fileupload';
-import { checkPermissions, verifyResourceOwnership } from '~/auth/utils';
+import { checkPermissions, verifyResourceOwnership, isTokenBlacklisted } from '~/auth/utils';
 import { UserRoleEnum } from '~/user/interfaces';
 import { ControllerArgsTypes, ControllerHandlerOptions, ValidationSchema } from './index.interface';
 
@@ -64,6 +64,10 @@ export const handlePrivateRequest = async (req: Request, options: ControllerHand
         }
 
         const token = authHeader.split(' ')[1];
+
+        if (await isTokenBlacklisted(token)) {
+            throw new UnAuthorizedError('Token has been revoked');
+        }
 
         const {
             data: { user: supabaseUser },

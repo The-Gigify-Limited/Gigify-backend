@@ -1,5 +1,7 @@
 # Gigify Figma Endpoint Matrix
 
+See also: [figma-exact-prd.md](/Users/apple/Documents/Work/Gigify/backend/docs/figma-exact-prd.md)
+
 This matrix tracks the backend coverage needed for the current Figma source files:
 
 - Mobile canvas: `2:3`
@@ -10,14 +12,20 @@ The Figma roots contain duplicate mobile and web variants for the same domain wo
 ## Auth and Onboarding
 
 - Splash, create account, login, forgot password, password reset email, login security email
-  - `POST /api/v1/auth/signup`
+  - `POST /api/v1/auth/register`
   - `POST /api/v1/auth/login`
+  - `POST /api/v1/auth/phone/request-otp`
+  - `POST /api/v1/auth/phone/verify`
+  - `POST /api/v1/auth/oauth/google/url`
+  - `POST /api/v1/auth/oauth/google/exchange`
   - `POST /api/v1/auth/forgot-password`
-  - `PATCH /api/v1/auth/set-role`
+  - `POST /api/v1/auth/set-role`
 - User setup and profile completion
   - `GET /api/v1/user/:id`
   - `PATCH /api/v1/user/:id`
   - `POST /api/v1/user/onboarding/liveness`
+  - `POST /api/v1/user/kyc/session`
+  - `GET /api/v1/user/kyc/status`
 
 ## Discovery and Marketplace
 
@@ -86,6 +94,8 @@ The Figma roots contain duplicate mobile and web variants for the same domain wo
 
 - Employer payment processing
   - `POST /api/v1/earnings/payments/process`
+  - `POST /api/v1/earnings/payments/stripe/checkout-session`
+  - `POST /api/v1/earnings/payments/stripe/webhook`
 - Notification center
   - `GET /api/v1/notifications`
   - `GET /api/v1/notifications/unread-count`
@@ -134,3 +144,4 @@ The Figma roots contain duplicate mobile and web variants for the same domain wo
 - Web and mobile screen variants reuse the same backend modules.
 - Swagger remains the executable API reference at `/api/v1/api-docs`.
 - The discovery and offers additions were introduced to cover the web home sections and the gig-related offer flows surfaced in the current Figma audit.
+- The provider-native gaps called out during the Figma PRD pass are now covered by the Stripe escrow funding endpoints and the Sumsub KYC session/status/webhook flow.

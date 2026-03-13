@@ -9,6 +9,7 @@ export type UserStatusEnum = DatabaseEnum['user_status'];
 export type ActivityTypeEnum = DatabaseEnum['activity_type'];
 export type IdentityDocumentTypeEnum = DatabaseEnum['identity_document_type'];
 export type IdentityVerificationStatusEnum = DatabaseEnum['verification_status'];
+export type IdentityVerificationProvider = 'manual' | 'sumsub';
 
 export type User = {
     id: string;
@@ -60,9 +61,15 @@ export type NotificationPreferences = {
 export type IdentityVerification = {
     id: string;
     userId: string;
-    idType: IdentityDocumentTypeEnum;
-    mediaUrl: string;
+    idType: IdentityDocumentTypeEnum | null;
+    mediaUrl: string | null;
     selfieUrl: string | null;
+    provider: IdentityVerificationProvider;
+    providerApplicantId: string | null;
+    providerLevelName: string | null;
+    providerPayload: Json | null;
+    providerReviewResult: string | null;
+    providerReviewStatus: string | null;
     status: IdentityVerificationStatusEnum;
     notes: string | null;
     reviewedAt: string | null;

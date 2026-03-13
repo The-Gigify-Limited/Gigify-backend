@@ -1,7 +1,23 @@
 import { ControlBuilder, paymentReleaseOtpRateLimiter } from '@/core';
 import { Router } from 'express';
-import { confirmPaymentRelease, getMyEarnings, getPaymentHistory, processPayment, requestPaymentReleaseOtp, requestPayout } from '../services';
-import { confirmPaymentReleaseSchema, paymentHistorySchema, paymentReleaseParamsSchema, processPaymentSchema, requestPayoutSchema } from './schema';
+import {
+    confirmPaymentRelease,
+    createStripeCheckoutSession,
+    getMyEarnings,
+    getPaymentHistory,
+    handleStripeWebhook,
+    processPayment,
+    requestPaymentReleaseOtp,
+    requestPayout,
+} from '../services';
+import {
+    confirmPaymentReleaseSchema,
+    createStripeCheckoutSessionSchema,
+    paymentHistorySchema,
+    paymentReleaseParamsSchema,
+    processPaymentSchema,
+    requestPayoutSchema,
+} from './schema';
 
 export const earningsRouter = Router();
 
@@ -118,6 +134,82 @@ earningsRouter.post('/payout-requests', ControlBuilder.builder().only('talent').
  *                 currency: NGN
  */
 earningsRouter.post('/payments/process', ControlBuilder.builder().only('employer').setValidator(processPaymentSchema).setHandler(processPayment.handle).handle());
+
+/**
+ * @swagger
+ * /earnings/payments/stripe/checkout-session:
+ *   post:
+ *     tags: [Earnings]
+ *     summary: Create a Stripe Checkout session to fund gig escrow
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             gigId: 50000000-0000-0000-0000-000000000002
+ *             talentId: 20000000-0000-0000-0000-000000000002
+ *             amount: 180000
+ *             currency: NGN
+ *             successUrl: https://app.gigify.com/employer/gigs/50000000-0000-0000-0000-000000000002/payment/success
+ *             cancelUrl: https://app.gigify.com/employer/gigs/50000000-0000-0000-0000-000000000002/payment/cancel
+ *     responses:
+ *       201:
+ *         description: Checkout session created
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Stripe Checkout Session Created Successfully
+ *               data:
+ *                 payment:
+ *                   id: 70000000-0000-0000-0000-000000000011
+ *                   status: pending
+ *                   provider: stripe
+ *                 checkout:
+ *                   sessionId: cs_test_123
+ *                   url: https://checkout.stripe.com/c/pay/cs_test_123
+ *                   expiresAt: "2026-03-13T12:45:00.000Z"
+ */
+earningsRouter.post(
+    '/payments/stripe/checkout-session',
+    ControlBuilder.builder().only('employer').setValidator(createStripeCheckoutSessionSchema).setHandler(createStripeCheckoutSession.handle).handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payments/stripe/webhook:
+ *   post:
+ *     tags: [Earnings]
+ *     summary: Receive Stripe payment events and reconcile escrow state
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             id: evt_123
+ *             type: checkout.session.completed
+ *             data:
+ *               object:
+ *                 id: cs_test_123
+ *                 payment_intent: pi_123
+ *                 metadata:
+ *                   paymentId: 70000000-0000-0000-0000-000000000011
+ *     responses:
+ *       200:
+ *         description: Webhook processed
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Stripe Webhook Processed Successfully
+ *               data:
+ *                 acknowledged: true
+ *                 handled: true
+ *                 eventType: checkout.session.completed
+ *                 paymentId: 70000000-0000-0000-0000-000000000011
+ *                 status: processing
+ */
+earningsRouter.post('/payments/stripe/webhook', ControlBuilder.builder().setHandler(handleStripeWebhook.handle).handle());
 
 /**
  * @swagger

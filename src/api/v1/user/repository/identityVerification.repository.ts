@@ -1,5 +1,6 @@
 import { BaseRepository, supabaseAdmin } from '@/core';
 import { normalizePagination } from '@/core/utils/pagination';
+import { Json } from '@/core/types';
 import { DatabaseIdentityVerification, IdentityVerification, SubmitIdentityVerificationInput } from '../interfaces';
 
 export class IdentityVerificationRepository extends BaseRepository<DatabaseIdentityVerification, IdentityVerification> {
@@ -12,6 +13,8 @@ export class IdentityVerificationRepository extends BaseRepository<DatabaseIdent
                 user_id: userId,
                 id_type: input.idType,
                 media_url: input.mediaUrl,
+                provider: 'manual',
+                provider_payload: null,
                 selfie_url: input.selfieUrl ?? null,
             })
             .select('*')
@@ -24,6 +27,37 @@ export class IdentityVerificationRepository extends BaseRepository<DatabaseIdent
 
     async getById(id: string): Promise<IdentityVerification | null> {
         const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('id', id).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data) : null;
+    }
+
+    async getLatestByUserId(userId: string): Promise<IdentityVerification | null> {
+        const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data) : null;
+    }
+
+    async getLatestByUserIdAndProvider(userId: string, provider: IdentityVerification['provider']): Promise<IdentityVerification | null> {
+        const { data, error } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .eq('user_id', userId)
+            .eq('provider', provider)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data) : null;
+    }
+
+    async getByProviderApplicantId(providerApplicantId: string): Promise<IdentityVerification | null> {
+        const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('provider_applicant_id', providerApplicantId).maybeSingle();
 
         if (error) throw error;
 
@@ -48,7 +82,47 @@ export class IdentityVerificationRepository extends BaseRepository<DatabaseIdent
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
-    async review(id: string, input: Partial<Pick<IdentityVerification, 'status' | 'notes' | 'reviewedAt'>>): Promise<IdentityVerification> {
+    async createProviderVerification(input: {
+        userId: string;
+        provider: IdentityVerification['provider'];
+        status?: IdentityVerification['status'];
+        idType?: IdentityVerification['idType'] | null;
+        mediaUrl?: string | null;
+        selfieUrl?: string | null;
+        notes?: string | null;
+        reviewedAt?: string | null;
+        providerApplicantId?: string | null;
+        providerLevelName?: string | null;
+        providerReviewStatus?: string | null;
+        providerReviewResult?: string | null;
+        providerPayload?: Json | null;
+    }): Promise<IdentityVerification> {
+        const { data, error } = await supabaseAdmin
+            .from(this.table)
+            .insert({
+                user_id: input.userId,
+                provider: input.provider,
+                status: input.status ?? 'pending',
+                id_type: input.idType ?? null,
+                media_url: input.mediaUrl ?? null,
+                selfie_url: input.selfieUrl ?? null,
+                notes: input.notes ?? null,
+                reviewed_at: input.reviewedAt ?? null,
+                provider_applicant_id: input.providerApplicantId ?? null,
+                provider_level_name: input.providerLevelName ?? null,
+                provider_review_status: input.providerReviewStatus ?? null,
+                provider_review_result: input.providerReviewResult ?? null,
+                provider_payload: input.providerPayload ?? null,
+            })
+            .select('*')
+            .single();
+
+        if (error) throw error;
+
+        return this.mapToCamelCase(data);
+    }
+
+    async updateVerification(id: string, input: Partial<IdentityVerification>): Promise<IdentityVerification> {
         const { data, error } = await supabaseAdmin
             .from(this.table)
             .update({
@@ -62,6 +136,13 @@ export class IdentityVerificationRepository extends BaseRepository<DatabaseIdent
         if (error) throw error;
 
         return this.mapToCamelCase(data);
+    }
+
+    async review(
+        id: string,
+        input: Partial<Pick<IdentityVerification, 'status' | 'notes' | 'reviewedAt' | 'providerReviewStatus' | 'providerReviewResult'>>,
+    ): Promise<IdentityVerification> {
+        return this.updateVerification(id, input);
     }
 }
 

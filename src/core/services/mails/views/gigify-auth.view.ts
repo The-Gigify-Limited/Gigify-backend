@@ -11,6 +11,11 @@ type PasswordResetMailOptions = {
     supportEmail?: string;
 };
 
+type WelcomeOnboardingMailOptions = {
+    firstName: string;
+    supportEmail?: string;
+};
+
 type NewLoginActivityMailOptions = {
     firstName: string;
     device: string;
@@ -283,6 +288,39 @@ export const passwordResetMail = ({ firstName, resetUrl, supportEmail }: Passwor
 
     return renderLayout({
         title: 'Reset Your Gigify Password',
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const welcomeOnboardingMail = ({ firstName, supportEmail }: WelcomeOnboardingMailOptions) => {
+    const contentHtml = `
+      <p style="margin: 0 0 22px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
+        You’re in. Your Gigify account is now active and ready for the next step.
+      </p>
+      <p style="margin: 0 0 22px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
+        Complete your profile setup so we can connect you with the right gigs, help employers understand your style, and make it easier for opportunities to reach you faster.
+      </p>
+      <p style="margin: 0 0 22px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
+        Once you finish onboarding, you’ll be ready to explore bookings, receive offers, and manage your work in one place.
+      </p>
+      <p style="margin: 0 0 32px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
+        If you need help getting started, contact
+        <a href="mailto:${escapeAttribute(supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail)}?subject=${encodeURIComponent(
+            'Gigify onboarding support',
+        )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">Gigify support</a>.
+      </p>
+      <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
+        Best Regards,
+      </p>
+      <p style="margin: 0; color: #0055E8; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 600; line-height: 22px;">
+        The Gigify Team.
+      </p>
+    `;
+
+    return renderLayout({
+        title: 'You’re In! Let’s Get You Booked on Gigify',
         greetingName: firstName,
         contentHtml,
         supportEmail,

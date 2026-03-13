@@ -25,6 +25,19 @@ const envSchema = Joi.object()
         TWILIO_SID: Joi.string().required(),
         TWILIO_AUTH_TOKEN: Joi.string().required(),
         TWILIO_PHONE_NUMBER: Joi.number().required(),
+
+        GOOGLE_OAUTH_REDIRECT_URL: Joi.string().allow('').optional(),
+
+        STRIPE_SECRET_KEY: Joi.string().allow('').optional(),
+        STRIPE_WEBHOOK_SECRET: Joi.string().allow('').optional(),
+        STRIPE_CHECKOUT_SUCCESS_URL: Joi.string().allow('').optional(),
+        STRIPE_CHECKOUT_CANCEL_URL: Joi.string().allow('').optional(),
+
+        SUMSUB_APP_TOKEN: Joi.string().allow('').optional(),
+        SUMSUB_SECRET_KEY: Joi.string().allow('').optional(),
+        SUMSUB_BASE_URL: Joi.string().allow('').optional(),
+        SUMSUB_LEVEL_NAME: Joi.string().allow('').optional(),
+        SUMSUB_WEBHOOK_SECRET: Joi.string().allow('').optional(),
     })
     .unknown();
 
@@ -57,9 +70,32 @@ export const config = Object.freeze({
         sendgrid_email: validatedEnvVars.SENDGRID_EMAIL,
     },
 
+    auth: {
+        googleOAuthRedirectUrl: validatedEnvVars.GOOGLE_OAUTH_REDIRECT_URL || null,
+    },
+
     twilio: {
         twilio_sid: validatedEnvVars.TWILIO_SID,
         twilio_auth_token: validatedEnvVars.TWILIO_AUTH_TOKEN,
         twilio_phone_number: validatedEnvVars.TWILIO_PHONE_NUMBER,
+    },
+
+    payments: {
+        stripe: {
+            secretKey: validatedEnvVars.STRIPE_SECRET_KEY || null,
+            webhookSecret: validatedEnvVars.STRIPE_WEBHOOK_SECRET || null,
+            checkoutSuccessUrl: validatedEnvVars.STRIPE_CHECKOUT_SUCCESS_URL || null,
+            checkoutCancelUrl: validatedEnvVars.STRIPE_CHECKOUT_CANCEL_URL || null,
+        },
+    },
+
+    kyc: {
+        sumsub: {
+            appToken: validatedEnvVars.SUMSUB_APP_TOKEN || null,
+            secretKey: validatedEnvVars.SUMSUB_SECRET_KEY || null,
+            baseUrl: validatedEnvVars.SUMSUB_BASE_URL || 'https://api.sumsub.com',
+            levelName: validatedEnvVars.SUMSUB_LEVEL_NAME || null,
+            webhookSecret: validatedEnvVars.SUMSUB_WEBHOOK_SECRET || null,
+        },
     },
 });

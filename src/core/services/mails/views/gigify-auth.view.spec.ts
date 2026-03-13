@@ -1,4 +1,4 @@
-import { newLoginActivityMail, passwordResetMail, paymentReleaseOtpMail } from './gigify-auth.view';
+import { newLoginActivityMail, passwordResetMail, paymentReleaseOtpMail, welcomeOnboardingMail } from './gigify-auth.view';
 
 describe('Gigify auth mail views', () => {
     it('renders the password reset email content from the Figma flow', () => {
@@ -29,6 +29,18 @@ describe('Gigify auth mail views', () => {
         expect(html).not.toContain('<script>alert(1)</script>');
         expect(html).toContain('Lagos &amp; Abuja');
         expect(html).toContain('New Login Attempt on Your Gigify Account');
+    });
+
+    it('renders the welcome onboarding email content from the Figma flow', () => {
+        const html = welcomeOnboardingMail({
+            firstName: 'Ada',
+            supportEmail: 'support@gigify.com',
+        });
+
+        expect(html).toContain('You’re In! Let’s Get You Booked on Gigify');
+        expect(html).toContain('Hello Ada,');
+        expect(html).toContain('Complete your profile setup');
+        expect(html).toContain('Gigify support');
     });
 
     it('renders the payment release OTP mail with the verification code and booking context', () => {

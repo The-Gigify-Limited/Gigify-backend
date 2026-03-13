@@ -1,5 +1,6 @@
 import { BadRequestError, BaseRepository, supabaseAdmin } from '@/core';
 import { normalizePagination } from '@/core/utils/pagination';
+import { TablesInsert } from '@/core/types/common/database.interface';
 import { DatabaseUser, User, UserRoleEnum } from '../interfaces';
 
 export class UserRepository extends BaseRepository<DatabaseUser, User> {
@@ -48,14 +49,32 @@ export class UserRepository extends BaseRepository<DatabaseUser, User> {
         return data ? this.mapToCamelCase(data) : null;
     }
 
+    async findByPhoneNumber(phoneNumber: string): Promise<User | null> {
+        const { data, error } = await supabaseAdmin.from('users').select('*').eq('phone_number', phoneNumber).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data) : null;
+    }
+
     async createUserPreSignup(id: string, email: string): Promise<User> {
+        return this.upsertAuthUserIdentity({
+            id,
+            email,
+        });
+    }
+
+    async upsertAuthUserIdentity(input: { id: string; email?: string | null; phoneNumber?: string | null }): Promise<User> {
+        const payload: TablesInsert<'users'> = {
+            id: input.id,
+            ...(input.email !== undefined ? { email: input.email } : {}),
+            ...(input.phoneNumber !== undefined ? { phone_number: input.phoneNumber } : {}),
+        };
+
         const { data, error } = await supabaseAdmin
             .from('users')
             .upsert(
-                {
-                    id,
-                    email,
-                },
+                payload,
                 {
                     onConflict: 'id',
                     ignoreDuplicates: false,

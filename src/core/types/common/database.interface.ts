@@ -389,9 +389,15 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          id_type: Database["public"]["Enums"]["identity_document_type"]
-          media_url: string
+          id_type: Database["public"]["Enums"]["identity_document_type"] | null
+          media_url: string | null
           notes: string | null
+          provider: string
+          provider_applicant_id: string | null
+          provider_level_name: string | null
+          provider_payload: Json | null
+          provider_review_result: string | null
+          provider_review_status: string | null
           reviewed_at: string | null
           selfie_url: string | null
           status: Database["public"]["Enums"]["verification_status"]
@@ -401,9 +407,15 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
-          id_type: Database["public"]["Enums"]["identity_document_type"]
-          media_url: string
+          id_type?: Database["public"]["Enums"]["identity_document_type"] | null
+          media_url?: string | null
           notes?: string | null
+          provider?: string
+          provider_applicant_id?: string | null
+          provider_level_name?: string | null
+          provider_payload?: Json | null
+          provider_review_result?: string | null
+          provider_review_status?: string | null
           reviewed_at?: string | null
           selfie_url?: string | null
           status?: Database["public"]["Enums"]["verification_status"]
@@ -413,9 +425,15 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
-          id_type?: Database["public"]["Enums"]["identity_document_type"]
-          media_url?: string
+          id_type?: Database["public"]["Enums"]["identity_document_type"] | null
+          media_url?: string | null
           notes?: string | null
+          provider?: string
+          provider_applicant_id?: string | null
+          provider_level_name?: string | null
+          provider_payload?: Json | null
+          provider_review_result?: string | null
+          provider_review_status?: string | null
           reviewed_at?: string | null
           selfie_url?: string | null
           status?: Database["public"]["Enums"]["verification_status"]

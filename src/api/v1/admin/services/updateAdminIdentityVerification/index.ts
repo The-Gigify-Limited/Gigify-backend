@@ -1,10 +1,10 @@
 import { ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError, auditService } from '@/core';
-import { IdentityVerificationRepository } from '~/user/repository';
+import { IdentityVerificationRepository, UserRepository } from '~/user/repository';
 import { AdminIdentityVerificationUpdateDto } from '../../interfaces';
 import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
 
 export class UpdateAdminIdentityVerification {
-    constructor(private readonly identityVerificationRepository: IdentityVerificationRepository) {}
+    constructor(private readonly identityVerificationRepository: IdentityVerificationRepository, private readonly userRepository: UserRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<AdminIdentityVerificationUpdateDto>) => {
         const adminId = request.user?.id;
@@ -18,10 +18,15 @@ export class UpdateAdminIdentityVerification {
         const updatedVerification = await this.identityVerificationRepository.review(verification.id, {
             status: input.status,
             notes: input.notes ?? null,
+            providerReviewResult: input.status === 'approved' ? 'GREEN' : input.status === 'rejected' ? 'RED' : null,
+            providerReviewStatus: input.status,
             reviewedAt: input.status === 'pending' ? null : new Date().toISOString(),
         });
 
         await Promise.all([
+            this.userRepository.updateById(updatedVerification.userId, {
+                isVerified: input.status === 'approved',
+            }),
             auditService.log({
                 userId: adminId,
                 action: 'admin_identity_verification_updated',
@@ -55,5 +60,5 @@ export class UpdateAdminIdentityVerification {
     };
 }
 
-const updateAdminIdentityVerification = new UpdateAdminIdentityVerification(new IdentityVerificationRepository());
+const updateAdminIdentityVerification = new UpdateAdminIdentityVerification(new IdentityVerificationRepository(), new UserRepository());
 export default updateAdminIdentityVerification;

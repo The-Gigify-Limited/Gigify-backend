@@ -24,6 +24,20 @@ export const processPaymentSchema = {
     }),
 };
 
+export const createStripeCheckoutSessionSchema = {
+    inputSchema: Joi.object({
+        paymentId: uuid.optional(),
+        gigId: uuid.optional(),
+        applicationId: uuid.optional(),
+        talentId: uuid.required(),
+        amount: Joi.number().min(0).required(),
+        currency: Joi.string().max(8).optional(),
+        platformFee: Joi.number().min(0).optional(),
+        successUrl: Joi.string().uri().allow(null, ''),
+        cancelUrl: Joi.string().uri().allow(null, ''),
+    }),
+};
+
 export const requestPayoutSchema = {
     inputSchema: Joi.object({
         amount: Joi.number().min(0).required(),

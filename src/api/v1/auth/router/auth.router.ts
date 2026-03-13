@@ -1,17 +1,29 @@
-import { ControlBuilder, authRateLimiter, passwordResetRateLimiter } from '@/core';
+import {
+    ControlBuilder,
+    authRateLimiter,
+    passwordResetRateLimiter,
+} from '@/core';
 import { Router } from 'express';
 import {
+    exchangeGoogleAuthCode,
     forgotPassword,
+    getGoogleAuthUrl,
     login,
     logout,
     refreshToken,
     register,
+    requestPhoneOtp,
     setUserRole,
     verifyEmail,
+    verifyPhoneOtp,
 } from '../services';
 import {
     forgotPasswordSchema,
+    googleAuthCodeExchangeSchema,
+    googleAuthUrlSchema,
     loginSchema,
+    phoneOtpRequestSchema,
+    phoneOtpVerifySchema,
     refreshTokenSchema,
     resendVerifyEmailMessageSchema,
     setUserRoleSchema,
@@ -128,6 +140,190 @@ authRouter
         ControlBuilder.builder()
             .setValidator(signUpSchema)
             .setHandler(register.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /auth/phone/request-otp:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Request a phone verification code for sign up or login
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - phoneNumber
+     *             properties:
+     *               phoneNumber:
+     *                 type: string
+     *                 description: Phone number in E.164 format
+     *           example:
+     *             phoneNumber: "+2348012345678"
+     *     responses:
+     *       200:
+     *         description: Verification code sent
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Verification code sent successfully
+     *               data:
+     *                 phoneNumber: "+2348012345678"
+     *                 channel: sms
+     *                 resendAvailableInSeconds: 90
+     *       429:
+     *         description: Too many verification requests
+     */
+    .post(
+        '/phone/request-otp',
+        authRateLimiter,
+        ControlBuilder.builder()
+            .setValidator(phoneOtpRequestSchema)
+            .setHandler(requestPhoneOtp.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /auth/phone/verify:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Verify a phone OTP and sign the user in
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - phoneNumber
+     *               - otp
+     *             properties:
+     *               phoneNumber:
+     *                 type: string
+     *                 description: Phone number in E.164 format
+     *               otp:
+     *                 type: string
+     *                 description: 6-digit verification code sent by SMS
+     *           example:
+     *             phoneNumber: "+2348012345678"
+     *             otp: "123456"
+     *     responses:
+     *       200:
+     *         description: Phone number verified successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Phone number verified successfully
+     *               data:
+     *                 user:
+     *                   id: 20000000-0000-0000-0000-000000000031
+     *                   phone: "+2348012345678"
+     *                 session:
+     *                   access_token: access-token
+     *                   refresh_token: refresh-token
+     *                 profile:
+     *                   id: 20000000-0000-0000-0000-000000000031
+     *                   phoneNumber: "+2348012345678"
+     *       400:
+     *         description: Invalid verification code
+     */
+    .post(
+        '/phone/verify',
+        authRateLimiter,
+        ControlBuilder.builder()
+            .setValidator(phoneOtpVerifySchema)
+            .setHandler(verifyPhoneOtp.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /auth/oauth/google/url:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Generate a Google authentication URL
+     *     requestBody:
+     *       required: false
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               redirectTo:
+     *                 type: string
+     *                 format: uri
+     *                 description: Optional frontend callback URL
+     *           example:
+     *             redirectTo: https://app.gigify.com/auth/callback/google
+     *     responses:
+     *       200:
+     *         description: Google authentication URL generated successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Google authentication URL generated successfully
+     *               data:
+     *                 provider: google
+     *                 url: https://example.supabase.co/auth/v1/authorize?provider=google
+     *                 redirectTo: https://app.gigify.com/auth/callback/google
+     */
+    .post(
+        '/oauth/google/url',
+        ControlBuilder.builder()
+            .setValidator(googleAuthUrlSchema)
+            .setHandler(getGoogleAuthUrl.handle)
+            .handle(),
+    )
+
+    /**
+     * @swagger
+     * /auth/oauth/google/exchange:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Exchange a Google OAuth callback code for a Gigify session
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - code
+     *             properties:
+     *               code:
+     *                 type: string
+     *                 description: Authorization code returned from the Google callback redirect
+     *           example:
+     *             code: 4/0Adeu5BWm-example-google-callback-code
+     *     responses:
+     *       200:
+     *         description: Google authentication completed successfully
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Google authentication completed successfully
+     *               data:
+     *                 user:
+     *                   id: 20000000-0000-0000-0000-000000000041
+     *                   email: talent.demo@gigify.app
+     *                 session:
+     *                   access_token: access-token
+     *                   refresh_token: refresh-token
+     *                 profile:
+     *                   id: 20000000-0000-0000-0000-000000000041
+     *                   email: talent.demo@gigify.app
+     *                   onboardingStep: null
+     */
+    .post(
+        '/oauth/google/exchange',
+        authRateLimiter,
+        ControlBuilder.builder()
+            .setValidator(googleAuthCodeExchangeSchema)
+            .setHandler(exchangeGoogleAuthCode.handle)
             .handle(),
     )
 
@@ -396,8 +592,5 @@ authRouter
      */
     .post(
         '/logout',
-        ControlBuilder.builder()
-            .isPrivate()
-            .setHandler(logout.handle)
-            .handle(),
+        ControlBuilder.builder().isPrivate().setHandler(logout.handle).handle(),
     );

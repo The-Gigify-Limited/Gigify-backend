@@ -72,6 +72,12 @@ const livenessSchema = {
     }),
 };
 
+const kycSessionSchema = {
+    inputSchema: Joi.object({
+        levelName: Joi.string().max(120).allow(null, ''),
+    }),
+};
+
 const notificationPreferencesSchema = {
     inputSchema: Joi.object({
         emailEnabled: Joi.boolean().optional(),
@@ -89,6 +95,7 @@ export {
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
+    kycSessionSchema,
     livenessSchema,
     notificationPreferencesSchema,
     timelineQuerySchema,

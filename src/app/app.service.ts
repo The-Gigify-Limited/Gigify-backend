@@ -9,8 +9,18 @@ import session from 'express-session';
 
 export const app = express();
 
+const captureRawBody = (req: express.Request, _res: express.Response, buffer: Buffer) => {
+    if (buffer.length > 0) {
+        req.rawBody = buffer.toString('utf8');
+    }
+};
+
 // Use the built-in middleware to parse JSON bodies. This allows you to handle JSON payloads.
-app.use(express.json());
+app.use(
+    express.json({
+        verify: captureRawBody,
+    }),
+);
 
 // Use cookie-parser middleware to parse cookies attached to the client request object.
 app.use(cookieParser());
@@ -32,7 +42,12 @@ app.use(express.static('public'));
 
 // Use middleware to parse URL-encoded bodies with the querystring library.
 // 'extended: false' opts to use the classic encoding.
-app.use(express.urlencoded({ extended: false }));
+app.use(
+    express.urlencoded({
+        extended: false,
+        verify: captureRawBody,
+    }),
+);
 
 app.use(
     session({

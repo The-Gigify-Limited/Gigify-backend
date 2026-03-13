@@ -1,13 +1,16 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    createKycSession,
     createUserReview,
     deleteUserById,
     getAllUsers,
+    getKycStatus,
     getNotificationPreferences,
     getUserById,
     getUserReviews,
     getUserTimeline,
+    handleSumsubWebhook,
     submitLivenessCheck,
     updateNotificationPreferences,
     updateUserById,
@@ -16,6 +19,7 @@ import {
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
+    kycSessionSchema,
     livenessSchema,
     notificationPreferencesSchema,
     timelineQuerySchema,
@@ -346,6 +350,98 @@ userRouter
      *                 status: pending
      */
     .post('/onboarding/liveness', ControlBuilder.builder().isPrivate().setValidator(livenessSchema).setHandler(submitLivenessCheck.handle).handle())
+
+    /**
+     * @swagger
+     * /user/kyc/session:
+     *   post:
+     *     tags: [User Identity]
+     *     summary: Create a Sumsub verification session for the current user
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: false
+     *       content:
+     *         application/json:
+     *           example:
+     *             levelName: gigify-basic-kyc
+     *     responses:
+     *       201:
+     *         description: KYC session created
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: KYC Session Created Successfully
+     *               data:
+     *                 verification:
+     *                   id: 92000000-0000-0000-0000-000000000011
+     *                   provider: sumsub
+     *                   status: pending
+     *                   providerApplicantId: sumsub-applicant-1
+     *                 session:
+     *                   applicantId: sumsub-applicant-1
+     *                   token: sumsub-sdk-token
+     *                   levelName: gigify-basic-kyc
+     *                   expiresInSeconds: 600
+     */
+    .post('/kyc/session', ControlBuilder.builder().isPrivate().setValidator(kycSessionSchema).setHandler(createKycSession.handle).handle())
+
+    /**
+     * @swagger
+     * /user/kyc/status:
+     *   get:
+     *     tags: [User Identity]
+     *     summary: Get the current user's latest KYC verification status
+     *     security:
+     *       - bearerAuth: []
+     *     responses:
+     *       200:
+     *         description: Latest KYC status
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: KYC Status Retrieved Successfully
+     *               data:
+     *                 verification:
+     *                   id: 92000000-0000-0000-0000-000000000011
+     *                   provider: sumsub
+     *                   status: pending
+     *                 isVerified: false
+     *                 completed: false
+     */
+    .get('/kyc/status', ControlBuilder.builder().isPrivate().setHandler(getKycStatus.handle).handle())
+
+    /**
+     * @swagger
+     * /user/kyc/webhooks/sumsub:
+     *   post:
+     *     tags: [User Identity]
+     *     summary: Receive Sumsub verification events and reconcile user KYC state
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           example:
+     *             type: applicantReviewed
+     *             applicantId: sumsub-applicant-1
+     *             reviewStatus: completed
+     *             reviewResult:
+     *               reviewAnswer: GREEN
+     *     responses:
+     *       200:
+     *         description: Webhook processed
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Sumsub Webhook Processed Successfully
+     *               data:
+     *                 acknowledged: true
+     *                 handled: true
+     *                 eventType: applicantReviewed
+     *                 verificationId: 92000000-0000-0000-0000-000000000011
+     *                 status: approved
+     */
+    .post('/kyc/webhooks/sumsub', ControlBuilder.builder().setHandler(handleSumsubWebhook.handle).handle())
 
     /**
      * @swagger
