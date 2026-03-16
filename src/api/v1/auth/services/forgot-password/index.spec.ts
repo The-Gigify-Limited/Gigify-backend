@@ -45,7 +45,7 @@ describe('ForgotPassword service', () => {
         };
         const emailSender = jest.fn();
 
-        const service = new ForgotPassword(userRepository as never, emailSender);
+        const service = new ForgotPassword(userRepository as never);
 
         const response = await service.handle({
             input: { email: 'missing@example.com' },
@@ -69,7 +69,7 @@ describe('ForgotPassword service', () => {
             actionLink: 'https://example.com/reset?token=abc123',
         });
 
-        const service = new ForgotPassword(userRepository as never, emailSender, recoveryLinkGenerator);
+        const service = new ForgotPassword(userRepository as never);
 
         const response = await service.handle({
             input: { email: 'Ada@Example.com' },
@@ -101,7 +101,7 @@ describe('ForgotPassword service', () => {
             code: 'over_email_send_rate_limit',
         });
 
-        const service = new ForgotPassword(userRepository as never, emailSender, recoveryLinkGenerator);
+        const service = new ForgotPassword(userRepository as never);
 
         await expect(
             service.handle({

@@ -9,19 +9,12 @@ import {
     resolveUserDisplayName,
 } from '../../utils/passwordRecovery';
 
-type MailSender = (request: { to: string; subject: string; body: string }) => Promise<unknown>;
-type RecoveryLinkGenerator = (email: string) => Promise<{ actionLink: string }>;
-
 export class ForgotPassword extends BaseService {
-    constructor(
-        private readonly userRepository: Pick<UserRepository, 'findByEmail'> = new UserRepository(),
-        private readonly emailSender: MailSender = sendEmail,
-        private readonly recoveryLinkGenerator?: RecoveryLinkGenerator,
-    ) {
+    constructor(private readonly userRepository: Pick<UserRepository, 'findByEmail'> = new UserRepository()) {
         super();
     }
 
-    handle = async ({ input }: ControllerArgs<ForgotPasswordPayload>) => {
+    handle = async ({ input, request }: ControllerArgs<ForgotPasswordPayload>) => {
         if (!input?.email) {
             throw new BadRequestError('Email is required');
         }
@@ -35,17 +28,15 @@ export class ForgotPassword extends BaseService {
             return this.buildSuccessResponse();
         }
 
-        try {
-            const { actionLink } = await this.createRecoveryLink(normalizedEmail);
+        const headers = request.headers;
+        const origin = headers.origin;
 
-            await this.emailSender({
-                to: normalizedEmail,
-                subject: 'Reset Your Gigify Password',
-                body: passwordResetMail({
-                    firstName: resolveUserDisplayName(user.firstName, normalizedEmail),
-                    resetUrl: actionLink,
-                }),
+        try {
+            const { error } = await this.supabase.auth.resetPasswordForEmail(input.email, {
+                redirectTo: `${origin}/auth/callback/client?type=recovery&next=/reset-password`,
             });
+
+            if (error) throw error;
 
             logger.info('Password reset email sent successfully', {
                 email: normalizedEmail,
@@ -68,17 +59,6 @@ export class ForgotPassword extends BaseService {
 
         return this.buildSuccessResponse();
     };
-
-    private async createRecoveryLink(email: string) {
-        if (this.recoveryLinkGenerator) {
-            return this.recoveryLinkGenerator(email);
-        }
-
-        return generatePasswordRecoveryLink({
-            supabase: this.supabase,
-            email,
-        });
-    }
 
     private buildSuccessResponse() {
         return {
