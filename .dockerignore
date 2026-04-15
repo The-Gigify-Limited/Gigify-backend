@@ -1,5 +1,10 @@
 .env
+.env.*
 node_modules/
+build/
 dist/
+.git/
+.husky/
 LICENSE
 README.md
+*.md
