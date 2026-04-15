@@ -8,26 +8,28 @@ type TableConfig = {
     ownerColumn: string;
 };
 
-export class ResourceRepository extends BaseRepository<any, any> {
+export class ResourceRepository extends BaseRepository<Record<string, unknown>, Record<string, unknown>> {
     protected readonly table = 'users';
 
     async isResourceOwner(userId: string, resourceType: Resources, resourceId: string): Promise<boolean> {
         const { table, ownerColumn } = this.getTableConfig(resourceType);
 
+        // @ts-expect-error — dynamic table name prevents Supabase from narrowing column types
         const { data, error } = await supabaseAdmin.from(table).select(ownerColumn).eq('id', resourceId).single();
 
         if (error || !data) return false;
 
-        return (data as any)[ownerColumn] === userId;
+        return (data as unknown as Record<string, unknown>)[ownerColumn] === userId;
     }
 
     async getResourceOwner(resourceType: Resources, resourceId: string): Promise<string | null> {
         const { table, ownerColumn } = this.getTableConfig(resourceType);
 
+        // @ts-expect-error — dynamic table name prevents Supabase from narrowing column types
         const { data, error } = await supabaseAdmin.from(table).select(ownerColumn).eq('id', resourceId).single();
 
         if (error || !data) return null;
-        return (data as any)[ownerColumn] || null;
+        return ((data as unknown as Record<string, unknown>)[ownerColumn] as string) || null;
     }
 
     private getTableConfig(resourceType: Resources): TableConfig {

@@ -131,7 +131,11 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     }
 
     async getPayoutRequestsForTalent(talentId: string): Promise<PayoutRequest[]> {
-        const { data = [], error } = await supabaseAdmin.from('payout_requests').select('*').eq('talent_id', talentId).order('created_at', { ascending: false });
+        const { data = [], error } = await supabaseAdmin
+            .from('payout_requests')
+            .select('*')
+            .eq('talent_id', talentId)
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
 
@@ -179,6 +183,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
 
         const { data, error } = await supabaseAdmin
             .from('payout_requests')
+            // @ts-expect-error — Object.fromEntries returns { [k: string]: ... } which is too wide for Supabase's strict update types
             .update(payload)
             .eq('id', id)
             .select('*')
@@ -204,12 +209,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
         return data ? this.mapRow<PaymentReleaseOtp>(data as unknown as DatabasePaymentReleaseOtp) : null;
     }
 
-    async createPaymentReleaseOtp(input: {
-        paymentId: string;
-        employerId: string;
-        codeHash: string;
-        expiresAt: string;
-    }): Promise<PaymentReleaseOtp> {
+    async createPaymentReleaseOtp(input: { paymentId: string; employerId: string; codeHash: string; expiresAt: string }): Promise<PaymentReleaseOtp> {
         const { data, error } = await supabaseAdmin
             .from('payment_release_otps')
             .insert({
@@ -231,6 +231,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     async updatePaymentReleaseOtp(id: string, input: Partial<PaymentReleaseOtp>): Promise<PaymentReleaseOtp> {
         const { data, error } = await supabaseAdmin
             .from('payment_release_otps')
+            // @ts-expect-error — mapToSnakeCase returns Partial<DatabasePayment> which mismatches the payment_release_otps table schema
             .update({
                 ...this.mapToSnakeCase(input),
                 updated_at: new Date().toISOString(),

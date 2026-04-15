@@ -33,6 +33,7 @@ export abstract class BaseRepository<
     /* CRUD */
 
     async findById(id: string, fields?: (keyof TDBRow)[]): Promise<TDBRow | null> {
+        // @ts-expect-error — Supabase collapses column types to `never` on a TableNames union
         const { data, error } = await supabaseAdmin.from(this.table).select(this.buildSelect(fields)).eq('id', id).single();
 
         if (error) throw error;
@@ -58,7 +59,11 @@ export abstract class BaseRepository<
         if (filters) {
             for (const [key, value] of Object.entries(filters)) {
                 const col = this.toSnakeCase(key);
-                Array.isArray(value) ? (query = query.in(col, value)) : (query = query.eq(col, value));
+                if (Array.isArray(value)) {
+                    query = query.in(col, value);
+                } else {
+                    query = query.eq(col, value);
+                }
             }
         }
 
@@ -76,7 +81,7 @@ export abstract class BaseRepository<
 
     async updateById(id: string, updates: Partial<TRow>): Promise<TDBRow> {
         const payload = this.mapToSnakeCase(updates);
-
+        // @ts-expect-error — Supabase collapses column types to `never` on a TableNames union
         const { data, error } = await supabaseAdmin.from(this.table).update(payload).eq('id', id).select('*').single();
 
         if (error) throw error;
