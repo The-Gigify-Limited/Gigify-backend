@@ -7,6 +7,11 @@ jest.mock('@/core', () => {
     };
 });
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+    eventBus: {},
+}));
+
 jest.mock('../../repository', () => ({
     ChatRepository: class ChatRepository {},
 }));
@@ -43,7 +48,7 @@ describe('GetMyConversations service', () => {
             },
         } as never);
 
-        expect(chatRepository.getConversationsForUser).toHaveBeenCalledWith('employer-1', { limit: 20 });
+        expect(chatRepository.getConversationsForUser).toHaveBeenCalledWith('employer-1', { limit: 20 }, {});
         expect(response.message).toBe('Conversations Retrieved Successfully');
         expect(response.data).toHaveLength(2);
     });

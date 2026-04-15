@@ -152,7 +152,7 @@ export class UpdateGigOffer {
             ? this.gigOfferRepository.expirePendingOffersForGig(gig.id, offer.talentId)
             : Promise.resolve([]);
 
-        const activitiesAndNotifs: Promise<any>[] = [
+        const activitiesAndNotifs: Promise<unknown>[] = [
             shouldCloseHiring ? this.gigRepository.rejectOtherApplications(gig.id, offer.talentId) : Promise.resolve(),
         ];
 

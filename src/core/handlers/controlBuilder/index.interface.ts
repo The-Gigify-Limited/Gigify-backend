@@ -11,13 +11,14 @@ type ExtractPayloadKeys<T> = {
 
 type ExtractControllerArgsPayloadKeys<T> = Pick<T, ExtractPayloadKeys<T>>;
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type ControllerArgsTypes = Partial<{
-    params: Record<string, any>;
+    params: Record<string, string>;
     query: Record<string, any>;
     input: Record<string, any>;
     user: Partial<User> | undefined | null;
     files: FileObjects | null;
-}> & {
+}> & /* eslint-enable @typescript-eslint/no-explicit-any */ {
     headers: IncomingHttpHeaders;
     request: Request;
 };

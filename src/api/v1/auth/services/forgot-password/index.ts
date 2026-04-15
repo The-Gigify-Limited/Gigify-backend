@@ -32,7 +32,7 @@ export class ForgotPassword extends BaseService {
         const origin = headers.origin;
 
         try {
-            const { error } = await this.supabase.auth.resetPasswordForEmail(input.email, {
+            const { error } = await this.supabase.auth.resetPasswordForEmail(normalizedEmail, {
                 redirectTo: `${origin}/auth/callback/client?type=recovery&next=/reset-password`,
             });
 

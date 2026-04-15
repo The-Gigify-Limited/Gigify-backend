@@ -1,4 +1,4 @@
-import { Talent, TalentProfile } from './interfaces';
+import { Talent, TalentProfile, TalentReview, TalentReviewSummary } from './interfaces';
 import { TalentPortfolioRepository, TalentRepository, TalentReviewRepository } from './repository';
 
 export async function createTalentEventListener(user_id: string): Promise<Talent | null> {
@@ -44,7 +44,7 @@ export async function getTalentReviewsEventListener(input: {
     talentId: string;
     page?: number;
     pageSize?: number;
-}): Promise<{ reviews: any[]; summary: any }> {
+}): Promise<{ reviews: TalentReview[]; summary: TalentReviewSummary[] }> {
     const talentReviewRepository = new TalentReviewRepository();
 
     const reviews = await talentReviewRepository.findMany({
@@ -75,7 +75,7 @@ export async function createTalentReviewEventListener(input: {
     gigId?: string;
     comment?: string;
     rating: number;
-}): Promise<any> {
+}): Promise<TalentReview | null> {
     const talentReviewRepository = new TalentReviewRepository();
 
     const createdReview = await talentReviewRepository.createTalentReview(input.revieweeId, {

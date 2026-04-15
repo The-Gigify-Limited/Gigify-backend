@@ -13,7 +13,7 @@ export class AppCacheManager extends Redis {
         });
     }
 
-    read = async <T = any>(key: string): Promise<T | null> => {
+    read = async <T = unknown>(key: string): Promise<T | null> => {
         const value: string | null = await this.get(key);
 
         if (!value) return null;

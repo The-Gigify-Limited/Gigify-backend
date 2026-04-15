@@ -1,9 +1,10 @@
-import { User } from './interfaces';
+import { Activity, ActivityTypeEnum, User } from './interfaces';
 import { NotificationPreferenceRepository, UserRepository, ActivityRepository } from './repository';
 
 export async function getUserByIdEventListener(id: string, fields?: (keyof User)[]): Promise<Partial<User> | null> {
     const userRepository = new UserRepository();
-    const existingUser = await userRepository.findById(id, fields as any);
+    // @ts-expect-error — User field keys don't match DB column keys due to camelCase mapping
+    const existingUser = await userRepository.findById(id, fields);
     if (!existingUser) return null;
 
     const convertedUser = userRepository.mapToCamelCase(existingUser);
@@ -34,11 +35,11 @@ export async function createActivityEventListener(input: {
     targetId?: string;
     targetType?: string;
     description?: string;
-}): Promise<any> {
+}): Promise<Activity> {
     const activityRepository = new ActivityRepository();
     const activity = await activityRepository.logActivity(
         input.userId,
-        input.type as any,
+        input.type as ActivityTypeEnum,
         input.targetId,
         input.description ? { description: input.description, targetType: input.targetType } : undefined,
     );

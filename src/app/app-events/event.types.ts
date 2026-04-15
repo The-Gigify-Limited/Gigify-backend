@@ -1,13 +1,15 @@
 import { EmployerProfile } from '~/employers/interfaces';
-import { Gig } from '~/gigs/interfaces';
+import { Gig, GigApplication, GigReport } from '~/gigs/interfaces';
 import { Notification, NotificationChannelEnum, NotificationTypeEnum } from '~/notifications/interfaces';
 import { NotificationPreferenceTopic } from '~/notifications/listeners';
 import winston from 'winston';
-import { Talent, TalentProfile } from '~/talents/interfaces';
+import { Talent, TalentProfile, TalentReview, TalentReviewSummary } from '~/talents/interfaces';
 import { Json } from '@/core/types';
-import { User } from '~/user/interfaces';
+import { Activity, User } from '~/user/interfaces';
+import { Payment } from '~/earnings/interfaces';
+import { AppEventManager } from './app.events';
 
-interface EventDefinition<Data = any, Return = any> {
+interface EventDefinition<Data = void, Return = void> {
     data: Data;
     return: Return;
 }
@@ -39,7 +41,7 @@ export interface AppEventsInterface {
             page?: number;
             pageSize?: number;
         },
-        { reviews: any[]; summary: any }
+        { reviews: TalentReview[]; summary: TalentReviewSummary[] }
     >;
     'talent:create-review': EventDefinition<
         {
@@ -49,23 +51,23 @@ export interface AppEventsInterface {
             comment?: string;
             rating: number;
         },
-        any
+        TalentReview | null
     >;
     'gig:get-by-id': EventDefinition<{ gigId: string }, Gig | null>;
-    'gig:get-all': EventDefinition<{ query: Record<string, any> }, Gig[]>;
+    'gig:get-all': EventDefinition<{ query: Record<string, string | number | boolean> }, Gig[]>;
     'gig:update-report-status': EventDefinition<
         {
             reportId: string;
             status: 'open' | 'in_review' | 'resolved' | 'dismissed';
         },
-        any
+        GigReport
     >;
     'gig:find-application': EventDefinition<
         {
             gigId: string;
             talentId: string;
         },
-        any | null
+        GigApplication | null
     >;
     'user:create-activity': EventDefinition<
         {
@@ -75,7 +77,7 @@ export interface AppEventsInterface {
             targetType?: string;
             description?: string;
         },
-        any
+        Activity
     >;
     'earnings:create-record': EventDefinition<
         {
@@ -84,7 +86,7 @@ export interface AppEventsInterface {
             gigId: string;
             amount: number;
         },
-        any
+        Payment
     >;
     'notification:dispatch': EventDefinition<
         {
@@ -95,7 +97,7 @@ export interface AppEventsInterface {
             channel?: NotificationChannelEnum;
             payload?: Json;
             preferenceKey?: NotificationPreferenceTopic;
-            appEventManager?: any;
+            appEventManager?: AppEventManager;
         },
         Notification | null
     >;

@@ -3,6 +3,7 @@ jest.mock('@/core', () => {
     class ForbiddenError extends Error {}
     class RouteNotFoundError extends Error {}
     class UnAuthorizedError extends Error {}
+    class BaseRepository {}
 
     return {
         BadRequestError,
@@ -10,8 +11,21 @@ jest.mock('@/core', () => {
         HttpStatus: { CREATED: 201 },
         RouteNotFoundError,
         UnAuthorizedError,
+        BaseRepository,
+        realtimeService: {
+            broadcastToConversation: jest.fn(),
+        },
     };
 });
+
+jest.mock(
+    '@/app',
+    () => ({
+        dispatch: jest.fn(),
+        eventBus: {},
+    }),
+    { virtual: true },
+);
 
 jest.mock('~/notifications/utils/dispatchNotification', () => ({
     notificationDispatcher: {
@@ -23,10 +37,14 @@ jest.mock('../../repository', () => ({
     ChatRepository: class ChatRepository {},
 }));
 
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
+import { dispatch } from '@/app';
 import { SendMessage } from './index';
 
 describe('SendMessage service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('sends a message and dispatches a message notification to the recipient', async () => {
         const chatRepository = {
             findConversationById: jest.fn().mockResolvedValue({
@@ -42,6 +60,8 @@ describe('SendMessage service', () => {
                 body: 'Hello there',
             }),
         };
+
+        (dispatch as jest.Mock).mockResolvedValue([undefined]);
 
         const service = new SendMessage(chatRepository as never);
 
@@ -61,7 +81,8 @@ describe('SendMessage service', () => {
             body: 'Hello there',
             attachmentUrl: null,
         });
-        expect(notificationDispatcher.dispatch).toHaveBeenCalledWith(
+        expect(dispatch).toHaveBeenCalledWith(
+            'notification:dispatch',
             expect.objectContaining({
                 userId: 'talent-1',
                 type: 'message_received',

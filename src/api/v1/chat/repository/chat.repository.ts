@@ -1,6 +1,7 @@
+import { AppEventManager } from '@/app/app-events/app.events';
 import { BaseRepository, supabaseAdmin } from '@/core';
 import { normalizePagination } from '@/core/utils/pagination';
-import { DatabaseConversation, DatabaseMessage, Conversation, ConversationThread, Message } from '../interfaces';
+import { Counterpart, DatabaseConversation, DatabaseMessage, Conversation, ConversationThread, GigSummary, Message } from '../interfaces';
 
 export class ChatRepository extends BaseRepository<DatabaseConversation, Conversation> {
     protected readonly table = 'conversations';
@@ -135,7 +136,7 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
     async getConversationsForUser(
         userId: string,
         query: { page?: number | string; pageSize?: number | string },
-        appEventManager: any,
+        appEventManager: AppEventManager,
     ): Promise<ConversationThread[]> {
         const { offset, rangeEnd } = normalizePagination(query);
 
@@ -169,15 +170,15 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
             Promise.all(gigIds.map((id) => appEventManager.dispatch('gig:get-by-id', { gigId: id }))),
         ]);
 
-        const userMap = new Map(
-            userResults.filter(Boolean).map((userResultArray: any[]) => {
-                const user = userResultArray[0];
+        const userMap = new Map<string, Counterpart>(
+            userResults.filter(Boolean).map((userResultArray) => {
+                const user = userResultArray[0] as Counterpart;
                 return [user.id, user];
             }),
         );
-        const gigMap = new Map(
-            gigResults.filter(Boolean).map((gigResultArray: any[]) => {
-                const gig = gigResultArray[0];
+        const gigMap = new Map<string, GigSummary>(
+            gigResults.filter(Boolean).map((gigResultArray) => {
+                const gig = gigResultArray[0] as GigSummary;
                 return [gig.id, gig];
             }),
         );

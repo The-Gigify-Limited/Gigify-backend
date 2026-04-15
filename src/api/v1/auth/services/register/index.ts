@@ -37,9 +37,9 @@ export class Register extends BaseService {
             mapSupabaseAuthError(error, 'Registration failed. Please try again later.');
         }
 
-        await this.userRepository.createUserPreSignup(data.user?.id!, normalizedEmail);
-
- 
+        const userId = data.user?.id;
+        if (!userId) throw new Error('Registration failed: no user ID returned');
+        await this.userRepository.createUserPreSignup(userId, normalizedEmail);
 
         logger.info('User Account Created Successfully');
 

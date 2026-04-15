@@ -26,22 +26,22 @@ describe('UpdateTalentById service', () => {
             updateById: jest.fn().mockResolvedValue({
                 id: 'talent-1',
                 user_id: 'user-1',
-                bio: 'Updated bio',
+                biography: 'Updated bio',
                 hourly_rate: 50,
             }),
             mapToCamelCase: jest.fn().mockReturnValue({
                 id: 'talent-1',
                 userId: 'user-1',
-                bio: 'Updated bio',
-                hourlyRate: 50,
-            }),
+                biography: 'Updated bio',
+                minRate: 50,
+            } as never),
         };
 
         const service = new UpdateTalentById(talentRepository as never);
 
         const response = await service.handle({
             params: { id: 'user-1' },
-            input: { bio: 'Updated bio', hourlyRate: 50 },
+            input: { biography: 'Updated bio' },
         } as never);
 
         expect(talentRepository.findByUserId).toHaveBeenCalledWith('user-1');

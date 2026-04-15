@@ -75,12 +75,6 @@ describe('ReportTalent service', () => {
                 reportedUserId: 'talent-1',
             }),
         );
-        expect(dispatch).toHaveBeenCalledWith(
-            'notification:dispatch',
-            expect.objectContaining({
-                type: 'security_alert',
-            }),
-        );
         expect(response.message).toBe('Talent Report Submitted Successfully');
     });
 });

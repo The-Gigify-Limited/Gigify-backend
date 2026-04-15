@@ -38,7 +38,7 @@ export class UpdateGigStatus {
             status: 'hired',
         });
 
-        const activitiesList: Promise<any>[] = [];
+        const activitiesList: Promise<unknown>[] = [];
 
         if (nextStatus === 'in_progress') {
             for (const application of hiredApplications) {

@@ -1,8 +1,11 @@
 import { AppEventsInterface, EventRegister } from './event.types';
 import { registerEvents } from './events.register';
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type EventHandler = (data: any) => any;
+
 export class AppEventManager {
-    private handlers: Map<keyof AppEventsInterface, Array<(data: unknown) => unknown>> = new Map();
+    private handlers: Map<keyof AppEventsInterface, EventHandler[]> = new Map();
 
     constructor(registerFn: (bus: AppEventManager) => void) {
         registerFn(this);
@@ -44,12 +47,12 @@ export class AppEventManager {
         if (!this.handlers.has(eventName)) {
             this.handlers.set(eventName, []);
         }
-        this.handlers.get(eventName)!.push(handler);
+        this.handlers.get(eventName)!.push(handler as EventHandler);
 
         return () => {
             const handlers = this.handlers.get(eventName);
             if (handlers) {
-                const index = handlers.indexOf(handler);
+                const index = handlers.indexOf(handler as EventHandler);
                 if (index > -1) {
                     handlers.splice(index, 1);
                 }

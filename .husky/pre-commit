@@ -2,3 +2,12 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npx lint-staged
+
+echo "Running type check..."
+npx tsc --noEmit --skipLibCheck || exit 1
+
+echo "Building project..."
+npm run build || exit 1
+
+echo "Running tests..."
+npx jest --no-coverage --runInBand || exit 1

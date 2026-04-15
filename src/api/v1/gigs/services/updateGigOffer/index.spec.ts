@@ -81,6 +81,7 @@ describe('UpdateGigOffer service', () => {
         };
 
         (dispatch as jest.Mock)
+            .mockResolvedValueOnce([null])
             .mockResolvedValueOnce([{ id: 'payment-1', status: 'pending' }])
             .mockResolvedValueOnce([undefined])
             .mockResolvedValueOnce([undefined])
@@ -96,7 +97,7 @@ describe('UpdateGigOffer service', () => {
                 ip: '127.0.0.1',
                 headers: { 'user-agent': 'jest' },
             },
-        } as never)) as any;
+        } as never)) as { data: { remainingTalentSlots: number } };
 
         expect(gigRepository.createApplication).toHaveBeenCalledWith(
             'gig-1',

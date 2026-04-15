@@ -1,3 +1,4 @@
+import { AppEventManager } from '@/app/app-events/app.events';
 import { realtimeService } from '@/core';
 import { Json } from '@/core/types';
 import { Notification, NotificationChannelEnum, NotificationTypeEnum } from './interfaces';
@@ -13,12 +14,12 @@ export async function dispatchNotificationEventListener(input: {
     channel?: NotificationChannelEnum;
     payload?: Json;
     preferenceKey?: NotificationPreferenceTopic;
-    appEventManager?: any;
+    appEventManager?: AppEventManager;
 }): Promise<Notification | null> {
     const notificationRepository = new NotificationRepository();
 
     if (input.preferenceKey && input.appEventManager) {
-        const shouldSend = await input.appEventManager.emit('user:check-notification-preference', {
+        const shouldSend = await input.appEventManager.dispatch('user:check-notification-preference', {
             userId: input.userId,
             preferenceKey: input.preferenceKey,
         });

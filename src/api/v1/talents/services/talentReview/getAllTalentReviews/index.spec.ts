@@ -16,10 +16,12 @@ describe('GetTalentReviews service', () => {
                 { id: 'review-2', talent_id: 'talent-1', rating: 4, comment: 'Good job' },
             ]),
             mapToCamelCase: jest.fn().mockImplementation((review) => review),
-            findTalentRatingSummary: jest.fn().mockResolvedValue({
-                rating: 4.5,
-                count: 2,
-            }),
+            findTalentRatingSummary: jest.fn().mockResolvedValue([
+                {
+                    rating: 4.5,
+                    count: 2,
+                },
+            ]),
         };
 
         const service = new GetTalentReviews(talentReviewRepository as never);

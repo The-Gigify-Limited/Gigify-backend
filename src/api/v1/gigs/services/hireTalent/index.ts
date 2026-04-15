@@ -62,7 +62,7 @@ export class HireTalent {
         });
         const payment = paymentResults;
 
-        const activitiesAndNotifications: Promise<any>[] = [
+        const activitiesAndNotifications: Promise<unknown>[] = [
             shouldCloseHiring ? this.gigRepository.rejectOtherApplications(params.id, params.talentId) : Promise.resolve(),
             shouldCloseHiring ? this.gigOfferRepository.expirePendingOffersForGig(params.id, params.talentId) : Promise.resolve(),
         ];
@@ -74,7 +74,7 @@ export class HireTalent {
                     type: 'gig_started',
                     targetId: params.id,
                     targetType: 'gig',
-                }) as any,
+                }),
             );
             activitiesAndNotifications.push(
                 dispatch('user:create-activity', {
@@ -82,7 +82,7 @@ export class HireTalent {
                     type: 'gig_started',
                     targetId: params.id,
                     targetType: 'gig',
-                }) as any,
+                }),
             );
         }
 
@@ -97,7 +97,7 @@ export class HireTalent {
                     applicationId: application.id,
                 },
                 preferenceKey: 'gigUpdates',
-            }) as any,
+            }),
         );
 
         await Promise.all(activitiesAndNotifications);
