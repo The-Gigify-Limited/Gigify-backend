@@ -10,7 +10,6 @@ const signUpSchema = {
         password: Joi.string()
             .min(8)
             .required()
-            // .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=!.]).*$/)
             .label(
                 'Password is required and must be at least 8 characters. It should include at least one uppercase letter, one lowercase letter, one digit, and one special character (@#$%^&+=!.).',
             ),
@@ -46,7 +45,10 @@ const phoneOtpVerifySchema = {
             .pattern(/^\+[1-9]\d{7,14}$/)
             .required()
             .label('Phone number is required in E.164 format, for example +2348012345678.'),
-        otp: Joi.string().pattern(/^\d{6}$/).required().label('A valid 6-digit OTP code is required'),
+        otp: Joi.string()
+            .pattern(/^\d{6}$/)
+            .required()
+            .label('A valid 6-digit OTP code is required'),
     }),
 };
 

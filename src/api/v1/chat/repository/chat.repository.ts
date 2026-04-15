@@ -1,16 +1,11 @@
 import { BaseRepository, supabaseAdmin } from '@/core';
 import { normalizePagination } from '@/core/utils/pagination';
 import { DatabaseConversation, DatabaseMessage, Conversation, ConversationThread, Message } from '../interfaces';
-import { GigRepository } from '~/gigs/repository';
-import { UserRepository } from '~/user/repository';
 
 export class ChatRepository extends BaseRepository<DatabaseConversation, Conversation> {
     protected readonly table = 'conversations';
 
-    constructor(
-        private readonly userRepository = new UserRepository(),
-        private readonly gigRepository = new GigRepository(),
-    ) {
+    constructor() {
         super();
     }
 
@@ -137,7 +132,11 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
         return count ?? 0;
     }
 
-    async getConversationsForUser(userId: string, query: { page?: number | string; pageSize?: number | string }): Promise<ConversationThread[]> {
+    async getConversationsForUser(
+        userId: string,
+        query: { page?: number | string; pageSize?: number | string },
+        appEventManager: any,
+    ): Promise<ConversationThread[]> {
         const { offset, rangeEnd } = normalizePagination(query);
 
         const { data = [], error } = await supabaseAdmin
@@ -157,24 +156,31 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
         const conversationIds = conversations.map((conversation) => conversation.id);
         const counterpartIds = Array.from(
             new Set(
-                conversations.map((conversation) => (conversation.employerId === userId ? conversation.talentId : conversation.employerId)).filter(Boolean),
+                conversations
+                    .map((conversation) => (conversation.employerId === userId ? conversation.talentId : conversation.employerId))
+                    .filter(Boolean),
             ),
         );
         const gigIds = Array.from(new Set(conversations.map((conversation) => conversation.gigId).filter(Boolean))) as string[];
 
-        const [messageRows, userRows, gigRows] = await Promise.all([
+        const [messageRows, userResults, gigResults] = await Promise.all([
             this.getMessageMetadata(conversationIds, userId),
-            Promise.all(counterpartIds.map((id) => this.userRepository.findById(id))),
-            Promise.all(gigIds.map((id) => this.gigRepository.getGigById(id))),
+            Promise.all(counterpartIds.map((id) => appEventManager.dispatch('user:get-by-id', { id }))),
+            Promise.all(gigIds.map((id) => appEventManager.dispatch('gig:get-by-id', { gigId: id }))),
         ]);
 
         const userMap = new Map(
-            userRows.filter(Boolean).map((user) => {
-                const mapped = this.userRepository.mapToCamelCase(user!);
-                return [mapped.id, mapped];
+            userResults.filter(Boolean).map((userResultArray: any[]) => {
+                const user = userResultArray[0];
+                return [user.id, user];
             }),
         );
-        const gigMap = new Map(gigRows.filter(Boolean).map((gig) => [gig!.id, gig!]));
+        const gigMap = new Map(
+            gigResults.filter(Boolean).map((gigResultArray: any[]) => {
+                const gig = gigResultArray[0];
+                return [gig.id, gig];
+            }),
+        );
 
         return conversations.map((conversation) => {
             const counterpartId = conversation.employerId === userId ? conversation.talentId : conversation.employerId;

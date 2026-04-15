@@ -1,18 +1,10 @@
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError, auditService } from '@/core';
-import { EarningsRepository } from '~/earnings/repository';
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
-import { ActivityRepository, UserRepository } from '~/user/repository';
+import { dispatch } from '@/app';
 import { GigOfferRepository, GigRepository } from '../../repository';
 import { UpdateGigOfferDto } from '../../interfaces';
 
 export class UpdateGigOffer {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly gigOfferRepository: GigOfferRepository,
-        private readonly earningsRepository: EarningsRepository,
-        private readonly userRepository: UserRepository,
-        private readonly activityRepository: ActivityRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository, private readonly gigOfferRepository: GigOfferRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<UpdateGigOfferDto>) => {
         const userId = request.user?.id;
@@ -55,12 +47,10 @@ export class UpdateGigOffer {
             const counterpartId = input.status === 'withdrawn' ? offer.talentId : offer.employerId;
             const title = input.status === 'withdrawn' ? 'Gig offer withdrawn' : 'Gig offer declined';
             const message =
-                input.status === 'withdrawn'
-                    ? `An offer for "${gig.title}" is no longer available.`
-                    : `Your offer for "${gig.title}" was declined.`;
+                input.status === 'withdrawn' ? `An offer for "${gig.title}" is no longer available.` : `Your offer for "${gig.title}" was declined.`;
 
             await Promise.all([
-                notificationDispatcher.dispatch({
+                dispatch('notification:dispatch', {
                     userId: counterpartId,
                     type: 'application_update',
                     title,
@@ -82,7 +72,9 @@ export class UpdateGigOffer {
                         talentId: offer.talentId,
                     },
                     ipAddress: request.ip ?? null,
-                    userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                    userAgent: Array.isArray(request.headers['user-agent'])
+                        ? request.headers['user-agent'][0] ?? null
+                        : request.headers['user-agent'] ?? null,
                 }),
             ]);
 
@@ -108,51 +100,40 @@ export class UpdateGigOffer {
             throw new ConflictError('This gig already has all required talents selected');
         }
 
-        const existingApplication = await this.gigRepository.findApplicationByGigAndTalent(gig.id, offer.talentId);
+        const [existingApplicationResults] = await dispatch('gig:find-application', { gigId: gig.id, talentId: offer.talentId });
+        const existingApplication = existingApplicationResults;
 
         if (existingApplication?.status === 'hired') {
             throw new ConflictError('This offer has already been fulfilled');
         }
 
-        const application =
-            existingApplication
-                ? await this.gigRepository.updateApplication(existingApplication.id, {
+        const application = existingApplication
+            ? await this.gigRepository.updateApplication(existingApplication.id, {
+                  status: 'hired',
+                  hiredAt: new Date().toISOString(),
+                  proposedRate: offer.proposedRate ?? existingApplication.proposedRate ?? null,
+                  employerNotes: offer.message ?? existingApplication.employerNotes ?? null,
+              })
+            : await (async () => {
+                  const createdApplication = await this.gigRepository.createApplication(gig.id, offer.talentId, {
+                      coverMessage: offer.message ?? null,
+                      proposedRate: offer.proposedRate ?? null,
+                  });
+
+                  return this.gigRepository.updateApplication(createdApplication.id, {
                       status: 'hired',
                       hiredAt: new Date().toISOString(),
-                      proposedRate: offer.proposedRate ?? existingApplication.proposedRate ?? null,
-                      employerNotes: offer.message ?? existingApplication.employerNotes ?? null,
-                  })
-                : await (async () => {
-                      const createdApplication = await this.gigRepository.createApplication(gig.id, offer.talentId, {
-                          coverMessage: offer.message ?? null,
-                          proposedRate: offer.proposedRate ?? null,
-                      });
+                      employerNotes: offer.message ?? null,
+                  });
+              })();
 
-                      return this.gigRepository.updateApplication(createdApplication.id, {
-                          status: 'hired',
-                          hiredAt: new Date().toISOString(),
-                          employerNotes: offer.message ?? null,
-                      });
-                  })();
-
-        const existingPayment = await this.earningsRepository.findPendingPaymentByContext({
+        const [paymentResults] = await dispatch('earnings:create-record', {
+            employerId: offer.employerId,
             talentId: offer.talentId,
             gigId: gig.id,
-            applicationId: application.id,
+            amount: offer.proposedRate ?? gig.budgetAmount,
         });
-
-        const payment =
-            existingPayment ??
-            (await this.earningsRepository.createPayment({
-                employerId: offer.employerId,
-                talentId: offer.talentId,
-                amount: offer.proposedRate ?? gig.budgetAmount,
-                currency: offer.currency || gig.currency || 'NGN',
-                gigId: gig.id,
-                applicationId: application.id,
-                provider: 'manual',
-                status: 'pending',
-            }));
+        const payment = paymentResults;
 
         const shouldCloseHiring = alreadyHired.length + 1 >= requiredTalentCount;
         const nextGigStatus = shouldCloseHiring ? 'in_progress' : gig.status === 'draft' ? 'open' : gig.status ?? 'open';
@@ -167,25 +148,35 @@ export class UpdateGigOffer {
             }),
         ]);
 
-        const expiredOffersPromise = shouldCloseHiring ? this.gigOfferRepository.expirePendingOffersForGig(gig.id, offer.talentId) : Promise.resolve([]);
+        const expiredOffersPromise = shouldCloseHiring
+            ? this.gigOfferRepository.expirePendingOffersForGig(gig.id, offer.talentId)
+            : Promise.resolve([]);
 
-        await Promise.all([
+        const activitiesAndNotifs: Promise<any>[] = [
             shouldCloseHiring ? this.gigRepository.rejectOtherApplications(gig.id, offer.talentId) : Promise.resolve(),
-            shouldCloseHiring
-                ? this.activityRepository.logActivity(offer.employerId, 'gig_started', gig.id, {
-                      talentId: offer.talentId,
-                      offerId: offer.id,
-                      paymentId: payment.id,
-                  })
-                : Promise.resolve(),
-            shouldCloseHiring
-                ? this.activityRepository.logActivity(offer.talentId, 'gig_started', gig.id, {
-                      employerId: offer.employerId,
-                      offerId: offer.id,
-                      paymentId: payment.id,
-                  })
-                : Promise.resolve(),
-            notificationDispatcher.dispatch({
+        ];
+
+        if (shouldCloseHiring) {
+            activitiesAndNotifs.push(
+                dispatch('user:create-activity', {
+                    userId: offer.employerId,
+                    type: 'gig_started',
+                    targetId: gig.id,
+                    targetType: 'gig',
+                }),
+            );
+            activitiesAndNotifs.push(
+                dispatch('user:create-activity', {
+                    userId: offer.talentId,
+                    type: 'gig_started',
+                    targetId: gig.id,
+                    targetType: 'gig',
+                }),
+            );
+        }
+
+        activitiesAndNotifs.push(
+            dispatch('notification:dispatch', {
                 userId: offer.employerId,
                 type: 'application_update',
                 title: 'Gig offer accepted',
@@ -194,10 +185,12 @@ export class UpdateGigOffer {
                     gigId: gig.id,
                     offerId: updatedOffer.id,
                     applicationId: application.id,
-                    paymentId: payment.id,
                 },
                 preferenceKey: 'gigUpdates',
             }),
+        );
+
+        activitiesAndNotifs.push(
             auditService.log({
                 userId,
                 action: 'gig_offer_accepted',
@@ -207,14 +200,18 @@ export class UpdateGigOffer {
                     gigId: gig.id,
                     employerId: offer.employerId,
                     talentId: offer.talentId,
-                    paymentId: payment.id,
                     applicationId: application.id,
                 },
                 ipAddress: request.ip ?? null,
-                userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                userAgent: Array.isArray(request.headers['user-agent'])
+                    ? request.headers['user-agent'][0] ?? null
+                    : request.headers['user-agent'] ?? null,
             }),
-            expiredOffersPromise,
-        ]);
+        );
+
+        activitiesAndNotifs.push(expiredOffersPromise);
+
+        await Promise.all(activitiesAndNotifs);
 
         return {
             code: HttpStatus.OK,
@@ -230,12 +227,6 @@ export class UpdateGigOffer {
     };
 }
 
-const updateGigOffer = new UpdateGigOffer(
-    new GigRepository(),
-    new GigOfferRepository(),
-    new EarningsRepository(),
-    new UserRepository(),
-    new ActivityRepository(),
-);
+const updateGigOffer = new UpdateGigOffer(new GigRepository(), new GigOfferRepository());
 
 export default updateGigOffer;

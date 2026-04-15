@@ -1,10 +1,10 @@
+import { dispatch } from '@/app';
 import { BadRequestError, ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
-import { TalentReviewRepository } from '~/talents/repository';
 import { ActivityRepository } from '~/user/repository';
 import { CreateUserReviewDto } from '../../interfaces';
 
 export class CreateUserReview {
-    constructor(private readonly talentReviewRepository: TalentReviewRepository, private readonly activityRepository: ActivityRepository) {}
+    constructor(private readonly activityRepository: ActivityRepository) {}
 
     handle = async ({ input, request }: ControllerArgs<CreateUserReviewDto>) => {
         const reviewerId = request.user?.id;
@@ -13,7 +13,8 @@ export class CreateUserReview {
         if (!input?.revieweeId) throw new BadRequestError('Review target is required');
         if (input.revieweeId === reviewerId) throw new BadRequestError('You cannot review yourself');
 
-        const createdReview = await this.talentReviewRepository.createTalentReview(input.revieweeId, {
+        const [createdReview] = await dispatch('talent:create-review', {
+            revieweeId: input.revieweeId,
             reviewerId,
             gigId: input.gigId,
             comment: input.comment,
@@ -35,6 +36,6 @@ export class CreateUserReview {
     };
 }
 
-const createUserReview = new CreateUserReview(new TalentReviewRepository(), new ActivityRepository());
+const createUserReview = new CreateUserReview(new ActivityRepository());
 
 export default createUserReview;

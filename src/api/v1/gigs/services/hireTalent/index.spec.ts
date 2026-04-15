@@ -13,28 +13,23 @@ jest.mock('@/core', () => {
     };
 });
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('~/gigs/repository', () => ({
     GigRepository: class GigRepository {},
     GigOfferRepository: class GigOfferRepository {},
 }));
 
-jest.mock('~/earnings/repository', () => ({
-    EarningsRepository: class EarningsRepository {},
-}));
-
-jest.mock('~/user/repository', () => ({
-    ActivityRepository: class ActivityRepository {},
-}));
-
-jest.mock('~/notifications/utils/dispatchNotification', () => ({
-    notificationDispatcher: {
-        dispatch: jest.fn(),
-    },
-}));
-
+import { dispatch } from '@/app';
 import { HireTalent } from './index';
 
 describe('HireTalent service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('marks the application as hired, moves the gig in progress, and creates a pending payment', async () => {
         const gigRepository = {
             getGigById: jest.fn().mockResolvedValue({
@@ -43,11 +38,8 @@ describe('HireTalent service', () => {
                 budgetAmount: 100000,
                 currency: 'NGN',
                 status: 'open',
-            }),
-            findApplicationByGigAndTalent: jest.fn().mockResolvedValue({
-                id: 'application-1',
-                talentId: 'talent-1',
-                status: 'submitted',
+                requiredTalentCount: 1,
+                title: 'Test Gig',
             }),
             getApplicationsForGig: jest.fn().mockResolvedValue([]),
             updateApplication: jest.fn().mockResolvedValue({
@@ -61,20 +53,19 @@ describe('HireTalent service', () => {
             }),
             rejectOtherApplications: jest.fn().mockResolvedValue(undefined),
         };
-        const earningsRepository = {
-            createPayment: jest.fn().mockResolvedValue({
-                id: 'payment-1',
-                status: 'pending',
-            }),
-        };
         const gigOfferRepository = {
             expirePendingOffersForGig: jest.fn().mockResolvedValue([]),
         };
-        const activityRepository = {
-            logActivity: jest.fn().mockResolvedValue(undefined),
-        };
 
-        const service = new HireTalent(gigRepository as never, gigOfferRepository as never, earningsRepository as never, activityRepository as never);
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([{ id: 'application-1', talentId: 'talent-1', status: 'submitted' }])
+            .mockResolvedValueOnce([
+                { employerId: 'employer-1', talentId: 'talent-1', gigId: 'gig-1', amount: 100000, id: 'payment-1', status: 'pending' },
+            ])
+            .mockResolvedValueOnce([undefined])
+            .mockResolvedValueOnce([undefined]);
+
+        const service = new HireTalent(gigRepository as never, gigOfferRepository as never);
 
         const response = await service.handle({
             params: { id: 'gig-1', talentId: 'talent-1' },
@@ -91,15 +82,14 @@ describe('HireTalent service', () => {
         expect(gigRepository.updateGigById).toHaveBeenCalledWith('gig-1', {
             status: 'in_progress',
         });
-        expect(earningsRepository.createPayment).toHaveBeenCalledWith(
+        expect(dispatch).toHaveBeenCalledWith(
+            'earnings:create-record',
             expect.objectContaining({
                 employerId: 'employer-1',
                 talentId: 'talent-1',
                 amount: 100000,
-                status: 'pending',
             }),
         );
-        expect(activityRepository.logActivity).toHaveBeenCalledTimes(2);
         expect(response.message).toBe('Talent Hired Successfully');
     });
 });

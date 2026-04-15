@@ -1,15 +1,10 @@
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError, auditService } from '@/core';
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
-import { UserRepository } from '~/user/repository';
+import { dispatch } from '@/app';
 import { CreateGigOfferDto } from '../../interfaces';
 import { GigOfferRepository, GigRepository } from '../../repository';
 
 export class CreateGigOffer {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly gigOfferRepository: GigOfferRepository,
-        private readonly userRepository: UserRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository, private readonly gigOfferRepository: GigOfferRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<CreateGigOfferDto>) => {
         const employerId = request.user?.id;
@@ -17,23 +12,25 @@ export class CreateGigOffer {
         if (!employerId) throw new UnAuthorizedError('User not authenticated');
         if (!params?.id) throw new BadRequestError('Gig ID is required');
 
-        const [gig, talentRow, existingPendingOffer, existingApplication] = await Promise.all([
-            this.gigRepository.getGigById(params.id),
-            this.userRepository.findById(input.talentId),
+        const [gigResults, talentResults, existingPendingOffer, existingApplication] = await Promise.all([
+            dispatch('gig:get-by-id', { gigId: params.id }),
+            dispatch('user:get-by-id', { id: input.talentId }),
             this.gigOfferRepository.findPendingOffer(params.id, input.talentId),
-            this.gigRepository.findApplicationByGigAndTalent(params.id, input.talentId),
+            dispatch('gig:find-application', { gigId: params.id, talentId: input.talentId }),
         ]);
+
+        const gig = gigResults[0];
+        const talent = talentResults[0];
 
         if (!gig) throw new RouteNotFoundError('Gig not found');
         if (gig.employerId !== employerId) throw new ConflictError('You do not own this gig');
         if (gig.status === 'completed' || gig.status === 'cancelled') throw new ConflictError('This gig can no longer receive offers');
-        if (!talentRow) throw new BadRequestError('Talent not found');
-
-        const talent = this.userRepository.mapToCamelCase(talentRow);
+        if (!talent) throw new BadRequestError('Talent not found');
 
         if (talent.role !== 'talent') throw new BadRequestError('Offers can only be sent to talents');
         if (existingPendingOffer) throw new ConflictError('A pending offer already exists for this talent');
-        if (existingApplication?.status === 'hired') throw new ConflictError('This talent has already been selected for the gig');
+        if (existingApplication && existingApplication[0]?.status === 'hired')
+            throw new ConflictError('This talent has already been selected for the gig');
 
         const alreadyHired = await this.gigRepository.getApplicationsForGig(params.id, {
             page: 1,
@@ -56,7 +53,7 @@ export class CreateGigOffer {
         });
 
         await Promise.all([
-            notificationDispatcher.dispatch({
+            dispatch('notification:dispatch', {
                 userId: input.talentId,
                 type: 'application_update',
                 title: 'New gig offer received',
@@ -79,7 +76,9 @@ export class CreateGigOffer {
                     currency: offer.currency,
                 },
                 ipAddress: request.ip ?? null,
-                userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                userAgent: Array.isArray(request.headers['user-agent'])
+                    ? request.headers['user-agent'][0] ?? null
+                    : request.headers['user-agent'] ?? null,
             }),
         ]);
 
@@ -91,6 +90,6 @@ export class CreateGigOffer {
     };
 }
 
-const createGigOffer = new CreateGigOffer(new GigRepository(), new GigOfferRepository(), new UserRepository());
+const createGigOffer = new CreateGigOffer(new GigRepository(), new GigOfferRepository());
 
 export default createGigOffer;

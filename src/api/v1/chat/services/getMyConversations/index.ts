@@ -1,4 +1,5 @@
 import { ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
+import { dispatch, eventBus } from '@/app';
 import { ConversationsQueryDto } from '../../interfaces';
 import { ChatRepository } from '../../repository';
 
@@ -10,7 +11,7 @@ export class GetMyConversations {
 
         if (!userId) throw new UnAuthorizedError('User not authenticated');
 
-        const conversations = await this.chatRepository.getConversationsForUser(userId, query ?? {});
+        const conversations = await this.chatRepository.getConversationsForUser(userId, query ?? {}, eventBus);
 
         return {
             code: HttpStatus.OK,

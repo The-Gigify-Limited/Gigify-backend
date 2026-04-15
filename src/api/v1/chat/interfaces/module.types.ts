@@ -1,6 +1,4 @@
 import { DatabaseTable } from '@/core/types';
-import { Gig } from '~/gigs/interfaces';
-import { User } from '~/user/interfaces';
 
 export type DatabaseConversation = DatabaseTable['conversations']['Row'];
 export type DatabaseMessage = DatabaseTable['messages']['Row'];
@@ -25,10 +23,26 @@ export type Message = {
     createdAt: string;
 };
 
+export type Counterpart = {
+    id: string;
+    firstName: string;
+    lastName: string;
+    profileImageUrl: string | null;
+    role: string | null;
+    username: string;
+    email: string;
+};
+
+export type GigSummary = {
+    id: string;
+    title: string;
+    status: string;
+};
+
 export type ConversationThread = {
     conversation: Conversation;
-    counterpart: Pick<User, 'id' | 'firstName' | 'lastName' | 'profileImageUrl' | 'role' | 'username' | 'email'> | null;
-    gig: Pick<Gig, 'id' | 'title' | 'status'> | null;
+    counterpart: Counterpart | null;
+    gig: GigSummary | null;
     lastMessage: Message | null;
     unreadCount: number;
 };

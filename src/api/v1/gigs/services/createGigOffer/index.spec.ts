@@ -18,22 +18,16 @@ jest.mock('@/core', () => {
     };
 });
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('../../repository', () => ({
     GigOfferRepository: class GigOfferRepository {},
     GigRepository: class GigRepository {},
 }));
 
-jest.mock('~/user/repository', () => ({
-    UserRepository: class UserRepository {},
-}));
-
-jest.mock('~/notifications/utils/dispatchNotification', () => ({
-    notificationDispatcher: {
-        dispatch: jest.fn(),
-    },
-}));
-
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
+import { dispatch } from '@/app';
 import { CreateGigOffer } from './index';
 
 describe('CreateGigOffer service', () => {
@@ -43,15 +37,6 @@ describe('CreateGigOffer service', () => {
 
     it('creates an offer and notifies the recipient talent', async () => {
         const gigRepository = {
-            getGigById: jest.fn().mockResolvedValue({
-                id: 'gig-1',
-                employerId: 'employer-1',
-                title: 'Afrobeat Night Drummer',
-                currency: 'NGN',
-                requiredTalentCount: 1,
-                status: 'open',
-            }),
-            findApplicationByGigAndTalent: jest.fn().mockResolvedValue(null),
             getApplicationsForGig: jest.fn().mockResolvedValue([]),
         };
         const gigOfferRepository = {
@@ -66,15 +51,17 @@ describe('CreateGigOffer service', () => {
                 currency: 'NGN',
             }),
         };
-        const userRepository = {
-            findById: jest.fn().mockResolvedValue({
-                id: 'talent-1',
-                role: 'talent',
-            }),
-            mapToCamelCase: jest.fn((value) => value),
-        };
 
-        const service = new CreateGigOffer(gigRepository as never, gigOfferRepository as never, userRepository as never);
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([
+                { id: 'gig-1', employerId: 'employer-1', title: 'Afrobeat Night Drummer', currency: 'NGN', requiredTalentCount: 1, status: 'open' },
+            ])
+            .mockResolvedValueOnce([{ id: 'talent-1', role: 'talent' }])
+            .mockResolvedValueOnce([null])
+            .mockResolvedValueOnce([undefined])
+            .mockResolvedValueOnce([undefined]);
+
+        const service = new CreateGigOffer(gigRepository as never, gigOfferRepository as never);
 
         const response = await service.handle({
             params: { id: 'gig-1' },
@@ -98,7 +85,8 @@ describe('CreateGigOffer service', () => {
                 proposedRate: 180000,
             }),
         );
-        expect(notificationDispatcher.dispatch).toHaveBeenCalledWith(
+        expect(dispatch).toHaveBeenCalledWith(
+            'notification:dispatch',
             expect.objectContaining({
                 userId: 'talent-1',
                 type: 'application_update',

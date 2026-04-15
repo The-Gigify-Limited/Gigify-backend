@@ -34,7 +34,6 @@ export interface UpdateTalentDto extends ControllerArgsTypes {
     input: Partial<Talent>;
 }
 
-// TALENT REVIEWS
 export interface CreateTalentReviewDto extends ControllerArgsTypes {
     params: {
         id: string;

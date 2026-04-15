@@ -5,7 +5,6 @@ dotenv.config();
 
 type INodeEnv = 'development' | 'production' | 'staging';
 
-// Define validation schema for environment variables
 const envSchema = Joi.object()
     .keys({
         NODE_ENV: Joi.string().valid('development', 'production', 'staging').required(),
@@ -41,10 +40,8 @@ const envSchema = Joi.object()
     })
     .unknown();
 
-// Validate environment variables against the schema
 const { value: validatedEnvVars, error: validationError } = envSchema.prefs({ errors: { label: 'key' } }).validate(process.env);
 
-// Throw an error if validation fails
 if (validationError) {
     throw new Error(`Config validation error: ${validationError.message}`);
 }

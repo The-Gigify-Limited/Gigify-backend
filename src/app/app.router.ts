@@ -5,6 +5,7 @@ import { earningsRouter } from '@/api/v1/earnings';
 import { employerRouter } from '@/api/v1/employers';
 import { gigRouter } from '@/api/v1/gigs';
 import { notificationRouter } from '@/api/v1/notifications';
+import { realtimeRouter } from '@/api/v1/realtime';
 import { talentRouter } from '@/api/v1/talents';
 import { userRouter } from '@/api/v1/user';
 import { config, HttpStatus } from '@/core';
@@ -22,6 +23,7 @@ appRouter.use('/employer', employerRouter);
 appRouter.use('/earnings', earningsRouter);
 appRouter.use('/chat', chatRouter);
 appRouter.use('/notifications', notificationRouter);
+appRouter.use('/realtime', realtimeRouter);
 appRouter.use('/admin', adminRouter);
 
 const swaggerOptions = {

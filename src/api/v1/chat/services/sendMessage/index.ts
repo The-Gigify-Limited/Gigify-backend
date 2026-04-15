@@ -1,7 +1,7 @@
-import { BadRequestError, ControllerArgs, ForbiddenError, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
+import { BadRequestError, ControllerArgs, ForbiddenError, HttpStatus, RouteNotFoundError, UnAuthorizedError, realtimeService } from '@/core';
+import { dispatch } from '@/app';
 import { SendMessageDto } from '../../interfaces';
 import { ChatRepository } from '../../repository';
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
 
 export class SendMessage {
     constructor(private readonly chatRepository: ChatRepository) {}
@@ -34,19 +34,22 @@ export class SendMessage {
 
         const recipientId = conversation.employerId === userId ? conversation.talentId : conversation.employerId;
 
-        await notificationDispatcher.dispatch({
-            userId: recipientId,
-            type: 'message_received',
-            title: 'New message',
-            message: body ? body.slice(0, 140) : 'You received a new attachment.',
-            payload: {
-                conversationId: conversation.id,
-                messageId: message.id,
-                gigId: conversation.gigId,
-                senderId: userId,
-            },
-            preferenceKey: 'messageUpdates',
-        });
+        await Promise.all([
+            dispatch('notification:dispatch', {
+                userId: recipientId,
+                type: 'message_received',
+                title: 'New message',
+                message: body ? body.slice(0, 140) : 'You received a new attachment.',
+                payload: {
+                    conversationId: conversation.id,
+                    messageId: message.id,
+                    gigId: conversation.gigId,
+                    senderId: userId,
+                },
+                preferenceKey: 'messageUpdates',
+            }),
+            realtimeService.broadcastToConversation(conversation.id, 'new_message', message),
+        ]);
 
         return {
             code: HttpStatus.CREATED,

@@ -69,7 +69,7 @@ userRouter
             .setHandler(getUserById.handle)
             .handle(),
     )
-  
+
     /**
      * @swagger
      * /user:
@@ -119,7 +119,6 @@ userRouter
             .isPrivate()
             .setValidator(getUsersQuerySchema)
             .setHandler(getAllUsers.handle)
-            // .only('admin')
             .handle(),
     )
     /**
@@ -315,7 +314,10 @@ userRouter
      */
     .get(
         '/:id/reviews',
-        ControlBuilder.builder().setValidator(userReviewsSchema).setHandler(getUserReviews.handle).handle(),
+        ControlBuilder.builder()
+            .setValidator(userReviewsSchema)
+            .setHandler(getUserReviews.handle)
+            .handle(),
     )
     /**
      * @swagger
@@ -349,7 +351,14 @@ userRouter
      *                 id: 92000000-0000-0000-0000-000000000001
      *                 status: pending
      */
-    .post('/onboarding/liveness', ControlBuilder.builder().isPrivate().setValidator(livenessSchema).setHandler(submitLivenessCheck.handle).handle())
+    .post(
+        '/onboarding/liveness',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setValidator(livenessSchema)
+            .setHandler(submitLivenessCheck.handle)
+            .handle(),
+    )
 
     /**
      * @swagger
@@ -384,7 +393,14 @@ userRouter
      *                   levelName: gigify-basic-kyc
      *                   expiresInSeconds: 600
      */
-    .post('/kyc/session', ControlBuilder.builder().isPrivate().setValidator(kycSessionSchema).setHandler(createKycSession.handle).handle())
+    .post(
+        '/kyc/session',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setValidator(kycSessionSchema)
+            .setHandler(createKycSession.handle)
+            .handle(),
+    )
 
     /**
      * @swagger
@@ -409,7 +425,13 @@ userRouter
      *                 isVerified: false
      *                 completed: false
      */
-    .get('/kyc/status', ControlBuilder.builder().isPrivate().setHandler(getKycStatus.handle).handle())
+    .get(
+        '/kyc/status',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setHandler(getKycStatus.handle)
+            .handle(),
+    )
 
     /**
      * @swagger
@@ -441,7 +463,12 @@ userRouter
      *                 verificationId: 92000000-0000-0000-0000-000000000011
      *                 status: approved
      */
-    .post('/kyc/webhooks/sumsub', ControlBuilder.builder().setHandler(handleSumsubWebhook.handle).handle())
+    .post(
+        '/kyc/webhooks/sumsub',
+        ControlBuilder.builder()
+            .setHandler(handleSumsubWebhook.handle)
+            .handle(),
+    )
 
     /**
      * @swagger
@@ -463,7 +490,13 @@ userRouter
      *                 pushEnabled: true
      *                 marketingEnabled: false
      */
-    .get('/settings/notifications', ControlBuilder.builder().isPrivate().setHandler(getNotificationPreferences.handle).handle())
+    .get(
+        '/settings/notifications',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setHandler(getNotificationPreferences.handle)
+            .handle(),
+    )
 
     /**
      * @swagger
@@ -501,5 +534,9 @@ userRouter
      */
     .patch(
         '/settings/notifications',
-        ControlBuilder.builder().isPrivate().setValidator(notificationPreferencesSchema).setHandler(updateNotificationPreferences.handle).handle(),
+        ControlBuilder.builder()
+            .isPrivate()
+            .setValidator(notificationPreferencesSchema)
+            .setHandler(updateNotificationPreferences.handle)
+            .handle(),
     );

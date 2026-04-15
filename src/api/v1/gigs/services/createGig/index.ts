@@ -1,31 +1,27 @@
 import { ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
-import { EmployerRepository } from '~/employers/repository';
+import { dispatch } from '@/app';
 import { GigRepository } from '~/gigs/repository';
-import { ActivityRepository } from '~/user/repository';
 import { CreateGigDto } from '../../interfaces';
 
 export class CreateGig {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly employerRepository: EmployerRepository,
-        private readonly activityRepository: ActivityRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository) {}
 
     handle = async ({ input, request }: ControllerArgs<CreateGigDto>) => {
         const employerId = request.user?.id;
 
         if (!employerId) throw new UnAuthorizedError('User not authenticated');
 
-        await this.employerRepository.createEmployerProfile(employerId);
+        await dispatch('employer:create-profile', { user_id: employerId });
 
         const gig = await this.gigRepository.createGig(employerId, input);
 
-        await Promise.all([
-            this.employerRepository.syncStats(employerId),
-            this.activityRepository.logActivity(employerId, 'gig_posted', gig.id, {
-                title: gig.title,
-            }),
-        ]);
+        await dispatch('user:create-activity', {
+            userId: employerId,
+            type: 'gig_posted',
+            targetId: gig.id,
+            targetType: 'gig',
+            description: gig.title,
+        });
 
         return {
             code: HttpStatus.CREATED,
@@ -35,6 +31,6 @@ export class CreateGig {
     };
 }
 
-const createGig = new CreateGig(new GigRepository(), new EmployerRepository(), new ActivityRepository());
+const createGig = new CreateGig(new GigRepository());
 
 export default createGig;

@@ -13,44 +13,34 @@ jest.mock('@/core', () => {
     };
 });
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('~/gigs/repository', () => ({
     GigRepository: class GigRepository {},
 }));
 
-jest.mock('~/talents/repository', () => ({
-    TalentRepository: class TalentRepository {},
-}));
-
-jest.mock('~/user/repository', () => ({
-    ActivityRepository: class ActivityRepository {},
-}));
-
 import { ConflictError } from '@/core';
+import { dispatch } from '@/app';
 import { ApplyToGig } from './index';
 
 describe('ApplyToGig service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('rejects duplicate applications for the same open gig', async () => {
         const gigRepository = {
-            getGigById: jest.fn().mockResolvedValue({
-                id: 'gig-1',
-                employerId: 'employer-1',
-                status: 'open',
-            }),
-            findApplicationByGigAndTalent: jest.fn().mockResolvedValue({
-                id: 'application-1',
-                status: 'submitted',
-            }),
-        };
-        const talentRepository = {
-            findByUserId: jest.fn().mockResolvedValue({
-                id: 'talent-profile-1',
-            }),
-        };
-        const activityRepository = {
-            logActivity: jest.fn(),
+            createApplication: jest.fn(),
         };
 
-        const service = new ApplyToGig(gigRepository as never, talentRepository as never, activityRepository as never);
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1', status: 'open' }])
+            .mockResolvedValueOnce([{ id: 'talent-profile-1' }])
+            .mockResolvedValueOnce([{ id: 'application-1', status: 'submitted' }]);
+
+        const service = new ApplyToGig(gigRepository as never);
 
         await expect(
             service.handle({
@@ -68,26 +58,15 @@ describe('ApplyToGig service', () => {
             talentId: 'talent-1',
             status: 'submitted',
         });
-        const activityRepository = {
-            logActivity: jest.fn().mockResolvedValue(undefined),
-        };
-        const service = new ApplyToGig(
-            {
-                getGigById: jest.fn().mockResolvedValue({
-                    id: 'gig-1',
-                    employerId: 'employer-1',
-                    status: 'open',
-                }),
-                findApplicationByGigAndTalent: jest.fn().mockResolvedValue(null),
-                createApplication,
-            } as never,
-            {
-                findByUserId: jest.fn().mockResolvedValue({
-                    id: 'talent-profile-1',
-                }),
-            } as never,
-            activityRepository as never,
-        );
+        const service = new ApplyToGig({
+            createApplication,
+        } as never);
+
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1', status: 'open' }])
+            .mockResolvedValueOnce([{ id: 'talent-profile-1' }])
+            .mockResolvedValueOnce([null])
+            .mockResolvedValueOnce([undefined]);
 
         const response = await service.handle({
             params: { id: 'gig-1' },
@@ -102,8 +81,11 @@ describe('ApplyToGig service', () => {
             coverMessage: 'I am a great fit for this event.',
             proposedRate: 75000,
         });
-        expect(activityRepository.logActivity).toHaveBeenCalledWith('talent-1', 'gig_applied', 'gig-1', {
-            applicationId: 'application-1',
+        expect(dispatch).toHaveBeenCalledWith('user:create-activity', {
+            userId: 'talent-1',
+            type: 'gig_applied',
+            targetId: 'gig-1',
+            targetType: 'gig',
         });
         expect(response.code).toBe(201);
     });

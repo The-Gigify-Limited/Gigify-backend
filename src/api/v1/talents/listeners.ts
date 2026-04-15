@@ -39,3 +39,51 @@ export async function getTalentProfileByUserId(user_id: string): Promise<TalentP
         portfolios: talentPortfolios,
     };
 }
+
+export async function getTalentReviewsEventListener(input: {
+    talentId: string;
+    page?: number;
+    pageSize?: number;
+}): Promise<{ reviews: any[]; summary: any }> {
+    const talentReviewRepository = new TalentReviewRepository();
+
+    const reviews = await talentReviewRepository.findMany({
+        filters: {
+            talent_id: input.talentId,
+        },
+        pagination: {
+            page: input.page ?? 1,
+            pageSize: input.pageSize ?? 10,
+        },
+        orderBy: {
+            column: 'created_at',
+            ascending: false,
+        },
+    });
+
+    const summary = await talentReviewRepository.findTalentRatingSummary(input.talentId);
+
+    return {
+        reviews: reviews.map(talentReviewRepository.mapToCamelCase),
+        summary,
+    };
+}
+
+export async function createTalentReviewEventListener(input: {
+    revieweeId: string;
+    reviewerId: string;
+    gigId?: string;
+    comment?: string;
+    rating: number;
+}): Promise<any> {
+    const talentReviewRepository = new TalentReviewRepository();
+
+    const createdReview = await talentReviewRepository.createTalentReview(input.revieweeId, {
+        reviewerId: input.reviewerId,
+        gigId: input.gigId,
+        comment: input.comment,
+        rating: input.rating,
+    });
+
+    return createdReview;
+}

@@ -23,7 +23,6 @@ export class UpdateTalentPortfolioById {
             const images = allFiles.filter((f) => f.mimetype.startsWith('image/'));
             const videos = allFiles.filter((f) => f.mimetype.startsWith('video/'));
 
-            // Upload images sequentially
             for (const img of images) {
                 const { publicUrl } = await imageUploadService.upload(img, {
                     bucket: 'avatars',
@@ -33,7 +32,7 @@ export class UpdateTalentPortfolioById {
                     allowedMimeTypes: ['image/*'],
                 });
 
-                publicUrl && uploadedUrls.push(publicUrl);
+                if (publicUrl) uploadedUrls.push(publicUrl);
             }
 
             const imageResults = await Promise.all(
@@ -50,14 +49,13 @@ export class UpdateTalentPortfolioById {
 
             uploadedUrls.push(...imageResults.map((r) => r.publicUrl).filter((url): url is string => Boolean(url)));
 
-            // Upload videos or large files in parallel
             const videoResults = await Promise.all(
                 videos.map((video) =>
                     imageUploadService.upload(video, {
                         bucket: 'avatars',
                         folder: 'talent_portfolios/videos',
                         userId: user.id,
-                        maxSizeMB: 500, // or any large limit
+                        maxSizeMB: 500,
                         allowedMimeTypes: ['video/*'],
                     }),
                 ),

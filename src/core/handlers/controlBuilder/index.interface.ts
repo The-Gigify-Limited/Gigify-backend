@@ -5,7 +5,6 @@ import { Schema } from 'joi';
 import { Permission, ResourceAuthorizationOptions } from '~/auth/interface';
 import { User, UserRoleEnum } from '~/user/interfaces';
 
-// Controller Handler Callback Function Arguments
 type ExtractPayloadKeys<T> = {
     [K in keyof T]: K extends keyof ControllerArgsTypes ? K : never;
 }[keyof T];
@@ -26,7 +25,6 @@ export type ControllerArgsTypes = Partial<{
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type ControllerArgs<T = {}> = ControllerArgsTypes & T & ExtractControllerArgsPayloadKeys<T>;
 
-// Controller Handler Validation
 export interface ValidationSchema {
     inputSchema?: Schema;
     paramsSchema?: Schema;
@@ -34,10 +32,9 @@ export interface ValidationSchema {
     fileSchema?: Schema;
 }
 
-// Controller Handler Options
 export type ControllerHandlerOptions = {
     isPrivate: boolean;
     allowedRoles?: UserRoleEnum[];
     requiredPermissions?: Permission[];
-    checkResourceOwnership?: ResourceAuthorizationOptions
+    checkResourceOwnership?: ResourceAuthorizationOptions;
 };

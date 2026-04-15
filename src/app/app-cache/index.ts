@@ -36,7 +36,6 @@ export class AppCacheManager extends Redis {
             return true;
         } catch (err: unknown) {
             logger.debug('Operation failed, key not found in cache');
-            // throw the error back to the consumer of the method to handle it.
             throw err;
         }
     };

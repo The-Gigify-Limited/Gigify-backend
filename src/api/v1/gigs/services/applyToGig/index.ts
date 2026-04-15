@@ -1,15 +1,10 @@
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
-import { TalentRepository } from '~/talents/repository';
-import { ActivityRepository } from '~/user/repository';
+import { dispatch } from '@/app';
 import { ApplyToGigDto } from '~/gigs/interfaces';
 import { GigRepository } from '~/gigs/repository';
 
 export class ApplyToGig {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly talentRepository: TalentRepository,
-        private readonly activityRepository: ActivityRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<ApplyToGigDto>) => {
         const talentId = request.user?.id;
@@ -17,25 +12,32 @@ export class ApplyToGig {
         if (!params?.id) throw new BadRequestError('Gig ID is required');
         if (!talentId) throw new UnAuthorizedError('User not authenticated');
 
-        const [gig, talentProfile, existingApplication] = await Promise.all([
-            this.gigRepository.getGigById(params.id),
-            this.talentRepository.findByUserId(talentId),
-            this.gigRepository.findApplicationByGigAndTalent(params.id, talentId),
+        const [gigResults, talentProfileResults, existingApplication] = await Promise.all([
+            dispatch('gig:get-by-id', { gigId: params.id }),
+            dispatch('talent:get-talent-profile', { user_id: talentId }),
+            dispatch('gig:find-application', { gigId: params.id, talentId }),
         ]);
+
+        const gig = gigResults[0];
+        const talentProfile = talentProfileResults[0];
+        const existingApp = existingApplication[0];
 
         if (!gig) throw new RouteNotFoundError('Gig not found');
         if (!talentProfile) throw new BadRequestError('Talent profile not found');
         if (gig.employerId === talentId) throw new ConflictError('You cannot apply to your own gig');
         if (gig.status !== 'open') throw new ConflictError('Only open gigs can accept applications');
-        if (existingApplication && existingApplication.status !== 'withdrawn') throw new ConflictError('You have already applied to this gig');
+        if (existingApp && existingApp.status !== 'withdrawn') throw new ConflictError('You have already applied to this gig');
 
         const application = await this.gigRepository.createApplication(params.id, talentId, {
             coverMessage: input.coverMessage ?? null,
             proposedRate: input.proposedRate ?? null,
         });
 
-        await this.activityRepository.logActivity(talentId, 'gig_applied', gig.id, {
-            applicationId: application.id,
+        await dispatch('user:create-activity', {
+            userId: talentId,
+            type: 'gig_applied',
+            targetId: gig.id,
+            targetType: 'gig',
         });
 
         return {
@@ -46,6 +48,6 @@ export class ApplyToGig {
     };
 }
 
-const applyToGig = new ApplyToGig(new GigRepository(), new TalentRepository(), new ActivityRepository());
+const applyToGig = new ApplyToGig(new GigRepository());
 
 export default applyToGig;

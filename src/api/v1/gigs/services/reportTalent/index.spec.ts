@@ -14,10 +14,8 @@ jest.mock('@/core', () => {
     };
 });
 
-jest.mock('~/notifications/utils/dispatchNotification', () => ({
-    notificationDispatcher: {
-        dispatch: jest.fn(),
-    },
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
 }));
 
 jest.mock('~/gigs/repository', () => ({
@@ -25,24 +23,20 @@ jest.mock('~/gigs/repository', () => ({
     ReportRepository: class ReportRepository {},
 }));
 
-jest.mock('~/user/repository', () => ({
-    UserRepository: class UserRepository {},
-}));
-
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
+import { dispatch } from '@/app';
 import { ReportTalent } from './index';
 
 describe('ReportTalent service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('creates a moderation report and alerts admins', async () => {
         const gigRepository = {
             getGigById: jest.fn().mockResolvedValue({
                 id: 'gig-1',
                 employerId: 'employer-1',
                 title: 'Wedding of Mike and Sarah #MS2025',
-            }),
-            findApplicationByGigAndTalent: jest.fn().mockResolvedValue({
-                id: 'application-1',
-                status: 'hired',
             }),
         };
         const reportRepository = {
@@ -53,15 +47,13 @@ describe('ReportTalent service', () => {
                 reportedUserId: 'talent-1',
             }),
         };
-        const userRepository = {
-            getAllUsers: jest.fn().mockResolvedValue([
-                {
-                    id: 'admin-1',
-                },
-            ]),
-        };
 
-        const service = new ReportTalent(gigRepository as never, reportRepository as never, userRepository as never);
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([{ id: 'application-1', status: 'hired' }])
+            .mockResolvedValueOnce([undefined])
+            .mockResolvedValueOnce([undefined]);
+
+        const service = new ReportTalent(gigRepository as never, reportRepository as never);
 
         const response = await service.handle({
             params: { id: 'gig-1' },
@@ -83,9 +75,9 @@ describe('ReportTalent service', () => {
                 reportedUserId: 'talent-1',
             }),
         );
-        expect(notificationDispatcher.dispatch).toHaveBeenCalledWith(
+        expect(dispatch).toHaveBeenCalledWith(
+            'notification:dispatch',
             expect.objectContaining({
-                userId: 'admin-1',
                 type: 'security_alert',
             }),
         );

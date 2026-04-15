@@ -1,24 +1,14 @@
 import { AppEventsInterface, EventRegister } from './event.types';
 import { registerEvents } from './events.register';
 
-/**
- * Class representing the application event manager.
- */
 export class AppEventManager {
-    private handlers: Map<keyof AppEventsInterface, Array<Function>> = new Map();
+    private handlers: Map<keyof AppEventsInterface, Array<(data: unknown) => unknown>> = new Map();
 
     constructor(registerFn: (bus: AppEventManager) => void) {
         registerFn(this);
         this.dispatch('event:registration:successful');
     }
 
-    /**
-     * Dispatches an event with optional parameters.
-     * @template T - The event key that extends the predefined event keys.
-     * @param {T} event - The event key to dispatch.
-     * @param {...AppEventListnerMap[T]} values - The parameters to pass with the event.
-     * @returns {Promise<void>} A promise that resolves when the event has been dispatched.
-     */
     public async dispatch<K extends keyof AppEventsInterface>(
         eventName: K,
         ...args: AppEventsInterface[K]['data'] extends void ? [] : [AppEventsInterface[K]['data']]
@@ -32,7 +22,6 @@ export class AppEventManager {
         const data = args[0] as EventRegister[K];
         const results: AppEventsInterface[K]['return'][] = [];
 
-        // Execute all handlers and collect their responses
         for (const handler of handlers) {
             try {
                 const result = await handler(data);
@@ -48,13 +37,6 @@ export class AppEventManager {
         return results;
     }
 
-    /**
-     * Registers an event handler that can return a value.
-     * @template K - The event key from AppEventsInterface
-     * @param {K} eventName - The event name to listen for
-     * @param {Function} handler - The handler function that processes the event
-     * @returns {Function} Unsubscribe function
-     */
     public onEvent<K extends keyof AppEventsInterface>(
         eventName: K,
         handler: (data: EventRegister[K]) => Promise<AppEventsInterface[K]['return']> | AppEventsInterface[K]['return'],

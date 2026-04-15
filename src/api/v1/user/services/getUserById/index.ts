@@ -1,11 +1,10 @@
 import { dispatch } from '@/app';
 import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
-import { EmployerRepository } from '~/employers/repository';
 import { GetUserParamsDto, User } from '~/user/interfaces';
 import { UserRepository } from '~/user/repository';
 
 export class GetUserById {
-    constructor(private readonly userRepository: UserRepository, private readonly employerRepository: EmployerRepository) {}
+    constructor(private readonly userRepository: UserRepository) {}
 
     handle = async (payload: ControllerArgs<GetUserParamsDto>) => {
         const { params, query } = payload;
@@ -35,7 +34,9 @@ export class GetUserById {
             }
 
             if (user.role === 'employer') {
-                employerProfile = await this.employerRepository.findByUserId(id);
+                const [employer] = await dispatch('employer:get-profile', { user_id: id });
+
+                if (employer) employerProfile = employer;
             }
         }
 
@@ -51,6 +52,6 @@ export class GetUserById {
     };
 }
 
-const getUserById = new GetUserById(new UserRepository(), new EmployerRepository());
+const getUserById = new GetUserById(new UserRepository());
 
 export default getUserById;

@@ -1,17 +1,10 @@
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
-import { EarningsRepository } from '~/earnings/repository';
+import { dispatch } from '@/app';
 import { GigOfferRepository, GigRepository } from '~/gigs/repository';
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
-import { ActivityRepository } from '~/user/repository';
 import { HireTalentDto } from '../../interfaces';
 
 export class HireTalent {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly gigOfferRepository: GigOfferRepository,
-        private readonly earningsRepository: EarningsRepository,
-        private readonly activityRepository: ActivityRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository, private readonly gigOfferRepository: GigOfferRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<HireTalentDto>) => {
         const employerId = request.user?.id;
@@ -25,7 +18,8 @@ export class HireTalent {
         if (gig.employerId !== employerId) throw new ConflictError('You do not own this gig');
         if (gig.status === 'completed' || gig.status === 'cancelled') throw new ConflictError('This gig can no longer be hired for');
 
-        const existingApplication = await this.gigRepository.findApplicationByGigAndTalent(params.id, params.talentId);
+        const [existingApplicationResults] = await dispatch('gig:find-application', { gigId: params.id, talentId: params.talentId });
+        const existingApplication = existingApplicationResults;
 
         if (!existingApplication) throw new BadRequestError('Talent has not applied for this gig');
         if (existingApplication.status === 'rejected' || existingApplication.status === 'withdrawn') {
@@ -50,7 +44,7 @@ export class HireTalent {
         const shouldCloseHiring = alreadyHired.length + 1 >= requiredTalentCount;
         const nextGigStatus = shouldCloseHiring ? 'in_progress' : gig.status === 'draft' ? 'open' : gig.status ?? 'open';
 
-        const [application, updatedGig, payment] = await Promise.all([
+        const [application, updatedGig] = await Promise.all([
             this.gigRepository.updateApplication(existingApplication.id, {
                 status: 'hired',
                 hiredAt: new Date().toISOString(),
@@ -58,36 +52,42 @@ export class HireTalent {
             this.gigRepository.updateGigById(params.id, {
                 status: nextGigStatus,
             }),
-            this.earningsRepository.createPayment({
-                applicationId: existingApplication.id,
-                amount: input.amount ?? gig.budgetAmount,
-                currency: input.currency ?? gig.currency ?? 'NGN',
-                gigId: params.id,
-                paymentReference: input.paymentReference ?? null,
-                platformFee: input.platformFee ?? 0,
-                provider: input.provider ?? 'manual',
-                status: 'pending',
-                talentId: params.talentId,
-                employerId,
-            }),
         ]);
 
-        await Promise.all([
+        const [paymentResults] = await dispatch('earnings:create-record', {
+            employerId,
+            talentId: params.talentId,
+            gigId: params.id,
+            amount: input.amount ?? gig.budgetAmount,
+        });
+        const payment = paymentResults;
+
+        const activitiesAndNotifications: Promise<any>[] = [
             shouldCloseHiring ? this.gigRepository.rejectOtherApplications(params.id, params.talentId) : Promise.resolve(),
             shouldCloseHiring ? this.gigOfferRepository.expirePendingOffersForGig(params.id, params.talentId) : Promise.resolve(),
-            shouldCloseHiring
-                ? this.activityRepository.logActivity(employerId, 'gig_started', params.id, {
-                      talentId: params.talentId,
-                      paymentId: payment.id,
-                  })
-                : Promise.resolve(),
-            shouldCloseHiring
-                ? this.activityRepository.logActivity(params.talentId, 'gig_started', params.id, {
-                      employerId,
-                      paymentId: payment.id,
-                  })
-                : Promise.resolve(),
-            notificationDispatcher.dispatch({
+        ];
+
+        if (shouldCloseHiring) {
+            activitiesAndNotifications.push(
+                dispatch('user:create-activity', {
+                    userId: employerId,
+                    type: 'gig_started',
+                    targetId: params.id,
+                    targetType: 'gig',
+                }) as any,
+            );
+            activitiesAndNotifications.push(
+                dispatch('user:create-activity', {
+                    userId: params.talentId,
+                    type: 'gig_started',
+                    targetId: params.id,
+                    targetType: 'gig',
+                }) as any,
+            );
+        }
+
+        activitiesAndNotifications.push(
+            dispatch('notification:dispatch', {
                 userId: params.talentId,
                 type: 'application_update',
                 title: 'You have been hired',
@@ -95,11 +95,12 @@ export class HireTalent {
                 payload: {
                     gigId: params.id,
                     applicationId: application.id,
-                    paymentId: payment.id,
                 },
                 preferenceKey: 'gigUpdates',
-            }),
-        ]);
+            }) as any,
+        );
+
+        await Promise.all(activitiesAndNotifications);
 
         return {
             code: HttpStatus.OK,
@@ -114,6 +115,6 @@ export class HireTalent {
     };
 }
 
-const hireTalent = new HireTalent(new GigRepository(), new GigOfferRepository(), new EarningsRepository(), new ActivityRepository());
+const hireTalent = new HireTalent(new GigRepository(), new GigOfferRepository());
 
 export default hireTalent;

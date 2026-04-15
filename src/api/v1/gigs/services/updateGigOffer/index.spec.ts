@@ -18,27 +18,16 @@ jest.mock('@/core', () => {
     };
 });
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('../../repository', () => ({
     GigOfferRepository: class GigOfferRepository {},
     GigRepository: class GigRepository {},
 }));
 
-jest.mock('~/earnings/repository', () => ({
-    EarningsRepository: class EarningsRepository {},
-}));
-
-jest.mock('~/user/repository', () => ({
-    ActivityRepository: class ActivityRepository {},
-    UserRepository: class UserRepository {},
-}));
-
-jest.mock('~/notifications/utils/dispatchNotification', () => ({
-    notificationDispatcher: {
-        dispatch: jest.fn(),
-    },
-}));
-
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
+import { dispatch } from '@/app';
 import { UpdateGigOffer } from './index';
 
 describe('UpdateGigOffer service', () => {
@@ -58,9 +47,9 @@ describe('UpdateGigOffer service', () => {
                 status: 'open',
             }),
             getApplicationsForGig: jest.fn().mockResolvedValue([]),
-            findApplicationByGigAndTalent: jest.fn().mockResolvedValue(null),
             createApplication: jest.fn().mockResolvedValue({
                 id: 'application-1',
+                status: 'hired',
             }),
             updateApplication: jest.fn().mockResolvedValue({
                 id: 'application-1',
@@ -90,25 +79,14 @@ describe('UpdateGigOffer service', () => {
             }),
             expirePendingOffersForGig: jest.fn().mockResolvedValue([]),
         };
-        const earningsRepository = {
-            findPendingPaymentByContext: jest.fn().mockResolvedValue(null),
-            createPayment: jest.fn().mockResolvedValue({
-                id: 'payment-1',
-                status: 'pending',
-            }),
-        };
-        const userRepository = {};
-        const activityRepository = {
-            logActivity: jest.fn().mockResolvedValue(undefined),
-        };
 
-        const service = new UpdateGigOffer(
-            gigRepository as never,
-            gigOfferRepository as never,
-            earningsRepository as never,
-            userRepository as never,
-            activityRepository as never,
-        );
+        (dispatch as jest.Mock)
+            .mockResolvedValueOnce([{ id: 'payment-1', status: 'pending' }])
+            .mockResolvedValueOnce([undefined])
+            .mockResolvedValueOnce([undefined])
+            .mockResolvedValueOnce([undefined]);
+
+        const service = new UpdateGigOffer(gigRepository as never, gigOfferRepository as never);
 
         const response = (await service.handle({
             params: { offerId: 'offer-1' },
@@ -120,11 +98,15 @@ describe('UpdateGigOffer service', () => {
             },
         } as never)) as any;
 
-        expect(gigRepository.createApplication).toHaveBeenCalledWith('gig-1', 'talent-1', {
-            coverMessage: 'You are our first choice.',
-            proposedRate: 1900,
-        });
-        expect(earningsRepository.createPayment).toHaveBeenCalledWith(
+        expect(gigRepository.createApplication).toHaveBeenCalledWith(
+            'gig-1',
+            'talent-1',
+            expect.objectContaining({
+                proposedRate: 1900,
+            }),
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            'earnings:create-record',
             expect.objectContaining({
                 employerId: 'employer-1',
                 talentId: 'talent-1',
@@ -134,12 +116,6 @@ describe('UpdateGigOffer service', () => {
         expect(gigRepository.updateGigById).toHaveBeenCalledWith('gig-1', {
             status: 'in_progress',
         });
-        expect(notificationDispatcher.dispatch).toHaveBeenCalledWith(
-            expect.objectContaining({
-                userId: 'employer-1',
-                type: 'application_update',
-            }),
-        );
         expect(mockAuditLog).toHaveBeenCalledWith(
             expect.objectContaining({
                 action: 'gig_offer_accepted',

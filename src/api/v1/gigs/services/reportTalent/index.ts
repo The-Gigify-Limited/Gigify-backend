@@ -1,15 +1,10 @@
 import { ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError, auditService } from '@/core';
+import { dispatch } from '@/app';
 import { ReportTalentDto } from '../../interfaces';
 import { GigRepository, ReportRepository } from '../../repository';
-import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
-import { UserRepository } from '~/user/repository';
 
 export class ReportTalent {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly reportRepository: ReportRepository,
-        private readonly userRepository: UserRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository, private readonly reportRepository: ReportRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<ReportTalentDto>) => {
         const employer = request.user;
@@ -22,7 +17,8 @@ export class ReportTalent {
         if (gig.employerId !== employer.id) throw new ConflictError('You do not own this gig');
         if (input.talentId === employer.id) throw new ConflictError('You cannot report yourself');
 
-        const application = await this.gigRepository.findApplicationByGigAndTalent(params.id, input.talentId);
+        const [applicationResults] = await dispatch('gig:find-application', { gigId: params.id, talentId: input.talentId });
+        const application = applicationResults;
 
         if (!application || application.status !== 'hired') {
             throw new ConflictError('Only the selected talent for this gig can be reported from this screen');
@@ -46,13 +42,7 @@ export class ReportTalent {
             reason: input.reason.trim(),
         });
 
-        const admins = await this.userRepository.getAllUsers({
-            role: 'admin',
-            page: 1,
-            pageSize: 50,
-        });
-
-        await Promise.all([
+        const activitiesList = [
             auditService.log({
                 userId: employer.id,
                 action: 'talent_report_submitted',
@@ -66,22 +56,9 @@ export class ReportTalent {
                 ipAddress: request.ip ?? null,
                 userAgent: request.headers['user-agent'] ?? null,
             }),
-            ...admins.map((admin) =>
-                notificationDispatcher.dispatch({
-                    userId: admin.id,
-                    type: 'security_alert',
-                    title: 'Talent report submitted',
-                    message: `A new report was submitted for gig "${gig.title}".`,
-                    payload: {
-                        reportId: report.id,
-                        gigId: gig.id,
-                        reportedUserId: input.talentId,
-                        reporterId: employer.id,
-                    },
-                    preferenceKey: 'securityAlerts',
-                }),
-            ),
-        ]);
+        ];
+
+        await Promise.all(activitiesList);
 
         return {
             code: HttpStatus.CREATED,
@@ -91,5 +68,5 @@ export class ReportTalent {
     };
 }
 
-const reportTalent = new ReportTalent(new GigRepository(), new ReportRepository(), new UserRepository());
+const reportTalent = new ReportTalent(new GigRepository(), new ReportRepository());
 export default reportTalent;

@@ -1,5 +1,5 @@
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError } from '@/core';
-import { ActivityRepository } from '~/user/repository';
+import { dispatch } from '@/app';
 import { GigRepository } from '~/gigs/repository';
 import { UpdateGigStatusDto } from '../../interfaces';
 
@@ -12,7 +12,7 @@ const allowedTransitions: Record<string, string[]> = {
 };
 
 export class UpdateGigStatus {
-    constructor(private readonly gigRepository: GigRepository, private readonly activityRepository: ActivityRepository) {}
+    constructor(private readonly gigRepository: GigRepository) {}
 
     handle = async ({ params, input }: ControllerArgs<UpdateGigStatusDto>) => {
         if (!params?.id) throw new BadRequestError('Gig ID is required');
@@ -38,24 +38,36 @@ export class UpdateGigStatus {
             status: 'hired',
         });
 
+        const activitiesList: Promise<any>[] = [];
+
         if (nextStatus === 'in_progress') {
-            await Promise.all(
-                hiredApplications.map((application) =>
-                    this.activityRepository.logActivity(application.talentId, 'gig_started', updatedGig.id, {
-                        gigId: updatedGig.id,
+            for (const application of hiredApplications) {
+                activitiesList.push(
+                    dispatch('user:create-activity', {
+                        userId: application.talentId,
+                        type: 'gig_started',
+                        targetId: updatedGig.id,
+                        targetType: 'gig',
                     }),
-                ),
-            );
+                );
+            }
         }
 
         if (nextStatus === 'completed') {
-            await Promise.all(
-                hiredApplications.map((application) =>
-                    this.activityRepository.logActivity(application.talentId, 'gig_completed', updatedGig.id, {
-                        gigId: updatedGig.id,
+            for (const application of hiredApplications) {
+                activitiesList.push(
+                    dispatch('user:create-activity', {
+                        userId: application.talentId,
+                        type: 'gig_completed',
+                        targetId: updatedGig.id,
+                        targetType: 'gig',
                     }),
-                ),
-            );
+                );
+            }
+        }
+
+        if (activitiesList.length > 0) {
+            await Promise.all(activitiesList);
         }
 
         return {
@@ -66,6 +78,6 @@ export class UpdateGigStatus {
     };
 }
 
-const updateGigStatus = new UpdateGigStatus(new GigRepository(), new ActivityRepository());
+const updateGigStatus = new UpdateGigStatus(new GigRepository());
 
 export default updateGigStatus;

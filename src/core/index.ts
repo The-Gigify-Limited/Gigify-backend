@@ -4,4 +4,5 @@ export * from './utils';
 export * from './logging';
 export * from './handlers';
 export * from './repository';
-export * from './services'
+export * from './services';
+export { realtimeService } from './services/realtime';

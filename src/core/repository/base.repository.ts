@@ -2,13 +2,8 @@ import { supabaseAdmin } from '@/core';
 import { normalizePagination, type PaginationQuery } from '@/core/utils/pagination';
 import { TableNames } from '../types';
 
-export abstract class BaseRepository<
-    TDBRow extends Record<string, unknown>, // optional snake_case DB row
-    TRow extends Record<string, unknown> = Record<string, unknown>, // camelCase domain model
-> {
+export abstract class BaseRepository<TDBRow extends Record<string, unknown>, TRow extends Record<string, unknown> = Record<string, unknown>> {
     protected abstract table: TableNames;
-
-    /* casing helpers */
 
     private buildSelect<T extends keyof TDBRow>(fields?: T[]): string {
         return fields?.length ? fields.map((f) => this.toSnakeCase(f as string)).join(', ') : '*';
@@ -29,8 +24,6 @@ export abstract class BaseRepository<
     mapToCamelCase = (row: TDBRow): TRow => {
         return Object.fromEntries(Object.entries(row).map(([k, v]) => [this.toCamelCase(k), v])) as TRow;
     };
-
-    /* CRUD */
 
     async findById(id: string, fields?: (keyof TDBRow)[]): Promise<TDBRow | null> {
         // @ts-expect-error — Supabase collapses column types to `never` on a TableNames union

@@ -1,14 +1,11 @@
 import { BadRequestError, ControllerArgs, HttpStatus, RouteNotFoundError } from '@/core';
-import { EmployerRepository } from '~/employers/repository';
-import { UserRepository } from '~/user/repository';
+import { dispatch } from '@/app';
 import { GetGigParamsDto } from '~/gigs/interfaces';
 import { GigOfferRepository, GigRepository, SavedGigRepository } from '~/gigs/repository';
 
 export class GetGigById {
     constructor(
         private readonly gigRepository: GigRepository,
-        private readonly employerRepository: EmployerRepository,
-        private readonly userRepository: UserRepository,
         private readonly savedGigRepository: SavedGigRepository,
         private readonly gigOfferRepository: GigOfferRepository,
     ) {}
@@ -20,11 +17,11 @@ export class GetGigById {
 
         if (!gig) throw new RouteNotFoundError('Gig not found');
 
-        const [service, employer, employerProfile, myApplication, selectedApplications, savedGig, myOffer] = await Promise.all([
+        const [serviceResult, employerResults, employerProfileResults, myApplication, selectedApplications, savedGig, myOffer] = await Promise.all([
             gig.serviceId ? this.gigRepository.getServiceById(gig.serviceId) : Promise.resolve(null),
-            this.userRepository.findById(gig.employerId),
-            this.employerRepository.findByUserId(gig.employerId),
-            request.user?.id ? this.gigRepository.findApplicationByGigAndTalent(gig.id, request.user.id) : Promise.resolve(null),
+            dispatch('user:get-by-id', { id: gig.employerId }),
+            dispatch('employer:get-profile', { user_id: gig.employerId }),
+            request.user?.id ? dispatch('gig:find-application', { gigId: gig.id, talentId: request.user.id }) : Promise.resolve(null),
             this.gigRepository.getApplicationsForGig(gig.id, {
                 page: 1,
                 pageSize: Math.max(gig.requiredTalentCount ?? 1, 25),
@@ -34,13 +31,17 @@ export class GetGigById {
             request.user?.id ? this.gigOfferRepository.findLatestOfferForGigAndTalent(gig.id, request.user.id) : Promise.resolve(null),
         ]);
 
+        const employer = employerResults[0];
+        const employerProfile = employerProfileResults[0];
+        const myApp = myApplication ? myApplication[0] : null;
+
         const selectedTalents = await Promise.all(
             selectedApplications.map(async (application) => {
-                const talentRow = await this.userRepository.findById(application.talentId);
+                const [talentResults] = await dispatch('user:get-by-id', { id: application.talentId });
 
                 return {
                     application,
-                    talent: talentRow ? this.userRepository.mapToCamelCase(talentRow) : null,
+                    talent: talentResults ?? null,
                 };
             }),
         );
@@ -50,10 +51,10 @@ export class GetGigById {
             message: 'Gig Retrieved Successfully',
             data: {
                 ...gig,
-                service,
-                employer: employer ? this.userRepository.mapToCamelCase(employer) : null,
-                employerProfile,
-                myApplication,
+                service: serviceResult,
+                employer: employer ?? null,
+                employerProfile: employerProfile ?? null,
+                myApplication: myApp,
                 selectedTalents,
                 remainingTalentSlots: Math.max((gig.requiredTalentCount ?? 1) - selectedApplications.length, 0),
                 isSaved: Boolean(savedGig),
@@ -63,6 +64,6 @@ export class GetGigById {
     };
 }
 
-const getGigById = new GetGigById(new GigRepository(), new EmployerRepository(), new UserRepository(), new SavedGigRepository(), new GigOfferRepository());
+const getGigById = new GetGigById(new GigRepository(), new SavedGigRepository(), new GigOfferRepository());
 
 export default getGigById;
