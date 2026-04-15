@@ -34,12 +34,10 @@ const swaggerOptions = {
             version: '1.0.0',
             description: 'API documentation using Swagger and JSDoc',
         },
-        servers: [
-            {
-                url: `http://localhost:8000/api/v1`,
-                description: 'Local development server',
-            },
-        ],
+        servers:
+            config.appEnvironment === 'development'
+                ? [{ url: 'http://localhost:8000/api/v1', description: 'Local development server' }]
+                : [{ url: '/api/v1', description: 'Production server' }],
         components: {
             securitySchemes: {
                 bearerAuth: {
@@ -50,11 +48,10 @@ const swaggerOptions = {
             },
         },
     },
-    apis: [
-        './src/app/app.router.ts',
-        './src/api/v1/**/router/*.router.ts',
-        '!./src/api/v1/user/router/gig.router.ts',
-    ],
+    apis:
+        config.appEnvironment === 'development'
+            ? ['./src/app/app.router.ts', './src/api/v1/**/router/*.router.ts']
+            : ['./build/app/app.router.js', './build/api/v1/**/router/*.router.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
