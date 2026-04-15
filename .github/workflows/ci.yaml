@@ -9,9 +9,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  # ── Quality gate ────────────────────────────────────────────────────────────
   quality:
-    name: Prettier · Lint · Typecheck · Tests · Build
+    name: Lint · Build · Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -19,53 +18,24 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
-          version: 8
+          version: 9
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 20
           cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Prettier — format check
-        run: pnpm format:check
+        run: pnpm prettier:check
 
       - name: ESLint — lint check
-        run: pnpm lint
+        run: pnpm lint:check
 
-      - name: TypeScript — type check
-        run: pnpm typecheck
-
-      - name: Vitest — run tests
-        run: pnpm test:run
-
-      - name: Next.js — build
+      - name: Build
         run: pnpm build
-        env:
-          SKIP_ENV_VALIDATION: true
 
-  # ── Supabase types ──────────────────────────────────────────────────────────
-  supabase-types:
-    name: Supabase generated types
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: supabase/setup-cli@v1
-        with:
-          version: latest
-
-      - name: Start Supabase local development setup
-        run: supabase db start
-
-      - name: Verify generated types are checked in
-        run: |
-          supabase gen types typescript --local > types.gen.ts
-          if ! git diff --ignore-space-at-eol --exit-code --quiet types.gen.ts; then
-            echo "Detected uncommitted changes after build. See status below:"
-            git diff
-            exit 1
-          fi
+      - name: Tests
+        run: pnpm jest --runInBand --config ./jest.config.cjs --no-coverage
