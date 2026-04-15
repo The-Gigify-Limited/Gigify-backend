@@ -82,9 +82,12 @@
         "typescript": "^5"
     },
     "lint-staged": {
-        "src/**/*.{js,ts,json,css,scss,md}": [
-            "npm run lint:staged",
-            "npm run prettier:fix"
+        "src/**/*.{ts,js}": [
+            "eslint --ignore-path .eslintignore --fix",
+            "prettier --write"
+        ],
+        "src/**/*.{json,css,scss,md}": [
+            "prettier --write"
         ]
     },
     "_moduleAliases": {
