@@ -8,7 +8,12 @@ import {
     openConversation,
     sendMessage,
 } from '../services';
-import { conversationIdSchema, conversationsQuerySchema, openConversationSchema, sendMessageSchema } from './schema';
+import {
+    conversationIdSchema,
+    conversationsQuerySchema,
+    openConversationSchema,
+    sendMessageSchema,
+} from './schema';
 
 export const chatRouter = Router();
 
@@ -34,7 +39,14 @@ export const chatRouter = Router();
  *                   talentId: 20000000-0000-0000-0000-000000000001
  *                   unreadCount: 1
  */
-chatRouter.get('/conversations', ControlBuilder.builder().isPrivate().setValidator(conversationsQuerySchema).setHandler(getMyConversations.handle).handle());
+chatRouter.get(
+    '/conversations',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(conversationsQuerySchema)
+        .setHandler(getMyConversations.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -54,7 +66,13 @@ chatRouter.get('/conversations', ControlBuilder.builder().isPrivate().setValidat
  *               data:
  *                 count: 2
  */
-chatRouter.get('/conversations/unread-count', ControlBuilder.builder().isPrivate().setHandler(getUnreadConversationCount.handle).handle());
+chatRouter.get(
+    '/conversations/unread-count',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(getUnreadConversationCount.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -84,7 +102,14 @@ chatRouter.get('/conversations/unread-count', ControlBuilder.builder().isPrivate
  *                 employerId: 10000000-0000-0000-0000-000000000002
  *                 talentId: 20000000-0000-0000-0000-000000000001
  */
-chatRouter.post('/conversations/open', ControlBuilder.builder().isPrivate().setValidator(openConversationSchema).setHandler(openConversation.handle).handle());
+chatRouter.post(
+    '/conversations/open',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(openConversationSchema)
+        .setHandler(openConversation.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -109,7 +134,11 @@ chatRouter.post('/conversations/open', ControlBuilder.builder().isPrivate().setV
  */
 chatRouter.get(
     '/conversations/:id/messages',
-    ControlBuilder.builder().isPrivate().setValidator({ ...conversationIdSchema, ...conversationsQuerySchema }).setHandler(getConversationMessages.handle).handle(),
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator({ ...conversationIdSchema, ...conversationsQuerySchema })
+        .setHandler(getConversationMessages.handle)
+        .handle(),
 );
 
 /**
@@ -140,7 +169,14 @@ chatRouter.get(
  *                 senderId: 20000000-0000-0000-0000-000000000001
  *                 body: Absolutely, I will send a 60-second reel in a moment.
  */
-chatRouter.post('/conversations/:id/messages', ControlBuilder.builder().isPrivate().setValidator(sendMessageSchema).setHandler(sendMessage.handle).handle());
+chatRouter.post(
+    '/conversations/:id/messages',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(sendMessageSchema)
+        .setHandler(sendMessage.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -161,4 +197,11 @@ chatRouter.post('/conversations/:id/messages', ControlBuilder.builder().isPrivat
  *                 conversationId: 80000000-0000-0000-0000-000000000001
  *                 readCount: 1
  */
-chatRouter.post('/conversations/:id/read', ControlBuilder.builder().isPrivate().setValidator(conversationIdSchema).setHandler(markConversationRead.handle).handle());
+chatRouter.post(
+    '/conversations/:id/read',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(conversationIdSchema)
+        .setHandler(markConversationRead.handle)
+        .handle(),
+);

@@ -34,7 +34,13 @@ export class IdentityVerificationRepository extends BaseRepository<DatabaseIdent
     }
 
     async getLatestByUserId(userId: string): Promise<IdentityVerification | null> {
-        const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('user_id', userId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+        const { data, error } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
         if (error) throw error;
 

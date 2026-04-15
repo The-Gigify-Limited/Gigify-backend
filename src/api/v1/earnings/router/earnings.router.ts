@@ -43,7 +43,13 @@ export const earningsRouter = Router();
  *                 totalRequestedPayouts: 90000
  *                 currency: NGN
  */
-earningsRouter.get('/me', ControlBuilder.builder().only('talent').setHandler(getMyEarnings.handle).handle());
+earningsRouter.get(
+    '/me',
+    ControlBuilder.builder()
+        .only('talent')
+        .setHandler(getMyEarnings.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -67,7 +73,14 @@ earningsRouter.get('/me', ControlBuilder.builder().only('talent').setHandler(get
  *                   currency: NGN
  *                   status: processing
  */
-earningsRouter.get('/history', ControlBuilder.builder().only('talent').setValidator(paymentHistorySchema).setHandler(getPaymentHistory.handle).handle());
+earningsRouter.get(
+    '/history',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(paymentHistorySchema)
+        .setHandler(getPaymentHistory.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -99,7 +112,14 @@ earningsRouter.get('/history', ControlBuilder.builder().only('talent').setValida
  *                 currency: NGN
  *                 status: requested
  */
-earningsRouter.post('/payout-requests', ControlBuilder.builder().only('talent').setValidator(requestPayoutSchema).setHandler(requestPayout.handle).handle());
+earningsRouter.post(
+    '/payout-requests',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(requestPayoutSchema)
+        .setHandler(requestPayout.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -133,7 +153,14 @@ earningsRouter.post('/payout-requests', ControlBuilder.builder().only('talent').
  *                 amount: 180000
  *                 currency: NGN
  */
-earningsRouter.post('/payments/process', ControlBuilder.builder().only('employer').setValidator(processPaymentSchema).setHandler(processPayment.handle).handle());
+earningsRouter.post(
+    '/payments/process',
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(processPaymentSchema)
+        .setHandler(processPayment.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -173,7 +200,11 @@ earningsRouter.post('/payments/process', ControlBuilder.builder().only('employer
  */
 earningsRouter.post(
     '/payments/stripe/checkout-session',
-    ControlBuilder.builder().only('employer').setValidator(createStripeCheckoutSessionSchema).setHandler(createStripeCheckoutSession.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(createStripeCheckoutSessionSchema)
+        .setHandler(createStripeCheckoutSession.handle)
+        .handle(),
 );
 
 /**
@@ -209,7 +240,10 @@ earningsRouter.post(
  *                 paymentId: 70000000-0000-0000-0000-000000000011
  *                 status: processing
  */
-earningsRouter.post('/payments/stripe/webhook', ControlBuilder.builder().setHandler(handleStripeWebhook.handle).handle());
+earningsRouter.post(
+    '/payments/stripe/webhook',
+    ControlBuilder.builder().setHandler(handleStripeWebhook.handle).handle(),
+);
 
 /**
  * @swagger
@@ -233,7 +267,11 @@ earningsRouter.post('/payments/stripe/webhook', ControlBuilder.builder().setHand
 earningsRouter.post(
     '/payments/:id/release/request-code',
     paymentReleaseOtpRateLimiter,
-    ControlBuilder.builder().only('employer').setValidator(paymentReleaseParamsSchema).setHandler(requestPaymentReleaseOtp.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(paymentReleaseParamsSchema)
+        .setHandler(requestPaymentReleaseOtp.handle)
+        .handle(),
 );
 
 /**
@@ -268,5 +306,9 @@ earningsRouter.post(
 earningsRouter.post(
     '/payments/:id/release/confirm',
     paymentReleaseOtpRateLimiter,
-    ControlBuilder.builder().only('employer').setValidator(confirmPaymentReleaseSchema).setHandler(confirmPaymentRelease.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(confirmPaymentReleaseSchema)
+        .setHandler(confirmPaymentRelease.handle)
+        .handle(),
 );

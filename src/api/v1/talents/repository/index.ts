@@ -1,3 +1,3 @@
-export * from './talent.repository'
-export * from './talentPortfolio.repository'
-export * from './talentReview.repository'
+export * from './talent.repository';
+export * from './talentPortfolio.repository';
+export * from './talentReview.repository';

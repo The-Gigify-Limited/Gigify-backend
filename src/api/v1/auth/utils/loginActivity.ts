@@ -22,10 +22,12 @@ const getIpAddress = (request?: RequestLike | null) => {
     const realIp = getHeader(request.headers['x-real-ip']);
     const requestIp = request.ip ?? '';
 
-    return [flyClientIp, realIp, forwardedFor.split(',')[0]?.trim(), requestIp]
-        .map((value) => value?.trim())
-        .find(Boolean)
-        ?.replace(/^::ffff:/, '') ?? '';
+    return (
+        [flyClientIp, realIp, forwardedFor.split(',')[0]?.trim(), requestIp]
+            .map((value) => value?.trim())
+            .find(Boolean)
+            ?.replace(/^::ffff:/, '') ?? ''
+    );
 };
 
 const inferBrowser = (userAgent: string) => {
@@ -63,9 +65,7 @@ const buildLocation = (request?: RequestLike | null) => {
     const city = getHeader(request.headers['x-vercel-ip-city']);
     const region = getHeader(request.headers['x-vercel-ip-country-region']);
     const country =
-        getHeader(request.headers['cf-ipcountry']) ||
-        getHeader(request.headers['x-vercel-ip-country']) ||
-        getHeader(request.headers['fly-country']);
+        getHeader(request.headers['cf-ipcountry']) || getHeader(request.headers['x-vercel-ip-country']) || getHeader(request.headers['fly-country']);
 
     const parts = [city, region, country].map((value) => value?.trim()).filter(Boolean);
 

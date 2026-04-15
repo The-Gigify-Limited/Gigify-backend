@@ -5,7 +5,24 @@ import crypto from 'crypto';
 
 const STRIPE_API_BASE_URL = 'https://api.stripe.com/v1';
 const STRIPE_WEBHOOK_TOLERANCE_SECONDS = 300;
-const ZERO_DECIMAL_CURRENCIES = new Set(['BIF', 'CLP', 'DJF', 'GNF', 'JPY', 'KMF', 'KRW', 'MGA', 'PYG', 'RWF', 'UGX', 'VND', 'VUV', 'XAF', 'XOF', 'XPF']);
+const ZERO_DECIMAL_CURRENCIES = new Set([
+    'BIF',
+    'CLP',
+    'DJF',
+    'GNF',
+    'JPY',
+    'KMF',
+    'KRW',
+    'MGA',
+    'PYG',
+    'RWF',
+    'UGX',
+    'VND',
+    'VUV',
+    'XAF',
+    'XOF',
+    'XPF',
+]);
 
 type StripeCheckoutSessionResponse = {
     id: string;
@@ -99,7 +116,11 @@ export const createStripeCheckoutSession = async (input: CreateStripeCheckoutSes
     setParam(params, 'line_items[0][price_data][currency]', currency);
     setParam(params, 'line_items[0][price_data][unit_amount]', toStripeMinorAmount(input.amount, input.currency));
     setParam(params, 'line_items[0][price_data][product_data][name]', input.productName ?? 'Gigify escrow funding');
-    setParam(params, 'line_items[0][price_data][product_data][description]', input.productDescription ?? 'Secure escrow funding for a Gigify booking.');
+    setParam(
+        params,
+        'line_items[0][price_data][product_data][description]',
+        input.productDescription ?? 'Secure escrow funding for a Gigify booking.',
+    );
 
     const response = await axios.post<StripeCheckoutSessionResponse>(`${STRIPE_API_BASE_URL}/checkout/sessions`, params, {
         headers: {
@@ -111,13 +132,7 @@ export const createStripeCheckoutSession = async (input: CreateStripeCheckoutSes
     return response.data;
 };
 
-export const verifyStripeWebhookSignature = ({
-    rawBody,
-    signatureHeader,
-}: {
-    rawBody: string;
-    signatureHeader: string | string[] | undefined;
-}) => {
+export const verifyStripeWebhookSignature = ({ rawBody, signatureHeader }: { rawBody: string; signatureHeader: string | string[] | undefined }) => {
     const { webhookSecret } = getStripeConfig();
 
     if (!webhookSecret) {

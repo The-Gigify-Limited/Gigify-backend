@@ -6,10 +6,7 @@ import { resolveUserDisplayName } from '../../utils/passwordRecovery';
 import { SetUserRolePayload } from '../../interface';
 
 export class SetUserRole extends BaseService {
-    constructor(
-        private readonly userRepository: UserRepository,
-        private readonly emailSender: typeof sendEmail = sendEmail,
-    ) {
+    constructor(private readonly userRepository: UserRepository, private readonly emailSender: typeof sendEmail = sendEmail) {
         super();
     }
 

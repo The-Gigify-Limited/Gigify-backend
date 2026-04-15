@@ -90,11 +90,11 @@ export class HandleStripeWebhook {
             metadata: mergeStripeMetadata(payment.metadata, {
                 lastStripeEventId: event.id ?? null,
                 lastStripeEventType: event.type,
-                stripeCheckoutSessionId: event.type.startsWith('checkout.session') ? object.id ?? null : currentMetadata.stripeCheckoutSessionId ?? null,
+                stripeCheckoutSessionId: event.type.startsWith('checkout.session')
+                    ? object.id ?? null
+                    : currentMetadata.stripeCheckoutSessionId ?? null,
                 stripePaymentIntentId:
-                    (typeof object.payment_intent === 'string' && object.payment_intent) ||
-                    currentMetadata.stripePaymentIntentId ||
-                    null,
+                    (typeof object.payment_intent === 'string' && object.payment_intent) || currentMetadata.stripePaymentIntentId || null,
                 stripePaymentStatus: object.payment_status ?? object.status ?? null,
             }),
         });

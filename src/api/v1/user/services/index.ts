@@ -11,5 +11,3 @@ export { default as submitLivenessCheck } from './submitLivenessCheck';
 export { default as updateNotificationPreferences } from './updateNotificationPreferences';
 export { default as updateUserById } from './updateUserById';
 export { default as getAllUsers } from './getAllUsers';
-
-

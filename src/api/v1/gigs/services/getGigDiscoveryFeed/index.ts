@@ -45,7 +45,14 @@ const matchesLocationText = (gig: Gig, city: string | null, country: string | nu
     return cityMatch || countryMatch;
 };
 
-const scoreGigForTalent = (gig: Gig, service: ServiceCatalog | null, talentTerms: string[], userCity: string | null, radiusKm: number | null, distanceKm: number | null) => {
+const scoreGigForTalent = (
+    gig: Gig,
+    service: ServiceCatalog | null,
+    talentTerms: string[],
+    userCity: string | null,
+    radiusKm: number | null,
+    distanceKm: number | null,
+) => {
     const searchableText = normalizeWords([gig.title, gig.description, service?.name, service?.category].filter(Boolean).join(' '));
     const termMatches = talentTerms.filter((term) => searchableText.includes(term)).length;
     const isFutureGig = toTimestamp(gig.gigDate) > Date.now();
@@ -71,7 +78,8 @@ const uniqueById = <T extends { id: string }>(items: T[]) => {
     });
 };
 
-const byGigDateAsc = <T extends { gig: Gig | null }>(items: T[]) => items.sort((left, right) => toTimestamp(left.gig?.gigDate) - toTimestamp(right.gig?.gigDate));
+const byGigDateAsc = <T extends { gig: Gig | null }>(items: T[]) =>
+    items.sort((left, right) => toTimestamp(left.gig?.gigDate) - toTimestamp(right.gig?.gigDate));
 
 export class GetGigDiscoveryFeed {
     constructor(
@@ -106,10 +114,7 @@ export class GetGigDiscoveryFeed {
         }
 
         const distanceKm =
-            viewerLatitude !== null &&
-            viewerLongitude !== null &&
-            gig.locationLatitude !== null &&
-            gig.locationLongitude !== null
+            viewerLatitude !== null && viewerLongitude !== null && gig.locationLatitude !== null && gig.locationLongitude !== null
                 ? Number(haversineDistanceKm(viewerLatitude, viewerLongitude, gig.locationLatitude, gig.locationLongitude).toFixed(1))
                 : null;
 
@@ -162,29 +167,23 @@ export class GetGigDiscoveryFeed {
         const userLatitude = query.latitude ?? user.locationLatitude ?? null;
         const userLongitude = query.longitude ?? user.locationLongitude ?? null;
         const radiusKm = query.radiusKm ?? 50;
-        const excludedGigIds = new Set(
-            talentGigItems
-                .map((item) => item.gig?.id)
-                .filter((gigId): gigId is string => Boolean(gigId)),
-        );
+        const excludedGigIds = new Set(talentGigItems.map((item) => item.gig?.id).filter((gigId): gigId is string => Boolean(gigId)));
 
         const availableOpenGigs = openGigs.filter((gig) => !excludedGigIds.has(gig.id) && gig.employerId !== userId);
         const employerCache = new Map<string, Record<string, unknown> | null>();
         const employerProfileCache = new Map<string, Record<string, unknown> | null>();
 
         const talentTerms = uniqueById(
-            normalizeWords([talentProfile?.primaryRole, talentProfile?.stageName, ...(talentProfile?.skills ?? []).map(String)].filter(Boolean).join(' '))
-                .map((term, index) => ({ id: `${term}-${index}`, term })),
+            normalizeWords(
+                [talentProfile?.primaryRole, talentProfile?.stageName, ...(talentProfile?.skills ?? []).map(String)].filter(Boolean).join(' '),
+            ).map((term, index) => ({ id: `${term}-${index}`, term })),
         ).map((item) => item.term);
 
         const scoredGigs = availableOpenGigs
             .map((gig) => {
                 const service = gig.serviceId ? catalogMap.get(gig.serviceId) ?? null : null;
                 const distanceKm =
-                    userLatitude !== null &&
-                    userLongitude !== null &&
-                    gig.locationLatitude !== null &&
-                    gig.locationLongitude !== null
+                    userLatitude !== null && userLongitude !== null && gig.locationLatitude !== null && gig.locationLongitude !== null
                         ? haversineDistanceKm(userLatitude, userLongitude, gig.locationLatitude, gig.locationLongitude)
                         : null;
 
@@ -201,12 +200,7 @@ export class GetGigDiscoveryFeed {
             .filter((gig) => {
                 if (gig.isRemote) return false;
 
-                if (
-                    userLatitude !== null &&
-                    userLongitude !== null &&
-                    gig.locationLatitude !== null &&
-                    gig.locationLongitude !== null
-                ) {
+                if (userLatitude !== null && userLongitude !== null && gig.locationLatitude !== null && gig.locationLongitude !== null) {
                     return haversineDistanceKm(userLatitude, userLongitude, gig.locationLatitude, gig.locationLongitude) <= radiusKm;
                 }
 
@@ -217,7 +211,10 @@ export class GetGigDiscoveryFeed {
         const nearYou = nearYouSource.slice(0, limit);
         const recommended = scoredGigs.filter((item) => item.score > 0 && !nearYou.some((gig) => gig.id === item.gig.id)).slice(0, limit);
         const gigsForYou = scoredGigs
-            .filter((item) => !nearYou.some((gig) => gig.id === item.gig.id) && !recommended.some((recommendedItem) => recommendedItem.gig.id === item.gig.id))
+            .filter(
+                (item) =>
+                    !nearYou.some((gig) => gig.id === item.gig.id) && !recommended.some((recommendedItem) => recommendedItem.gig.id === item.gig.id),
+            )
             .slice(0, limit);
 
         const activeItems = talentGigItems.filter((item) => item.application.status === 'hired' && item.gig?.status === 'in_progress');
@@ -276,27 +273,31 @@ export class GetGigDiscoveryFeed {
             Promise.all(
                 activeItems.slice(0, limit).map(async (item) => ({
                     application: item.application,
-                    gig: item.gig ? await this.buildGigCard(item.gig, {
-                        savedGigIds,
-                        catalogMap,
-                        viewerLatitude: userLatitude,
-                        viewerLongitude: userLongitude,
-                        employerCache,
-                        employerProfileCache,
-                    }) : null,
+                    gig: item.gig
+                        ? await this.buildGigCard(item.gig, {
+                              savedGigIds,
+                              catalogMap,
+                              viewerLatitude: userLatitude,
+                              viewerLongitude: userLongitude,
+                              employerCache,
+                              employerProfileCache,
+                          })
+                        : null,
                 })),
             ),
             Promise.all(
                 upcomingItems.slice(0, limit).map(async (item) => ({
                     application: item.application,
-                    gig: item.gig ? await this.buildGigCard(item.gig, {
-                        savedGigIds,
-                        catalogMap,
-                        viewerLatitude: userLatitude,
-                        viewerLongitude: userLongitude,
-                        employerCache,
-                        employerProfileCache,
-                    }) : null,
+                    gig: item.gig
+                        ? await this.buildGigCard(item.gig, {
+                              savedGigIds,
+                              catalogMap,
+                              viewerLatitude: userLatitude,
+                              viewerLongitude: userLongitude,
+                              employerCache,
+                              employerProfileCache,
+                          })
+                        : null,
                 })),
             ),
         ]);

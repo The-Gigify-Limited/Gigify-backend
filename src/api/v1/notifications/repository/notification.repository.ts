@@ -34,7 +34,10 @@ export class NotificationRepository extends BaseRepository<DatabaseNotification,
         return this.mapToCamelCase(data);
     }
 
-    async getNotificationsForUser(userId: string, query: { page?: number | string; pageSize?: number | string; isRead?: boolean }): Promise<Notification[]> {
+    async getNotificationsForUser(
+        userId: string,
+        query: { page?: number | string; pageSize?: number | string; isRead?: boolean },
+    ): Promise<Notification[]> {
         const { offset, rangeEnd } = normalizePagination(query);
 
         let request = supabaseAdmin.from(this.table).select('*').eq('user_id', userId);
@@ -51,7 +54,11 @@ export class NotificationRepository extends BaseRepository<DatabaseNotification,
     }
 
     async getUnreadCount(userId: string): Promise<number> {
-        const { count, error } = await supabaseAdmin.from(this.table).select('id', { count: 'exact', head: true }).eq('user_id', userId).eq('is_read', false);
+        const { count, error } = await supabaseAdmin
+            .from(this.table)
+            .select('id', { count: 'exact', head: true })
+            .eq('user_id', userId)
+            .eq('is_read', false);
 
         if (error) throw error;
 

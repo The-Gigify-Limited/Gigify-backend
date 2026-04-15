@@ -1,6 +1,10 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
-import { getEmployerDashboard, getEmployerProfile, upsertEmployerProfile } from '../services';
+import {
+    getEmployerDashboard,
+    getEmployerProfile,
+    upsertEmployerProfile,
+} from '../services';
 import { upsertEmployerProfileSchema } from './schema';
 
 export const employerRouter = Router();
@@ -29,7 +33,13 @@ export const employerRouter = Router();
  *                 totalGigsPosted: 5
  *                 totalSpent: 940000
  */
-employerRouter.get('/me', ControlBuilder.builder().only('employer').setHandler(getEmployerProfile.handle).handle());
+employerRouter.get(
+    '/me',
+    ControlBuilder.builder()
+        .only('employer')
+        .setHandler(getEmployerProfile.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -61,7 +71,14 @@ employerRouter.get('/me', ControlBuilder.builder().only('employer').setHandler(g
  *                 companyWebsite: https://pulselive.example
  *                 industry: Entertainment
  */
-employerRouter.patch('/me', ControlBuilder.builder().only('employer').setValidator(upsertEmployerProfileSchema).setHandler(upsertEmployerProfile.handle).handle());
+employerRouter.patch(
+    '/me',
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(upsertEmployerProfileSchema)
+        .setHandler(upsertEmployerProfile.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -88,4 +105,10 @@ employerRouter.patch('/me', ControlBuilder.builder().only('employer').setValidat
  *                 pendingApplications: 6
  *                 pendingPayments: 2
  */
-employerRouter.get('/dashboard', ControlBuilder.builder().only('employer').setHandler(getEmployerDashboard.handle).handle());
+employerRouter.get(
+    '/dashboard',
+    ControlBuilder.builder()
+        .only('employer')
+        .setHandler(getEmployerDashboard.handle)
+        .handle(),
+);

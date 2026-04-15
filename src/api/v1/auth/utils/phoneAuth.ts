@@ -18,7 +18,10 @@ export const normalizePhoneNumber = (value: string): string => {
     return normalized;
 };
 
-export const mapSupabasePhoneAuthError = (error: SupabaseAuthError, fallbackMessage = 'Phone authentication failed. Please try again later.'): never => {
+export const mapSupabasePhoneAuthError = (
+    error: SupabaseAuthError,
+    fallbackMessage = 'Phone authentication failed. Please try again later.',
+): never => {
     if (error.status === 429 || error.code === 'over_sms_send_rate_limit') {
         throw new TooManyRequestsError('Too many verification requests. Please wait a few minutes before trying again.');
     }

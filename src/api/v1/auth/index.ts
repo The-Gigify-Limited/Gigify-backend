@@ -1,1 +1,1 @@
-export * from './router/auth.router'
+export * from './router/auth.router';

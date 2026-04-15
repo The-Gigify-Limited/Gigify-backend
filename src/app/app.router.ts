@@ -36,7 +36,12 @@ const swaggerOptions = {
         },
         servers:
             config.appEnvironment === 'development'
-                ? [{ url: 'http://localhost:8000/api/v1', description: 'Local development server' }]
+                ? [
+                      {
+                          url: 'http://localhost:8000/api/v1',
+                          description: 'Local development server',
+                      },
+                  ]
                 : [{ url: '/api/v1', description: 'Production server' }],
         components: {
             securitySchemes: {
@@ -51,7 +56,10 @@ const swaggerOptions = {
     apis:
         config.appEnvironment === 'development'
             ? ['./src/app/app.router.ts', './src/api/v1/**/router/*.router.ts']
-            : ['./build/app/app.router.js', './build/api/v1/**/router/*.router.js'],
+            : [
+                  './build/app/app.router.js',
+                  './build/api/v1/**/router/*.router.js',
+              ],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);

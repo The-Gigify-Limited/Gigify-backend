@@ -31,7 +31,14 @@ export const notificationRouter = Router();
  *                   title: New gig offer received
  *                   isRead: false
  */
-notificationRouter.get('/', ControlBuilder.builder().isPrivate().setValidator(notificationsQuerySchema).setHandler(getMyNotifications.handle).handle());
+notificationRouter.get(
+    '/',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(notificationsQuerySchema)
+        .setHandler(getMyNotifications.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -51,7 +58,13 @@ notificationRouter.get('/', ControlBuilder.builder().isPrivate().setValidator(no
  *               data:
  *                 count: 3
  */
-notificationRouter.get('/unread-count', ControlBuilder.builder().isPrivate().setHandler(getUnreadNotificationCount.handle).handle());
+notificationRouter.get(
+    '/unread-count',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(getUnreadNotificationCount.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -71,7 +84,13 @@ notificationRouter.get('/unread-count', ControlBuilder.builder().isPrivate().set
  *               data:
  *                 updatedCount: 3
  */
-notificationRouter.post('/read-all', ControlBuilder.builder().isPrivate().setHandler(markAllNotificationsRead.handle).handle());
+notificationRouter.post(
+    '/read-all',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(markAllNotificationsRead.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -92,4 +111,11 @@ notificationRouter.post('/read-all', ControlBuilder.builder().isPrivate().setHan
  *                 id: 90000000-0000-0000-0000-000000000001
  *                 isRead: true
  */
-notificationRouter.patch('/:id/read', ControlBuilder.builder().isPrivate().setValidator(notificationIdSchema).setHandler(markNotificationRead.handle).handle());
+notificationRouter.patch(
+    '/:id/read',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(notificationIdSchema)
+        .setHandler(markNotificationRead.handle)
+        .handle(),
+);

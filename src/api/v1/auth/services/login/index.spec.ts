@@ -31,15 +31,8 @@ jest.mock('~/user/repository', () => ({
 }));
 
 jest.mock('@/core/services/mails', () => ({
-    newLoginActivityMail: ({
-        device,
-        location,
-        time,
-    }: {
-        device: string;
-        location: string;
-        time: string;
-    }) => `Device: ${device}\nLocation: ${location}\nTime: ${time}`,
+    newLoginActivityMail: ({ device, location, time }: { device: string; location: string; time: string }) =>
+        `Device: ${device}\nLocation: ${location}\nTime: ${time}`,
     sendEmail: jest.fn(),
 }));
 
@@ -84,8 +77,7 @@ describe('Login service', () => {
             },
             request: {
                 headers: {
-                    'user-agent':
-                        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
+                    'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0 Safari/537.36',
                     'x-forwarded-for': '203.0.113.20',
                 },
                 ip: '203.0.113.20',

@@ -83,7 +83,6 @@ export type SubmitIdentityVerificationInput = {
     selfieUrl?: string | null;
 };
 
-
 /**
  * Users
  * first name

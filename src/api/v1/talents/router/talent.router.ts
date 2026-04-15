@@ -1,7 +1,21 @@
 import { Router } from 'express';
 import { ControlBuilder } from '@/core';
-import { createTalentReview, deleteTalentPortfolio, getAllTalentReviews, getTalentById, getTalentPortfolio, updateTalent, uploadTalentPortfolio } from '../services';
-import { createTalentReviewSchema, getUserParamsSchema, talentPortfolioParamSchema, talentReviewsQuerySchema, updateTalentSchema } from './schema';
+import {
+    createTalentReview,
+    deleteTalentPortfolio,
+    getAllTalentReviews,
+    getTalentById,
+    getTalentPortfolio,
+    updateTalent,
+    uploadTalentPortfolio,
+} from '../services';
+import {
+    createTalentReviewSchema,
+    getUserParamsSchema,
+    talentPortfolioParamSchema,
+    talentReviewsQuerySchema,
+    updateTalentSchema,
+} from './schema';
 
 export const talentRouter = Router();
 
@@ -32,7 +46,13 @@ export const talentRouter = Router();
  *                 primaryRole: DJ
  *                 averageRating: 4.8
  */
-talentRouter.get('/:id', ControlBuilder.builder().setValidator(getUserParamsSchema).setHandler(getTalentById.handle).handle());
+talentRouter.get(
+    '/:id',
+    ControlBuilder.builder()
+        .setValidator(getUserParamsSchema)
+        .setHandler(getTalentById.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -75,7 +95,15 @@ talentRouter.get('/:id', ControlBuilder.builder().setValidator(getUserParamsSche
  *                 stageName: DJ Maxell
  *                 primaryRole: DJ
  */
-talentRouter.patch('/:id', ControlBuilder.builder().only('talent').setValidator(updateTalentSchema).checkResourceOwnership('user', 'id').setHandler(updateTalent.handle).handle());
+talentRouter.patch(
+    '/:id',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(updateTalentSchema)
+        .checkResourceOwnership('user', 'id')
+        .setHandler(updateTalent.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -102,7 +130,13 @@ talentRouter.patch('/:id', ControlBuilder.builder().only('talent').setValidator(
  *                   talentId: 30000000-0000-0000-0000-000000000001
  *                   portfolioUrl: https://portfolio.gigify.app/dj-maxell/afterparty-reel
  */
-talentRouter.get('/:id/portfolios', ControlBuilder.builder().setValidator(getUserParamsSchema).setHandler(getTalentPortfolio.handle).handle());
+talentRouter.get(
+    '/:id/portfolios',
+    ControlBuilder.builder()
+        .setValidator(getUserParamsSchema)
+        .setHandler(getTalentPortfolio.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -131,7 +165,13 @@ talentRouter.get('/:id/portfolios', ControlBuilder.builder().setValidator(getUse
  *                 - id: 31000000-0000-0000-0000-000000000001
  *                   portfolioUrl: https://portfolio.gigify.app/dj-maxell/afterparty-reel
  */
-talentRouter.post('/portfolios', ControlBuilder.builder().only('talent').setHandler(uploadTalentPortfolio.handle).handle());
+talentRouter.post(
+    '/portfolios',
+    ControlBuilder.builder()
+        .only('talent')
+        .setHandler(uploadTalentPortfolio.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -194,7 +234,13 @@ talentRouter.delete(
  *                   - rating: 5
  *                     count: 1
  */
-talentRouter.get('/:id/reviews', ControlBuilder.builder().setValidator(talentReviewsQuerySchema).setHandler(getAllTalentReviews.handle).handle());
+talentRouter.get(
+    '/:id/reviews',
+    ControlBuilder.builder()
+        .setValidator(talentReviewsQuerySchema)
+        .setHandler(getAllTalentReviews.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -230,4 +276,11 @@ talentRouter.get('/:id/reviews', ControlBuilder.builder().setValidator(talentRev
  *                 rating: 5
  *                 comment: Ada kept the room calm and elegant from guest arrival through the first dance.
  */
-talentRouter.post('/:id/reviews', ControlBuilder.builder().isPrivate().setValidator(createTalentReviewSchema).setHandler(createTalentReview.handle).handle());
+talentRouter.post(
+    '/:id/reviews',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(createTalentReviewSchema)
+        .setHandler(createTalentReview.handle)
+        .handle(),
+);

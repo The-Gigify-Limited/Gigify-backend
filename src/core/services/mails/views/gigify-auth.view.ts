@@ -36,12 +36,7 @@ type PaymentReleaseOtpMailOptions = {
 const defaultSupportEmail = 'support@gigify.com';
 
 const escapeHtml = (value: string) =>
-    value
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
 const escapeAttribute = (value: string) => escapeHtml(value);
 
@@ -273,9 +268,11 @@ export const passwordResetMail = ({ firstName, resetUrl, supportEmail }: Passwor
       </p>
       <p style="margin: 0 0 32px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         If you continue to experience issues, contact our
-        <a href="mailto:${escapeAttribute(supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail)}?subject=${encodeURIComponent(
-            'Gigify password reset support',
-        )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">support</a>
+        <a href="mailto:${escapeAttribute(
+            supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail,
+        )}?subject=${encodeURIComponent(
+        'Gigify password reset support',
+    )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">support</a>
         team.
       </p>
       <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
@@ -307,9 +304,11 @@ export const welcomeOnboardingMail = ({ firstName, supportEmail }: WelcomeOnboar
       </p>
       <p style="margin: 0 0 32px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         If you need help getting started, contact
-        <a href="mailto:${escapeAttribute(supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail)}?subject=${encodeURIComponent(
-            'Gigify onboarding support',
-        )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">Gigify support</a>.
+        <a href="mailto:${escapeAttribute(
+            supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail,
+        )}?subject=${encodeURIComponent(
+        'Gigify onboarding support',
+    )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">Gigify support</a>.
       </p>
       <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         Best Regards,
@@ -327,14 +326,7 @@ export const welcomeOnboardingMail = ({ firstName, supportEmail }: WelcomeOnboar
     });
 };
 
-export const newLoginActivityMail = ({
-    firstName,
-    device,
-    location,
-    time,
-    resetUrl,
-    supportEmail,
-}: NewLoginActivityMailOptions) => {
+export const newLoginActivityMail = ({ firstName, device, location, time, resetUrl, supportEmail }: NewLoginActivityMailOptions) => {
     const contentHtml = `
       <p style="margin: 0 0 16px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         We detected a new login attempt on your Gigify account.
@@ -359,9 +351,11 @@ export const newLoginActivityMail = ({
       </p>
       <p style="margin: 0 0 32px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         If you need assistance, our
-        <a href="mailto:${escapeAttribute(supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail)}?subject=${encodeURIComponent(
-            'Gigify login activity support',
-        )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">support</a>
+        <a href="mailto:${escapeAttribute(
+            supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail,
+        )}?subject=${encodeURIComponent(
+        'Gigify login activity support',
+    )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">support</a>
         team is ready to help.
       </p>
       <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
@@ -400,9 +394,11 @@ export const paymentReleaseOtpMail = ({ firstName, otpCode, gigTitle, amount, su
       </p>
       <p style="margin: 0 0 32px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         If you need help, contact
-        <a href="mailto:${escapeAttribute(supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail)}?subject=${encodeURIComponent(
-            'Gigify payment release verification support',
-        )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">Gigify support</a>.
+        <a href="mailto:${escapeAttribute(
+            supportEmail?.trim() || process.env.SENDGRID_EMAIL?.trim() || defaultSupportEmail,
+        )}?subject=${encodeURIComponent(
+        'Gigify payment release verification support',
+    )}" style="color: #005DFF; font-weight: 700; text-decoration: none;">Gigify support</a>.
       </p>
       <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">
         Best Regards,

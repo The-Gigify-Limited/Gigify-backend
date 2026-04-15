@@ -3,10 +3,7 @@ import { SaveGigDto } from '../../interfaces';
 import { GigRepository, SavedGigRepository } from '../../repository';
 
 export class SaveGig {
-    constructor(
-        private readonly gigRepository: GigRepository,
-        private readonly savedGigRepository: SavedGigRepository,
-    ) {}
+    constructor(private readonly gigRepository: GigRepository, private readonly savedGigRepository: SavedGigRepository) {}
 
     handle = async ({ params, request }: ControllerArgs<SaveGigDto>) => {
         const userId = request.user?.id;

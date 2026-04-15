@@ -4,7 +4,10 @@ import { GigRepository } from '~/gigs/repository';
 
 const isAppliedItem = (item: TalentGigItem) => ['submitted', 'reviewing', 'shortlisted'].includes(item.application.status);
 const isUpcomingItem = (item: TalentGigItem) =>
-    item.application.status === 'hired' && Boolean(item.gig) && item.gig?.status !== 'completed' && new Date(item.gig?.gigDate ?? 0).getTime() > Date.now();
+    item.application.status === 'hired' &&
+    Boolean(item.gig) &&
+    item.gig?.status !== 'completed' &&
+    new Date(item.gig?.gigDate ?? 0).getTime() > Date.now();
 const isActiveItem = (item: TalentGigItem) => item.application.status === 'hired' && item.gig?.status === 'in_progress';
 const isCompletedItem = (item: TalentGigItem) => item.application.status === 'hired' && ['completed', 'cancelled'].includes(item.gig?.status ?? '');
 

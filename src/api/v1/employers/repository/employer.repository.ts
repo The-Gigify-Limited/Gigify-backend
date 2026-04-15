@@ -71,7 +71,11 @@ export class EmployerRepository extends BaseRepository<DatabaseEmployerProfile, 
                     .select('id, gigs!inner(employer_id)', { count: 'exact', head: true })
                     .eq('gigs.employer_id', userId)
                     .in('status', ['submitted', 'reviewing', 'shortlisted']),
-                supabaseAdmin.from('payments').select('*', { count: 'exact', head: true }).eq('employer_id', userId).in('status', ['pending', 'processing']),
+                supabaseAdmin
+                    .from('payments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('employer_id', userId)
+                    .in('status', ['pending', 'processing']),
             ]);
 
         return {

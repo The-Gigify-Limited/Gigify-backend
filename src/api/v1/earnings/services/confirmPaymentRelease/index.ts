@@ -62,7 +62,9 @@ export class ConfirmPaymentRelease {
                     attempts: otpRecord.attempts + 1,
                 },
                 ipAddress: request.ip ?? null,
-                userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                userAgent: Array.isArray(request.headers['user-agent'])
+                    ? request.headers['user-agent'][0] ?? null
+                    : request.headers['user-agent'] ?? null,
                 errorMessage: 'Invalid payment release OTP',
             });
 
@@ -110,7 +112,9 @@ export class ConfirmPaymentRelease {
                     paidAt,
                 },
                 ipAddress: request.ip ?? null,
-                userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                userAgent: Array.isArray(request.headers['user-agent'])
+                    ? request.headers['user-agent'][0] ?? null
+                    : request.headers['user-agent'] ?? null,
             }),
         ]);
 
@@ -150,5 +154,10 @@ export class ConfirmPaymentRelease {
     };
 }
 
-const confirmPaymentRelease = new ConfirmPaymentRelease(new EarningsRepository(), new GigRepository(), new EmployerRepository(), new ActivityRepository());
+const confirmPaymentRelease = new ConfirmPaymentRelease(
+    new EarningsRepository(),
+    new GigRepository(),
+    new EmployerRepository(),
+    new ActivityRepository(),
+);
 export default confirmPaymentRelease;

@@ -57,6 +57,8 @@ export const confirmPaymentReleaseSchema = {
         id: uuid.required(),
     }),
     inputSchema: Joi.object({
-        otpCode: Joi.string().pattern(/^\d{6}$/).required(),
+        otpCode: Joi.string()
+            .pattern(/^\d{6}$/)
+            .required(),
     }),
 };
