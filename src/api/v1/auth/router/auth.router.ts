@@ -74,7 +74,7 @@ authRouter
      *                 user:
      *                   type: object
      *             example:
-     *               message: Login successful
+     *               message: Login successfuls
      *               data:
      *                 accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access.token
      *                 refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh.token
