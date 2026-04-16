@@ -1,0 +1,63 @@
+###############################################################################
+# Auto PR Description
+#
+# Generates a pull request description automatically when a PR is opened.
+#
+# FEATURE FLAG — controlled by a GitHub repo variable:
+#   PR_DESC_MODE = "commits"   →  free, formats commit log + file changes
+#   PR_DESC_MODE = "ai"        →  sends diff to OpenAI or Anthropic for summary
+#   PR_DESC_MODE = "off"       →  disables this workflow entirely
+#
+# To set the variable:
+#   GitHub repo → Settings → Secrets and variables → Variables → New variable
+#   Name:  PR_DESC_MODE
+#   Value: commits  (or "ai" or "off")
+#
+# For AI mode, also add a secret:
+#   OPENAI_API_KEY      — if you want to use OpenAI
+#   ANTHROPIC_API_KEY   — if you want to use Anthropic (checked first)
+#
+# Optional variables:
+#   AI_MODEL               — override the default model
+#   PR_DESC_MAX_DIFF_CHARS — max diff chars sent to AI (default 12000)
+###############################################################################
+
+name: Auto PR Description
+
+on:
+  pull_request:
+    types: [opened]
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  generate:
+    name: Generate PR Description
+    runs-on: ubuntu-latest
+
+    # Skip if feature flag is "off" or not set
+    if: ${{ vars.PR_DESC_MODE != 'off' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate and update PR description
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_DESC_MODE: ${{ vars.PR_DESC_MODE || 'commits' }}
+          # AI secrets — only needed for "ai" mode
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Optional overrides
+          AI_MODEL: ${{ vars.AI_MODEL }}
+          PR_DESC_MAX_DIFF_CHARS: ${{ vars.PR_DESC_MAX_DIFF_CHARS }}
+        run: node .github/scripts/generate-pr-description.js

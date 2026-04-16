@@ -1,8 +1,10 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Lint + format staged files only
 npx lint-staged
 
+# Run checks AFTER lint-staged has finished and restored git state
 echo "Running type check..."
 npx tsc --noEmit --skipLibCheck || exit 1
 
@@ -10,4 +12,4 @@ echo "Building project..."
 npm run build || exit 1
 
 echo "Running tests..."
-npx jest --no-coverage --runInBand || exit 1
+npx jest --no-coverage --runInBand --config ./jest.config.cjs || exit 1
