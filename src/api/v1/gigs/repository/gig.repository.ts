@@ -14,6 +14,25 @@ import {
 export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
     protected readonly table = 'gigs';
 
+    /**
+     * Override base camelCase mapping so that the DB column `location_name`
+     * is exposed as `venueName` instead of the auto-generated `locationName`.
+     */
+    mapToCamelCase = (row: DatabaseGig): Gig => {
+        const base = Object.fromEntries(Object.entries(row).map(([k, v]) => [this.toCamelCase(k), v])) as Gig & { locationName?: string | null };
+        const { locationName, ...rest } = base;
+        return { ...rest, venueName: locationName ?? null } as Gig;
+    };
+
+    mapToSnakeCase(obj: Partial<Gig>): Partial<DatabaseGig> {
+        const { venueName, ...rest } = obj as Partial<Gig> & { venueName?: string | null };
+        const snaked = Object.fromEntries(
+            Object.entries(rest).map(([k, v]) => [k.replace(/[A-Z]/g, (l) => `_${l.toLowerCase()}`), v]),
+        ) as Partial<DatabaseGig>;
+        if (venueName !== undefined) (snaked as Record<string, unknown>).location_name = venueName;
+        return snaked;
+    }
+
     private mapRow<T>(row: Record<string, unknown>): T {
         return Object.fromEntries(Object.entries(row).map(([key, value]) => [this.toCamelCase(key), value])) as T;
     }
@@ -115,7 +134,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 currency: input.currency ?? 'NGN',
                 gig_date: input.gigDate!,
                 service_id: input.serviceId ?? null,
-                location_name: input.locationName ?? null,
+                location_name: input.venueName ?? null,
                 location_latitude: input.locationLatitude ?? null,
                 location_longitude: input.locationLongitude ?? null,
                 is_remote: input.isRemote ?? false,

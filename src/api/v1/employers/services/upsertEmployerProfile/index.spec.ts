@@ -1,7 +1,9 @@
 jest.mock('@/core', () => {
     class UnAuthorizedError extends Error {}
+    class BadRequestError extends Error {}
 
     return {
+        BadRequestError,
         HttpStatus: { OK: 200 },
         UnAuthorizedError,
     };
@@ -31,6 +33,7 @@ describe('UpsertEmployerProfile service', () => {
         const service = new UpsertEmployerProfile(employerRepository as never);
 
         const response = await service.handle({
+            params: { id: 'user-1' },
             input: {
                 organizationName: 'Acme Corp',
                 companyWebsite: 'https://acme.com',
@@ -59,6 +62,7 @@ describe('UpsertEmployerProfile service', () => {
         const service = new UpsertEmployerProfile(employerRepository as never);
 
         await service.handle({
+            params: { id: 'user-1' },
             input: undefined,
             request: {
                 user: { id: 'user-1' },

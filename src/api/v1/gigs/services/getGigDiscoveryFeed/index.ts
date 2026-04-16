@@ -35,7 +35,7 @@ const haversineDistanceKm = (latitudeA: number, longitudeA: number, latitudeB: n
 };
 
 const matchesLocationText = (gig: Gig, city: string | null, country: string | null) => {
-    const location = `${gig.locationName ?? ''}`.toLowerCase();
+    const location = `${gig.venueName ?? ''}`.toLowerCase();
 
     if (!location) return false;
 

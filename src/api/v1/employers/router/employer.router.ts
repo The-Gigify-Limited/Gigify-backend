@@ -53,12 +53,19 @@ employerRouter.get(
 
 /**
  * @swagger
- * /employer/me:
+ * /employer/{id}/profile:
  *   get:
  *     tags: [Employer]
- *     summary: Get the current employer profile
+ *     summary: Get employer profile by ID
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Employer profile
@@ -76,21 +83,29 @@ employerRouter.get(
  *                 totalSpent: 940000
  */
 employerRouter.get(
-    '/me',
+    '/:id/profile',
     ControlBuilder.builder()
         .only('employer')
+        .setValidator(getEmployerParamsSchema)
         .setHandler(getEmployerProfile.handle)
         .handle(),
 );
 
 /**
  * @swagger
- * /employer/me:
+ * /employer/{id}/profile:
  *   patch:
  *     tags: [Employer]
- *     summary: Create or update the current employer profile
+ *     summary: Update employer profile by ID
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
@@ -114,22 +129,32 @@ employerRouter.get(
  *                 industry: Entertainment
  */
 employerRouter.patch(
-    '/me',
+    '/:id/profile',
     ControlBuilder.builder()
         .only('employer')
-        .setValidator(upsertEmployerProfileSchema)
+        .setValidator({
+            ...getEmployerParamsSchema,
+            ...upsertEmployerProfileSchema,
+        })
         .setHandler(upsertEmployerProfile.handle)
         .handle(),
 );
 
 /**
  * @swagger
- * /employer/dashboard:
+ * /employer/{id}/dashboard:
  *   get:
  *     tags: [Employer]
- *     summary: Get employer dashboard summary
+ *     summary: Get employer dashboard summary by ID
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
  *         description: Employer dashboard data
@@ -148,9 +173,10 @@ employerRouter.patch(
  *                 pendingPayments: 2
  */
 employerRouter.get(
-    '/dashboard',
+    '/:id/dashboard',
     ControlBuilder.builder()
         .only('employer')
+        .setValidator(getEmployerParamsSchema)
         .setHandler(getEmployerDashboard.handle)
         .handle(),
 );

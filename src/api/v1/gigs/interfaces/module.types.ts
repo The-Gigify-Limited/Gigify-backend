@@ -24,7 +24,7 @@ export type Gig = {
     gigDate: string;
     status: GigStatusEnum | null;
     serviceId: string | null;
-    locationName: string | null;
+    venueName: string | null;
     locationLatitude: number | null;
     locationLongitude: number | null;
     isRemote: boolean | null;

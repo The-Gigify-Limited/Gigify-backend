@@ -1,14 +1,18 @@
-import { ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
+import { BadRequestError, ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
 import { UpsertEmployerProfileDto } from '~/employers/interfaces';
 import { EmployerRepository } from '~/employers/repository';
 
 export class UpsertEmployerProfile {
     constructor(private readonly employerRepository: EmployerRepository) {}
 
-    handle = async ({ input, request }: ControllerArgs<UpsertEmployerProfileDto>) => {
-        const userId = request.user?.id;
+    handle = async ({ input, params, request }: ControllerArgs<UpsertEmployerProfileDto>) => {
+        const authUserId = request.user?.id;
 
-        if (!userId) throw new UnAuthorizedError('User not authenticated');
+        if (!authUserId) throw new UnAuthorizedError('User not authenticated');
+
+        const userId = params?.id ?? authUserId;
+
+        if (userId !== authUserId) throw new BadRequestError('You can only update your own profile');
 
         const profile = await this.employerRepository.upsertEmployerProfile(userId, input ?? {});
 

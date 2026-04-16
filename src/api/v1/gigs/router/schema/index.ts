@@ -48,7 +48,7 @@ export const createGigSchema = {
         requiredTalentCount: Joi.number().integer().min(1).max(25).default(1),
         locationLatitude: Joi.number().min(-90).max(90).allow(null),
         locationLongitude: Joi.number().min(-180).max(180).allow(null),
-        locationName: Joi.when('isRemote', {
+        venueName: Joi.when('isRemote', {
             is: true,
             then: Joi.string().max(160).allow(null, ''),
             otherwise: Joi.string().max(160).required(),
@@ -70,7 +70,7 @@ export const updateGigSchema = {
         isRemote: Joi.boolean().optional(),
         locationLatitude: Joi.number().min(-90).max(90).allow(null).optional(),
         locationLongitude: Joi.number().min(-180).max(180).allow(null).optional(),
-        locationName: Joi.string().max(160).allow(null, '').optional(),
+        venueName: Joi.string().max(160).allow(null, '').optional(),
         requiredTalentCount: Joi.number().integer().min(1).max(25).optional(),
         status: Joi.string()
             .valid(...statusEnum)
