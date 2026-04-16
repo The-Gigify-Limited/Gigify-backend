@@ -1,13 +1,17 @@
-import { ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
+import { BadRequestError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
 import { EmployerRepository } from '~/employers/repository';
 
 export class GetEmployerProfile {
     constructor(private readonly employerRepository: EmployerRepository) {}
 
-    handle = async ({ request }: ControllerArgs) => {
-        const userId = request.user?.id;
+    handle = async ({ params, request }: ControllerArgs) => {
+        const authUserId = request.user?.id;
 
-        if (!userId) throw new UnAuthorizedError('User not authenticated');
+        if (!authUserId) throw new UnAuthorizedError('User not authenticated');
+
+        const userId = params?.id ?? authUserId;
+
+        if (userId !== authUserId) throw new BadRequestError('You can only view your own profile');
 
         const profile = await this.employerRepository.findByUserId(userId);
 

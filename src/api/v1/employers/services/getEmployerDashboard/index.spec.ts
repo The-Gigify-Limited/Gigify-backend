@@ -1,8 +1,10 @@
 jest.mock('@/core', () => {
+    class BadRequestError extends Error {}
     class RouteNotFoundError extends Error {}
     class UnAuthorizedError extends Error {}
 
     return {
+        BadRequestError,
         HttpStatus: { OK: 200 },
         RouteNotFoundError,
         UnAuthorizedError,
@@ -40,6 +42,7 @@ describe('GetEmployerDashboard service', () => {
         const service = new GetEmployerDashboard(employerRepository as never);
 
         const response = await service.handle({
+            params: { id: 'user-1' },
             request: {
                 user: { id: 'user-1' },
             },
@@ -76,6 +79,7 @@ describe('GetEmployerDashboard service', () => {
 
         await expect(
             service.handle({
+                params: { id: 'user-1' },
                 request: {
                     user: { id: 'user-1' },
                 },

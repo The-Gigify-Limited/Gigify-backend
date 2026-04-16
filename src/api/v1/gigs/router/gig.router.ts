@@ -85,7 +85,7 @@ gigRouter.get(
  *                 - id: 50000000-0000-0000-0000-000000000005
  *                   title: Afrobeat Night Drummer
  *                   budgetAmount: 180000
- *                   locationName: Lekki, Lagos, Nigeria
+ *                   venueName: Lekki, Lagos, Nigeria
  *                   status: open
  */
 gigRouter.get(
@@ -337,7 +337,7 @@ gigRouter.delete(
  *             currency: NGN
  *             gigDate: 2026-03-20T18:00:00.000Z
  *             serviceId: 40000000-0000-0000-0000-000000000003
- *             locationName: Lekki, Lagos, Nigeria
+ *             venueName: Lekki, Lagos, Nigeria
  *             locationLatitude: 6.4474
  *             locationLongitude: 3.472
  *             isRemote: false
