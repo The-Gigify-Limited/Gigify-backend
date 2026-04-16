@@ -19,13 +19,12 @@ export class CreateKycSession {
 
         const user = this.userRepository.mapToCamelCase(userRow);
         const existingVerification = await this.identityVerificationRepository.getLatestByUserIdAndProvider(userId, 'sumsub');
-        const existingApplicant =
-            existingVerification?.providerApplicantId
-                ? {
-                      id: existingVerification.providerApplicantId,
-                      levelName: existingVerification.providerLevelName,
-                  }
-                : await getSumsubApplicantByExternalUserId(userId);
+        const existingApplicant = existingVerification?.providerApplicantId
+            ? {
+                  id: existingVerification.providerApplicantId,
+                  levelName: existingVerification.providerLevelName,
+              }
+            : await getSumsubApplicantByExternalUserId(userId);
 
         const applicant = existingApplicant
             ? existingApplicant

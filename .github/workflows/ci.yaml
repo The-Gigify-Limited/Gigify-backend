@@ -1,0 +1,41 @@
+name: CI Pipeline
+
+on:
+  push:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint · Build · Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier — format check
+        run: pnpm prettier:check
+
+      - name: ESLint — lint check
+        run: pnpm lint:check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Tests
+        run: pnpm jest --runInBand --config ./jest.config.cjs --no-coverage

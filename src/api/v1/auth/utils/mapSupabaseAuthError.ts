@@ -26,7 +26,6 @@ export function mapSupabaseAuthError(error: SupabaseError, fallBackMessage?: str
     if (error.status === 401) {
         throw new UnAuthorizedError('Invalid email or password');
     }
-    
 
     throw new ForbiddenError(fallBackMessage ?? 'Authentication failed');
 }

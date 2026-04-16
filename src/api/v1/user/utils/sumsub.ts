@@ -52,15 +52,7 @@ const buildSignature = ({
     return crypto.createHmac('sha256', secretKey).update(`${timestamp}${method}${path}${body}`).digest('hex');
 };
 
-const buildHeaders = ({
-    body = '',
-    method,
-    path,
-}: {
-    body?: string;
-    method: 'GET' | 'POST';
-    path: string;
-}) => {
+const buildHeaders = ({ body = '', method, path }: { body?: string; method: 'GET' | 'POST'; path: string }) => {
     const sumsubConfig = getSumsubConfig();
     const timestamp = Math.floor(Date.now() / 1000).toString();
 

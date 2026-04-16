@@ -56,7 +56,6 @@ export const rolePermissions: Record<Role, Permission[]> = {
         Permission.REVIEW_READ,
     ],
 
-
     admin: Object.values(Permission),
 };
 

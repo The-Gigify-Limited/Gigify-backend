@@ -6,21 +6,14 @@ type SupabaseAuthError = {
     status?: number;
 };
 
-export const PASSWORD_RESET_REQUEST_MESSAGE =
-    'If an account with that email exists, we will email password reset instructions shortly.';
+export const PASSWORD_RESET_REQUEST_MESSAGE = 'If an account with that email exists, we will email password reset instructions shortly.';
 
 export type PasswordRecoveryLink = {
     actionLink: string;
     emailOtp: string | null;
 };
 
-export async function generatePasswordRecoveryLink({
-    supabase,
-    email,
-}: {
-    supabase: SupabaseClient;
-    email: string;
-}): Promise<PasswordRecoveryLink> {
+export async function generatePasswordRecoveryLink({ supabase, email }: { supabase: SupabaseClient; email: string }): Promise<PasswordRecoveryLink> {
     const redirectTo = process.env.PASSWORD_RESET_REDIRECT_URL?.trim() || undefined;
 
     const { data, error } = await supabase.auth.admin.generateLink({

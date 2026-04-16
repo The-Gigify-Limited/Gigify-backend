@@ -63,7 +63,10 @@ export const gigRouter = Router();
  *                   name: DJ
  *                   category: Music
  */
-gigRouter.get('/catalog', ControlBuilder.builder().setHandler(getGigCatalog.handle).handle());
+gigRouter.get(
+    '/catalog',
+    ControlBuilder.builder().setHandler(getGigCatalog.handle).handle(),
+);
 
 /**
  * @swagger
@@ -85,7 +88,13 @@ gigRouter.get('/catalog', ControlBuilder.builder().setHandler(getGigCatalog.hand
  *                   locationName: Lekki, Lagos, Nigeria
  *                   status: open
  */
-gigRouter.get('/explore', ControlBuilder.builder().setValidator(gigFiltersSchema).setHandler(exploreGigs.handle).handle());
+gigRouter.get(
+    '/explore',
+    ControlBuilder.builder()
+        .setValidator(gigFiltersSchema)
+        .setHandler(exploreGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -106,7 +115,13 @@ gigRouter.get('/explore', ControlBuilder.builder().setValidator(gigFiltersSchema
  *                   budgetAmount: 2200
  *                   currency: GBP
  */
-gigRouter.get('/search', ControlBuilder.builder().setValidator(gigFiltersSchema).setHandler(searchGigs.handle).handle());
+gigRouter.get(
+    '/search',
+    ControlBuilder.builder()
+        .setValidator(gigFiltersSchema)
+        .setHandler(searchGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -148,7 +163,14 @@ gigRouter.get('/search', ControlBuilder.builder().setValidator(gigFiltersSchema)
  *                   - id: 61000000-0000-0000-0000-000000000001
  *                     status: pending
  */
-gigRouter.get('/discovery/home', ControlBuilder.builder().only('talent').setValidator(discoveryFeedSchema).setHandler(getGigDiscoveryFeed.handle).handle());
+gigRouter.get(
+    '/discovery/home',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(discoveryFeedSchema)
+        .setHandler(getGigDiscoveryFeed.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -169,7 +191,14 @@ gigRouter.get('/discovery/home', ControlBuilder.builder().only('talent').setVali
  *                 - id: 72000000-0000-0000-0000-000000000001
  *                   gigId: 50000000-0000-0000-0000-000000000005
  */
-gigRouter.get('/saved', ControlBuilder.builder().isPrivate().setValidator(savedGigsSchema).setHandler(getSavedGigs.handle).handle());
+gigRouter.get(
+    '/saved',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(savedGigsSchema)
+        .setHandler(getSavedGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -194,7 +223,14 @@ gigRouter.get('/saved', ControlBuilder.builder().isPrivate().setValidator(savedG
  *                     id: 50000000-0000-0000-0000-000000000002
  *                     title: Lagos Beach Wedding Sax Set
  */
-gigRouter.get('/my-gigs/:status', ControlBuilder.builder().only('talent').setValidator(myGigsSchema).setHandler(getMyGigs.handle).handle());
+gigRouter.get(
+    '/my-gigs/:status',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(myGigsSchema)
+        .setHandler(getMyGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -219,7 +255,14 @@ gigRouter.get('/my-gigs/:status', ControlBuilder.builder().only('talent').setVal
  *                     id: 50000000-0000-0000-0000-000000000005
  *                     title: Afrobeat Night Drummer
  */
-gigRouter.get('/offers/me', ControlBuilder.builder().isPrivate().setValidator(myGigOffersSchema).setHandler(getMyGigOffers.handle).handle());
+gigRouter.get(
+    '/offers/me',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(myGigOffersSchema)
+        .setHandler(getMyGigOffers.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -241,7 +284,14 @@ gigRouter.get('/offers/me', ControlBuilder.builder().isPrivate().setValidator(my
  *                 userId: 20000000-0000-0000-0000-000000000001
  *                 gigId: 50000000-0000-0000-0000-000000000005
  */
-gigRouter.post('/:id/save', ControlBuilder.builder().only('talent').setValidator(gigIdSchema).setHandler(saveGig.handle).handle());
+gigRouter.post(
+    '/:id/save',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(gigIdSchema)
+        .setHandler(saveGig.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -259,7 +309,14 @@ gigRouter.post('/:id/save', ControlBuilder.builder().only('talent').setValidator
  *             example:
  *               message: Gig Removed from Saved List Successfully
  */
-gigRouter.delete('/:id/save', ControlBuilder.builder().only('talent').setValidator(gigIdSchema).setHandler(removeSavedGig.handle).handle());
+gigRouter.delete(
+    '/:id/save',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(gigIdSchema)
+        .setHandler(removeSavedGig.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -297,7 +354,14 @@ gigRouter.delete('/:id/save', ControlBuilder.builder().only('talent').setValidat
  *                 title: Afrobeat Night Drummer
  *                 status: open
  */
-gigRouter.post('/', ControlBuilder.builder().only('employer').setValidator(createGigSchema).setHandler(createGig.handle).handle());
+gigRouter.post(
+    '/',
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(createGigSchema)
+        .setHandler(createGig.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -317,7 +381,13 @@ gigRouter.post('/', ControlBuilder.builder().only('employer').setValidator(creat
  *                   title: Abuja Wedding Band Lead
  *                   status: open
  */
-gigRouter.get('/', ControlBuilder.builder().setValidator(gigFiltersSchema).setHandler(getAllGigs.handle).handle());
+gigRouter.get(
+    '/',
+    ControlBuilder.builder()
+        .setValidator(gigFiltersSchema)
+        .setHandler(getAllGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -341,7 +411,12 @@ gigRouter.get('/', ControlBuilder.builder().setValidator(gigFiltersSchema).setHa
  */
 gigRouter.get(
     '/:id/applications',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(gigApplicationsSchema).setHandler(getGigApplications.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(gigApplicationsSchema)
+        .setHandler(getGigApplications.handle)
+        .handle(),
 );
 
 /**
@@ -366,7 +441,12 @@ gigRouter.get(
  */
 gigRouter.get(
     '/:id/offers',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(gigOffersSchema).setHandler(getGigOffersForGig.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(gigOffersSchema)
+        .setHandler(getGigOffersForGig.handle)
+        .handle(),
 );
 
 /**
@@ -401,7 +481,12 @@ gigRouter.get(
  */
 gigRouter.post(
     '/:id/offers',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(createGigOfferSchema).setHandler(createGigOffer.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(createGigOfferSchema)
+        .setHandler(createGigOffer.handle)
+        .handle(),
 );
 
 /**
@@ -430,7 +515,14 @@ gigRouter.post(
  *                 id: 60000000-0000-0000-0000-000000000010
  *                 status: submitted
  */
-gigRouter.post('/:id/apply', ControlBuilder.builder().only('talent').setValidator(applyToGigSchema).setHandler(applyToGig.handle).handle());
+gigRouter.post(
+    '/:id/apply',
+    ControlBuilder.builder()
+        .only('talent')
+        .setValidator(applyToGigSchema)
+        .setHandler(applyToGig.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -460,7 +552,12 @@ gigRouter.post('/:id/apply', ControlBuilder.builder().only('talent').setValidato
  */
 gigRouter.patch(
     '/:id/status',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(updateGigStatusSchema).setHandler(updateGigStatus.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(updateGigStatusSchema)
+        .setHandler(updateGigStatus.handle)
+        .handle(),
 );
 
 /**
@@ -501,7 +598,12 @@ gigRouter.patch(
  */
 gigRouter.post(
     '/:id/hire/:talentId',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(hireTalentSchema).setHandler(hireTalent.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(hireTalentSchema)
+        .setHandler(hireTalent.handle)
+        .handle(),
 );
 
 /**
@@ -533,7 +635,12 @@ gigRouter.post(
  */
 gigRouter.post(
     '/:id/report-talent',
-    ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(reportTalentSchema).setHandler(reportTalent.handle).handle(),
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(reportTalentSchema)
+        .setHandler(reportTalent.handle)
+        .handle(),
 );
 
 /**
@@ -565,7 +672,14 @@ gigRouter.post(
  *                   id: 70000000-0000-0000-0000-000000000003
  *                   status: pending
  */
-gigRouter.patch('/offers/:offerId', ControlBuilder.builder().isPrivate().setValidator(updateGigOfferSchema).setHandler(updateGigOffer.handle).handle());
+gigRouter.patch(
+    '/offers/:offerId',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(updateGigOfferSchema)
+        .setHandler(updateGigOffer.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -589,7 +703,13 @@ gigRouter.patch('/offers/:offerId', ControlBuilder.builder().isPrivate().setVali
  *                   id: 60000000-0000-0000-0000-000000000002
  *                   status: hired
  */
-gigRouter.get('/:id', ControlBuilder.builder().setValidator(gigIdSchema).setHandler(getGigById.handle).handle());
+gigRouter.get(
+    '/:id',
+    ControlBuilder.builder()
+        .setValidator(gigIdSchema)
+        .setHandler(getGigById.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -619,7 +739,15 @@ gigRouter.get('/:id', ControlBuilder.builder().setValidator(gigIdSchema).setHand
  *                 budgetAmount: 200000
  *                 requiredTalentCount: 2
  */
-gigRouter.patch('/:id', ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(updateGigSchema).setHandler(updateGig.handle).handle());
+gigRouter.patch(
+    '/:id',
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(updateGigSchema)
+        .setHandler(updateGig.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -637,4 +765,12 @@ gigRouter.patch('/:id', ControlBuilder.builder().only('employer').checkResourceO
  *             example:
  *               message: Gig Deleted Successfully
  */
-gigRouter.delete('/:id', ControlBuilder.builder().only('employer').checkResourceOwnership('gig', 'id').setValidator(gigIdSchema).setHandler(deleteGig.handle).handle());
+gigRouter.delete(
+    '/:id',
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'id')
+        .setValidator(gigIdSchema)
+        .setHandler(deleteGig.handle)
+        .handle(),
+);

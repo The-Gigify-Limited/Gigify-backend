@@ -1,2 +1,2 @@
 export * from './controller.payload';
-export * from './module.types'
+export * from './module.types';

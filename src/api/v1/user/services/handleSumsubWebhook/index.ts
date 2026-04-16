@@ -100,8 +100,8 @@ export class HandleSumsubWebhook {
                     updatedVerification.status === 'approved'
                         ? 'Your identity verification has been approved.'
                         : updatedVerification.status === 'rejected'
-                          ? 'Your identity verification was rejected. Please review the feedback and try again.'
-                          : 'Your identity verification is pending review.',
+                        ? 'Your identity verification was rejected. Please review the feedback and try again.'
+                        : 'Your identity verification is pending review.',
                 payload: {
                     verificationId: updatedVerification.id,
                     status: updatedVerification.status,

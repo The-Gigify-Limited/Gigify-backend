@@ -1,9 +1,55 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
-import { getEmployerDashboard, getEmployerProfile, upsertEmployerProfile } from '../services';
-import { upsertEmployerProfileSchema } from './schema';
+import {
+    getEmployerById,
+    getEmployerDashboard,
+    getEmployerProfile,
+    upsertEmployerProfile,
+} from '../services';
+import { getEmployerParamsSchema, upsertEmployerProfileSchema } from './schema';
 
 export const employerRouter = Router();
+
+/**
+ * @swagger
+ * /employer/{id}:
+ *   get:
+ *     tags: [Employer]
+ *     summary: Get employer profile by user ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Employer profile
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Employer Retrieved Successfully
+ *               data:
+ *                 user:
+ *                   id: 10000000-0000-0000-0000-000000000002
+ *                   firstName: John
+ *                   lastName: Doe
+ *                   email: john@example.com
+ *                 profile:
+ *                   id: 11000000-0000-0000-0000-000000000002
+ *                   userId: 10000000-0000-0000-0000-000000000002
+ *                   organizationName: Pulse Live
+ *                   companyWebsite: https://pulselive.example
+ *                   industry: Entertainment
+ */
+employerRouter.get(
+    '/:id',
+    ControlBuilder.builder()
+        .setValidator(getEmployerParamsSchema)
+        .setHandler(getEmployerById.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -29,7 +75,13 @@ export const employerRouter = Router();
  *                 totalGigsPosted: 5
  *                 totalSpent: 940000
  */
-employerRouter.get('/me', ControlBuilder.builder().only('employer').setHandler(getEmployerProfile.handle).handle());
+employerRouter.get(
+    '/me',
+    ControlBuilder.builder()
+        .only('employer')
+        .setHandler(getEmployerProfile.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -61,7 +113,14 @@ employerRouter.get('/me', ControlBuilder.builder().only('employer').setHandler(g
  *                 companyWebsite: https://pulselive.example
  *                 industry: Entertainment
  */
-employerRouter.patch('/me', ControlBuilder.builder().only('employer').setValidator(upsertEmployerProfileSchema).setHandler(upsertEmployerProfile.handle).handle());
+employerRouter.patch(
+    '/me',
+    ControlBuilder.builder()
+        .only('employer')
+        .setValidator(upsertEmployerProfileSchema)
+        .setHandler(upsertEmployerProfile.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -88,4 +147,10 @@ employerRouter.patch('/me', ControlBuilder.builder().only('employer').setValidat
  *                 pendingApplications: 6
  *                 pendingPayments: 2
  */
-employerRouter.get('/dashboard', ControlBuilder.builder().only('employer').setHandler(getEmployerDashboard.handle).handle());
+employerRouter.get(
+    '/dashboard',
+    ControlBuilder.builder()
+        .only('employer')
+        .setHandler(getEmployerDashboard.handle)
+        .handle(),
+);

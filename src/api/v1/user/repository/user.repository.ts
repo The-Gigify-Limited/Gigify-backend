@@ -73,13 +73,10 @@ export class UserRepository extends BaseRepository<DatabaseUser, User> {
 
         const { data, error } = await supabaseAdmin
             .from('users')
-            .upsert(
-                payload,
-                {
-                    onConflict: 'id',
-                    ignoreDuplicates: false,
-                },
-            )
+            .upsert(payload, {
+                onConflict: 'id',
+                ignoreDuplicates: false,
+            })
             .select()
             .single();
 

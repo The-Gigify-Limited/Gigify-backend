@@ -19,11 +19,17 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
     }
 
     private mapInputToSnakeCase(input: Record<string, unknown>) {
-        return Object.fromEntries(Object.entries(input).map(([key, value]) => [key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`), value]));
+        return Object.fromEntries(
+            Object.entries(input).map(([key, value]) => [key.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`), value]),
+        );
     }
 
     async getCatalog(): Promise<ServiceCatalog[]> {
-        const { data = [], error } = await supabaseAdmin.from('services_catalog').select('*').eq('is_active', true).order('name', { ascending: true });
+        const { data = [], error } = await supabaseAdmin
+            .from('services_catalog')
+            .select('*')
+            .eq('is_active', true)
+            .order('name', { ascending: true });
 
         if (error) throw error;
 
@@ -164,7 +170,10 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return data ? this.mapRow<GigApplication>(data as unknown as DatabaseGigApplication) : null;
     }
 
-    async getApplicationsForGig(gigId: string, query: { page?: number | string; pageSize?: number | string; status?: ApplicationStatusEnum }): Promise<GigApplication[]> {
+    async getApplicationsForGig(
+        gigId: string,
+        query: { page?: number | string; pageSize?: number | string; status?: ApplicationStatusEnum },
+    ): Promise<GigApplication[]> {
         const { offset, rangeEnd } = normalizePagination(query);
 
         let request = supabaseAdmin.from('gig_applications').select('*').eq('gig_id', gigId);

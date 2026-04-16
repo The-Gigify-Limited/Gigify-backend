@@ -28,14 +28,43 @@ export interface GetGigsQueryDto extends ControllerArgsTypes {
 }
 
 export interface CreateGigDto extends ControllerArgsTypes {
-    input: Pick<Gig, 'title' | 'description' | 'budgetAmount' | 'currency' | 'gigDate' | 'serviceId' | 'locationName' | 'locationLatitude' | 'locationLongitude' | 'isRemote' | 'requiredTalentCount'>;
+    input: Pick<
+        Gig,
+        | 'title'
+        | 'description'
+        | 'budgetAmount'
+        | 'currency'
+        | 'gigDate'
+        | 'serviceId'
+        | 'locationName'
+        | 'locationLatitude'
+        | 'locationLongitude'
+        | 'isRemote'
+        | 'requiredTalentCount'
+    >;
 }
 
 export interface UpdateGigDto extends ControllerArgsTypes {
     params: {
         id: string;
     };
-    input: Partial<Pick<Gig, 'title' | 'description' | 'budgetAmount' | 'currency' | 'gigDate' | 'serviceId' | 'locationName' | 'locationLatitude' | 'locationLongitude' | 'isRemote' | 'status' | 'requiredTalentCount'>>;
+    input: Partial<
+        Pick<
+            Gig,
+            | 'title'
+            | 'description'
+            | 'budgetAmount'
+            | 'currency'
+            | 'gigDate'
+            | 'serviceId'
+            | 'locationName'
+            | 'locationLatitude'
+            | 'locationLongitude'
+            | 'isRemote'
+            | 'status'
+            | 'requiredTalentCount'
+        >
+    >;
 }
 
 export interface ApplyToGigDto extends ControllerArgsTypes {

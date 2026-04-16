@@ -62,4 +62,11 @@ const talentReviewsQuerySchema = {
     }),
 };
 
-export { createTalentReviewSchema, getUserParamsSchema, getUsersQuerySchema, talentPortfolioParamSchema, talentReviewsQuerySchema, updateTalentSchema };
+export {
+    createTalentReviewSchema,
+    getUserParamsSchema,
+    getUsersQuerySchema,
+    talentPortfolioParamSchema,
+    talentReviewsQuerySchema,
+    updateTalentSchema,
+};

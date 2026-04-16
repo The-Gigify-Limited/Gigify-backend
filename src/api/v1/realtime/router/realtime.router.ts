@@ -9,7 +9,16 @@ export const realtimeRouter = Router();
  * /realtime/config:
  *   get:
  *     tags: [Realtime]
- *     summary: Get Supabase Realtime configuration
+ *     summary: Get Supabase Realtime configuration for WebSocket connections
+ *     description: |
+ *       Returns the Supabase URL and anon key needed to establish WebSocket
+ *       connections on the frontend via Supabase Realtime.
+ *
+ *       **Channels the frontend should subscribe to:**
+ *       - `user:{userId}` — personal notifications (new_notification, notification_read)
+ *       - `conversation:{conversationId}` — chat messages (new_message, message_read)
+ *
+ *       Use `supabase.channel(channelName).on('broadcast', { event }, callback).subscribe()`
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -22,6 +31,8 @@ export const realtimeRouter = Router();
  *               data:
  *                 supabaseUrl: https://example.supabase.co
  *                 supabaseAnonKey: eyJ...
+ *       401:
+ *         description: Unauthorized
  */
 realtimeRouter.get(
     '/config',

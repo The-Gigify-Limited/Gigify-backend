@@ -47,7 +47,9 @@ export class BroadcastNotification {
                     type: notificationType,
                 },
                 ipAddress: request.ip ?? null,
-                userAgent: Array.isArray(request.headers['user-agent']) ? request.headers['user-agent'][0] ?? null : request.headers['user-agent'] ?? null,
+                userAgent: Array.isArray(request.headers['user-agent'])
+                    ? request.headers['user-agent'][0] ?? null
+                    : request.headers['user-agent'] ?? null,
             }),
         ]);
 

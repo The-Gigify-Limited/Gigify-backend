@@ -1,5 +1,11 @@
 import Joi from 'joi';
 
+export const getEmployerParamsSchema = {
+    paramsSchema: Joi.object({
+        id: Joi.string().uuid().required(),
+    }),
+};
+
 export const upsertEmployerProfileSchema = {
     inputSchema: Joi.object({
         organizationName: Joi.string().max(120).allow(null),

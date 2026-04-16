@@ -60,7 +60,13 @@ adminRouter.use((req, _res, next) => next());
  *                   openReports: 3
  *                   pendingPayoutRequests: 2
  */
-adminRouter.get('/dashboard', ControlBuilder.builder().only('admin').setHandler(getAdminDashboard.handle).handle());
+adminRouter.get(
+    '/dashboard',
+    ControlBuilder.builder()
+        .only('admin')
+        .setHandler(getAdminDashboard.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -83,7 +89,14 @@ adminRouter.get('/dashboard', ControlBuilder.builder().only('admin').setHandler(
  *                   role: talent
  *                   status: active
  */
-adminRouter.get('/users', ControlBuilder.builder().only('admin').setValidator(adminUsersQuerySchema).setHandler(getAdminUsers.handle).handle());
+adminRouter.get(
+    '/users',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminUsersQuerySchema)
+        .setHandler(getAdminUsers.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -110,7 +123,14 @@ adminRouter.get('/users', ControlBuilder.builder().only('admin').setValidator(ad
  *                 id: 20000000-0000-0000-0000-000000000003
  *                 status: suspended
  */
-adminRouter.patch('/users/:id/status', ControlBuilder.builder().only('admin').setValidator(adminUserStatusSchema).setHandler(updateAdminUserStatus.handle).handle());
+adminRouter.patch(
+    '/users/:id/status',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminUserStatusSchema)
+        .setHandler(updateAdminUserStatus.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -132,7 +152,14 @@ adminRouter.patch('/users/:id/status', ControlBuilder.builder().only('admin').se
  *                   title: Afrobeat Night Drummer
  *                   status: open
  */
-adminRouter.get('/gigs', ControlBuilder.builder().only('admin').setValidator(adminGigsQuerySchema).setHandler(getAdminGigs.handle).handle());
+adminRouter.get(
+    '/gigs',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminGigsQuerySchema)
+        .setHandler(getAdminGigs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -160,7 +187,14 @@ adminRouter.get('/gigs', ControlBuilder.builder().only('admin').setValidator(adm
  *                 id: 50000000-0000-0000-0000-000000000005
  *                 status: cancelled
  */
-adminRouter.patch('/gigs/:id/status', ControlBuilder.builder().only('admin').setValidator(adminGigStatusSchema).setHandler(updateAdminGigStatus.handle).handle());
+adminRouter.patch(
+    '/gigs/:id/status',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminGigStatusSchema)
+        .setHandler(updateAdminGigStatus.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -182,7 +216,14 @@ adminRouter.patch('/gigs/:id/status', ControlBuilder.builder().only('admin').set
  *                   status: open
  *                   category: professional_conduct
  */
-adminRouter.get('/reports', ControlBuilder.builder().only('admin').setValidator(adminReportsQuerySchema).setHandler(getAdminReports.handle).handle());
+adminRouter.get(
+    '/reports',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminReportsQuerySchema)
+        .setHandler(getAdminReports.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -210,7 +251,14 @@ adminRouter.get('/reports', ControlBuilder.builder().only('admin').setValidator(
  *                 id: 93000000-0000-0000-0000-000000000001
  *                 status: resolved
  */
-adminRouter.patch('/reports/:id', ControlBuilder.builder().only('admin').setValidator(adminReportStatusSchema).setHandler(updateAdminReport.handle).handle());
+adminRouter.patch(
+    '/reports/:id',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminReportStatusSchema)
+        .setHandler(updateAdminReport.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -235,7 +283,11 @@ adminRouter.patch('/reports/:id', ControlBuilder.builder().only('admin').setVali
  */
 adminRouter.get(
     '/payout-requests',
-    ControlBuilder.builder().only('admin').setValidator(adminPayoutRequestsQuerySchema).setHandler(getAdminPayoutRequests.handle).handle(),
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminPayoutRequestsQuerySchema)
+        .setHandler(getAdminPayoutRequests.handle)
+        .handle(),
 );
 
 /**
@@ -265,7 +317,11 @@ adminRouter.get(
  */
 adminRouter.patch(
     '/payout-requests/:id',
-    ControlBuilder.builder().only('admin').setValidator(adminPayoutRequestStatusSchema).setHandler(updateAdminPayoutRequest.handle).handle(),
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminPayoutRequestStatusSchema)
+        .setHandler(updateAdminPayoutRequest.handle)
+        .handle(),
 );
 
 /**
@@ -290,7 +346,11 @@ adminRouter.patch(
  */
 adminRouter.get(
     '/identity-verifications',
-    ControlBuilder.builder().only('admin').setValidator(adminIdentityVerificationQuerySchema).setHandler(getAdminIdentityVerifications.handle).handle(),
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminIdentityVerificationQuerySchema)
+        .setHandler(getAdminIdentityVerifications.handle)
+        .handle(),
 );
 
 /**
@@ -321,7 +381,11 @@ adminRouter.get(
  */
 adminRouter.patch(
     '/identity-verifications/:id',
-    ControlBuilder.builder().only('admin').setValidator(adminIdentityVerificationStatusSchema).setHandler(updateAdminIdentityVerification.handle).handle(),
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminIdentityVerificationStatusSchema)
+        .setHandler(updateAdminIdentityVerification.handle)
+        .handle(),
 );
 
 /**
@@ -345,7 +409,14 @@ adminRouter.patch(
  *                   resourceType: report
  *                   result: success
  */
-adminRouter.get('/audit-logs', ControlBuilder.builder().only('admin').setValidator(adminAuditLogsQuerySchema).setHandler(getAdminAuditLogs.handle).handle());
+adminRouter.get(
+    '/audit-logs',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminAuditLogsQuerySchema)
+        .setHandler(getAdminAuditLogs.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -377,5 +448,9 @@ adminRouter.get('/audit-logs', ControlBuilder.builder().only('admin').setValidat
  */
 adminRouter.post(
     '/notifications/broadcast',
-    ControlBuilder.builder().only('admin').setValidator(adminBroadcastNotificationSchema).setHandler(broadcastNotification.handle).handle(),
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminBroadcastNotificationSchema)
+        .setHandler(broadcastNotification.handle)
+        .handle(),
 );

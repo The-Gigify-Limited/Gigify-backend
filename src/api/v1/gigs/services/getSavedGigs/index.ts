@@ -3,10 +3,7 @@ import { GetSavedGigsDto } from '../../interfaces';
 import { GigRepository, SavedGigRepository } from '../../repository';
 
 export class GetSavedGigs {
-    constructor(
-        private readonly savedGigRepository: SavedGigRepository,
-        private readonly gigRepository: GigRepository,
-    ) {}
+    constructor(private readonly savedGigRepository: SavedGigRepository, private readonly gigRepository: GigRepository) {}
 
     handle = async ({ query, request }: ControllerArgs<GetSavedGigsDto>) => {
         const userId = request.user?.id;
