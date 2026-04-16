@@ -1,5 +1,7 @@
 import { AppEventManager } from '@/app/app-events/app.events';
-import { realtimeService } from '@/core';
+import { logger, realtimeService } from '@/core';
+import { sendEmail } from '@/core/services/mails';
+import { notificationMail } from '@/core/services/mails/views/gigify-auth.view';
 import { Json } from '@/core/types';
 import { Notification, NotificationChannelEnum, NotificationTypeEnum } from './interfaces';
 import { NotificationRepository } from './repository';
@@ -41,5 +43,47 @@ export async function dispatchNotificationEventListener(input: {
 
     await realtimeService.broadcastToUser(input.userId, 'new_notification', notification);
 
+    if (input.channel === 'email') {
+        await sendNotificationEmail(input.userId, input.title, input.message ?? '', input.appEventManager);
+    }
+
     return notification;
+}
+
+async function sendNotificationEmail(userId: string, title: string, message: string, appEventManager?: AppEventManager): Promise<void> {
+    try {
+        let user;
+
+        if (appEventManager) {
+            const [userData] = await appEventManager.dispatch('user:get-by-id', { id: userId });
+            user = userData;
+        } else {
+            const { dispatch } = await import('@/app');
+            const [userData] = await dispatch('user:get-by-id', { id: userId });
+            user = userData;
+        }
+
+        if (!user?.email) {
+            logger.warn(`Cannot send notification email: user ${userId} has no email`);
+            return;
+        }
+
+        const firstName = user.firstName || user.email.split('@')[0];
+
+        await sendEmail({
+            to: user.email,
+            subject: title,
+            body: notificationMail({
+                firstName,
+                title,
+                message,
+            }),
+        });
+    } catch (error: any) {
+        logger.error('Failed to send notification email', {
+            userId,
+            error: error?.message,
+            code: error?.code,
+        });
+    }
 }

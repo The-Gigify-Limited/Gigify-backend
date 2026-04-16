@@ -29,6 +29,7 @@ jest.mock('~/user/repository', () => ({
 jest.mock('@/core/services/mails', () => ({
     sendEmail: jest.fn(),
     welcomeOnboardingMail: jest.fn().mockReturnValue('<html>welcome</html>'),
+    welcomeEmployerMail: jest.fn().mockReturnValue('<html>employer welcome</html>'),
 }));
 
 import { dispatch } from '@/app';
@@ -85,11 +86,46 @@ describe('SetUserRole service', () => {
         expect(sendEmail).toHaveBeenCalledWith(
             expect.objectContaining({
                 to: 'ada@example.com',
-                subject: 'You’re In! Let’s Get You Booked on Gigify',
             }),
         );
         expect(response.data.role).toBe('talent');
         expect(response.data.onboardingStep).toBe(1);
+    });
+
+    it('sends employer welcome email when role is employer', async () => {
+        const userRepository = {
+            findById: jest.fn().mockResolvedValue({
+                id: 'user-1',
+                email: 'employer@example.com',
+                firstName: 'Sarah',
+                role: null,
+                onboarding_step: 0,
+            }),
+            updateById: jest.fn().mockResolvedValue({
+                id: 'user-1',
+                role: 'employer',
+                onboarding_step: 1,
+            }),
+            mapToCamelCase: jest.fn().mockReturnValue({
+                id: 'user-1',
+                email: 'employer@example.com',
+                firstName: 'Sarah',
+                role: 'employer',
+                onboardingStep: 1,
+            }),
+        };
+
+        (dispatch as jest.Mock).mockResolvedValue([{ id: 'employer-profile-1' }]);
+
+        const service = new SetUserRole(userRepository as never, sendEmail as never);
+
+        const response = await service.handle({
+            input: { userId: 'user-1', role: 'employer' },
+        } as never);
+
+        expect(dispatch).toHaveBeenCalledWith('employer:create-profile', { user_id: 'user-1' });
+        expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'employer@example.com' }));
+        expect(response.data.role).toBe('employer');
     });
 
     it('does not block role assignment if the welcome email fails', async () => {

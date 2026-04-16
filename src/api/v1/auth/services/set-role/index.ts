@@ -1,6 +1,6 @@
 import { dispatch } from '@/app';
 import { BadRequestError, BaseService, ConflictError, ControllerArgs, HttpStatus, logger } from '@/core';
-import { sendEmail, welcomeOnboardingMail } from '@/core/services/mails';
+import { sendEmail, welcomeOnboardingMail, welcomeEmployerMail } from '@/core/services/mails';
 import { UserRepository } from '~/user/repository';
 import { resolveUserDisplayName } from '../../utils/passwordRecovery';
 import { SetUserRolePayload } from '../../interface';
@@ -36,6 +36,8 @@ export class SetUserRole extends BaseService {
             const [employerProfile] = await dispatch('employer:create-profile', { user_id: userId });
 
             if (!employerProfile) throw new Error('Failed to create employer profile');
+
+            await this.sendWelcomeEmployerEmail(updatedUser.email, updatedUser.firstName);
         }
 
         if (role == 'talent') {
@@ -61,17 +63,40 @@ export class SetUserRole extends BaseService {
         try {
             await this.emailSender({
                 to: email,
-                subject: 'You’re In! Let’s Get You Booked on Gigify',
+                subject: "You're In! Let's Get You Booked on Gigify",
                 body: welcomeOnboardingMail({
                     firstName: resolveUserDisplayName(firstName, email),
                 }),
             });
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
             logger.error('Failed to send welcome onboarding email', {
                 email,
-                error: error?.message,
-                status: error?.status,
-                code: error?.code,
+                error: err?.message,
+                status: err?.status,
+                code: err?.code,
+            });
+        }
+    }
+
+    private async sendWelcomeEmployerEmail(email: string | null, firstName: string | null) {
+        if (!email) return;
+
+        try {
+            await this.emailSender({
+                to: email,
+                subject: 'Welcome to Gigify - Start Posting Gigs',
+                body: welcomeEmployerMail({
+                    firstName: resolveUserDisplayName(firstName, email),
+                }),
+            });
+        } catch (error: unknown) {
+            const err = error as Record<string, unknown>;
+            logger.error('Failed to send welcome employer email', {
+                email,
+                error: err?.message,
+                status: err?.status,
+                code: err?.code,
             });
         }
     }

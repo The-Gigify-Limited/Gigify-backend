@@ -18,8 +18,8 @@ const envSchema = Joi.object()
         REDIS_PORT: Joi.string().required(),
         REDIS_PASSWORD: Joi.string().allow('').required(),
 
-        SENDGRID_API_KEY: Joi.string().required(),
-        SENDGRID_EMAIL: Joi.string().required(),
+        RESEND_API_KEY: Joi.string().required(),
+        RESEND_FROM_ADDRESS: Joi.string().required(),
 
         TWILIO_SID: Joi.string().required(),
         TWILIO_AUTH_TOKEN: Joi.string().required(),
@@ -62,9 +62,9 @@ export const config = Object.freeze({
         password: process.env.REDIS_PASSWORD,
     },
 
-    sendGrid: {
-        sendGridApikey: validatedEnvVars.SENDGRID_API_KEY,
-        sendgrid_email: validatedEnvVars.SENDGRID_EMAIL,
+    mail: {
+        apiKey: validatedEnvVars.RESEND_API_KEY,
+        fromAddress: validatedEnvVars.RESEND_FROM_ADDRESS,
     },
 
     auth: {

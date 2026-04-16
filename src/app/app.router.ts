@@ -7,6 +7,7 @@ import { gigRouter } from '@/api/v1/gigs';
 import { notificationRouter } from '@/api/v1/notifications';
 import { realtimeRouter } from '@/api/v1/realtime';
 import { talentRouter } from '@/api/v1/talents';
+import { uploadRouter } from '@/api/v1/upload';
 import { userRouter } from '@/api/v1/user';
 import { config, HttpStatus } from '@/core';
 import { Router } from 'express';
@@ -25,6 +26,7 @@ appRouter.use('/chat', chatRouter);
 appRouter.use('/notifications', notificationRouter);
 appRouter.use('/realtime', realtimeRouter);
 appRouter.use('/admin', adminRouter);
+appRouter.use('/upload', uploadRouter);
 
 const swaggerOptions = {
     definition: {
