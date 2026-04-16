@@ -54,10 +54,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_DESC_MODE: ${{ vars.PR_DESC_MODE || 'commits' }}
-          # AI secrets — only needed for "ai" mode
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          # Optional overrides
           AI_MODEL: ${{ vars.AI_MODEL }}
           PR_DESC_MAX_DIFF_CHARS: ${{ vars.PR_DESC_MAX_DIFF_CHARS }}
         run: node .github/scripts/generate-pr-description.js
