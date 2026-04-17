@@ -171,6 +171,7 @@ employerRouter.patch(
  *                 completedGigs: 1
  *                 pendingApplications: 6
  *                 pendingPayments: 2
+ *                 totalApplicationsReceived: 42
  */
 employerRouter.get(
     '/:id/dashboard',

@@ -20,4 +20,5 @@ export type EmployerDashboard = {
     completedGigs: number;
     pendingApplications: number;
     pendingPayments: number;
+    totalApplicationsReceived: number;
 };

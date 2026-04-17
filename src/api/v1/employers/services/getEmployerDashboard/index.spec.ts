@@ -36,6 +36,7 @@ describe('GetEmployerDashboard service', () => {
                 completedGigs: 2,
                 pendingApplications: 8,
                 pendingPayments: 0,
+                totalApplicationsReceived: 42,
             }),
         };
 
