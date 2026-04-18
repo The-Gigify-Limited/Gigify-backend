@@ -169,6 +169,27 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return this.mapToCamelCase(data);
     }
 
+    async findStaleOpenGigs(now: Date = new Date()): Promise<Gig[]> {
+        const nowIso = now.toISOString();
+        const { data = [], error } = await supabaseAdmin.from(this.table).select('*').eq('status', 'open').lt('gig_date', nowIso);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
+    }
+
+    async markGigsExpired(gigIds: string[]): Promise<void> {
+        if (!gigIds.length) return;
+
+        const { error } = await supabaseAdmin
+            .from(this.table)
+            .update({ status: 'expired' as any, updated_at: new Date().toISOString() })
+            .in('id', gigIds)
+            .eq('status', 'open');
+
+        if (error) throw error;
+    }
+
     async deleteGig(gigId: string): Promise<null> {
         const existingGig = await this.findById(gigId);
 

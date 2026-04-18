@@ -1,3 +1,4 @@
+import { logger } from '@/core';
 import { Gig, GigApplication, GigReport } from './interfaces';
 import { GigRepository, ReportRepository } from './repository';
 
@@ -26,4 +27,11 @@ export async function findApplicationByGigAndTalentEventListener(input: { gigId:
     const gigRepository = new GigRepository();
     const application = await gigRepository.findApplicationByGigAndTalent(input.gigId, input.talentId);
     return application;
+}
+
+export function gigExpiredEventListener(input: { gigId: string; employerId: string }): void {
+    logger.info('Gig expired', {
+        gigId: input.gigId,
+        employerId: input.employerId,
+    });
 }

@@ -17,6 +17,7 @@ jest.mock('@/app', () => ({
 
 jest.mock('~/gigs/repository', () => ({
     GigRepository: class GigRepository {},
+    GigOfferRepository: class GigOfferRepository {},
 }));
 
 import { dispatch } from '@/app';
@@ -177,5 +178,69 @@ describe('UpdateGigStatus service', () => {
         } as never);
 
         expect(response.data.status).toBe('open');
+    });
+
+    it('allows open to expired transition and leaves expired as a terminal state', async () => {
+        const gigRepository = {
+            getGigById: jest.fn().mockResolvedValueOnce({ id: 'gig-1', status: 'open' }).mockResolvedValueOnce({ id: 'gig-1', status: 'expired' }),
+            updateGigById: jest.fn().mockResolvedValue({ id: 'gig-1', status: 'expired' }),
+            getApplicationsForGig: jest.fn().mockResolvedValue([]),
+        };
+        const gigOfferRepository = { countOffersForGig: jest.fn() };
+
+        const service = new UpdateGigStatus(gigRepository as never, gigOfferRepository as never);
+
+        const response = await service.handle({
+            params: { id: 'gig-1' },
+            input: { status: 'expired' },
+        } as never);
+
+        expect(response.data.status).toBe('expired');
+
+        await expect(
+            service.handle({
+                params: { id: 'gig-1' },
+                input: { status: 'open' },
+            } as never),
+        ).rejects.toThrow('Gig cannot move from expired to open');
+    });
+
+    it('reverts an open gig back to draft only when no offers have been sent', async () => {
+        const gigRepository = {
+            getGigById: jest.fn().mockResolvedValue({ id: 'gig-1', status: 'open' }),
+            updateGigById: jest.fn().mockResolvedValue({ id: 'gig-1', status: 'draft' }),
+            getApplicationsForGig: jest.fn().mockResolvedValue([]),
+        };
+        const gigOfferRepository = { countOffersForGig: jest.fn().mockResolvedValue(0) };
+
+        const service = new UpdateGigStatus(gigRepository as never, gigOfferRepository as never);
+
+        const response = await service.handle({
+            params: { id: 'gig-1' },
+            input: { status: 'draft' },
+        } as never);
+
+        expect(gigOfferRepository.countOffersForGig).toHaveBeenCalledWith('gig-1');
+        expect(response.data.status).toBe('draft');
+    });
+
+    it('rejects reverting an open gig to draft when offers have already been sent', async () => {
+        const gigRepository = {
+            getGigById: jest.fn().mockResolvedValue({ id: 'gig-1', status: 'open' }),
+            updateGigById: jest.fn(),
+            getApplicationsForGig: jest.fn(),
+        };
+        const gigOfferRepository = { countOffersForGig: jest.fn().mockResolvedValue(2) };
+
+        const service = new UpdateGigStatus(gigRepository as never, gigOfferRepository as never);
+
+        await expect(
+            service.handle({
+                params: { id: 'gig-1' },
+                input: { status: 'draft' },
+            } as never),
+        ).rejects.toThrow('Cannot revert to draft: offers have already been sent for this gig.');
+
+        expect(gigRepository.updateGigById).not.toHaveBeenCalled();
     });
 });

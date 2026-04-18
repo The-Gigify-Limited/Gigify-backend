@@ -37,6 +37,8 @@ const envSchema = Joi.object()
         SUMSUB_BASE_URL: Joi.string().allow('').optional(),
         SUMSUB_LEVEL_NAME: Joi.string().allow('').optional(),
         SUMSUB_WEBHOOK_SECRET: Joi.string().allow('').optional(),
+
+        INTERNAL_JOB_SECRET: Joi.string().allow('').optional(),
     })
     .unknown();
 
@@ -84,6 +86,10 @@ export const config = Object.freeze({
             checkoutSuccessUrl: validatedEnvVars.STRIPE_CHECKOUT_SUCCESS_URL || null,
             checkoutCancelUrl: validatedEnvVars.STRIPE_CHECKOUT_CANCEL_URL || null,
         },
+    },
+
+    internalJobs: {
+        secret: validatedEnvVars.INTERNAL_JOB_SECRET || null,
     },
 
     kyc: {
