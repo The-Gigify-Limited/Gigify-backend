@@ -33,6 +33,10 @@ export type User = {
     createdAt: string | null;
     updatedAt: string | null;
     username: string | null;
+    dateOfBirth: string | null;
+    streetAddress: string | null;
+    acquisitionSource: string | null;
+    bio: string | null;
 };
 
 export type Activity = {
