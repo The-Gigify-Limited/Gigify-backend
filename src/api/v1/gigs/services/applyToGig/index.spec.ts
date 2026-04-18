@@ -71,15 +71,17 @@ describe('ApplyToGig service', () => {
         const response = await service.handle({
             params: { id: 'gig-1' },
             input: {
-                coverMessage: 'I am a great fit for this event.',
+                proposalMessage: 'I am a great fit for this event.',
                 proposedRate: 75000,
+                proposedCurrency: 'NGN',
             },
             request: { user: { id: 'talent-1' } },
         } as never);
 
         expect(createApplication).toHaveBeenCalledWith('gig-1', 'talent-1', {
-            coverMessage: 'I am a great fit for this event.',
+            proposalMessage: 'I am a great fit for this event.',
             proposedRate: 75000,
+            proposedCurrency: 'NGN',
         });
         expect(dispatch).toHaveBeenCalledWith('user:create-activity', {
             userId: 'talent-1',

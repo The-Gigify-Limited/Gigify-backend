@@ -509,8 +509,9 @@ gigRouter.post(
  *       content:
  *         application/json:
  *           example:
- *             coverMessage: I can deliver a high-energy Afrobeat set and manage transitions smoothly.
+ *             proposalMessage: I can deliver a high-energy Afrobeat set and manage transitions smoothly.
  *             proposedRate: 210000
+ *             proposedCurrency: NGN
  *     responses:
  *       201:
  *         description: Application submitted
