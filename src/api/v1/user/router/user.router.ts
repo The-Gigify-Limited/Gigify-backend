@@ -153,6 +153,10 @@ userRouter
      *             fullAddress: 24 Allen Avenue, Ikeja
      *             postCode: 100282
      *             username: djmaxell
+     *             dateOfBirth: "1995-06-15"
+     *             streetAddress: 24 Allen Avenue
+     *             acquisitionSource: referral
+     *             bio: DJ and event producer based in Lagos.
      *     responses:
      *       200:
      *         description: Updated profile

@@ -1112,7 +1112,10 @@ export type Database = {
             };
             users: {
                 Row: {
+                    acquisition_source: string | null;
+                    bio: string | null;
                     created_at: string | null;
+                    date_of_birth: string | null;
                     email: string | null;
                     first_name: string | null;
                     full_address: string | null;
@@ -1130,11 +1133,15 @@ export type Database = {
                     profile_image_url: string | null;
                     role: Database['public']['Enums']['user_role'] | null;
                     status: Database['public']['Enums']['user_status'];
+                    street_address: string | null;
                     updated_at: string | null;
                     username: string | null;
                 };
                 Insert: {
+                    acquisition_source?: string | null;
+                    bio?: string | null;
                     created_at?: string | null;
+                    date_of_birth?: string | null;
                     email?: string | null;
                     first_name?: string | null;
                     full_address?: string | null;
@@ -1152,11 +1159,15 @@ export type Database = {
                     profile_image_url?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
+                    street_address?: string | null;
                     updated_at?: string | null;
                     username?: string | null;
                 };
                 Update: {
+                    acquisition_source?: string | null;
+                    bio?: string | null;
                     created_at?: string | null;
+                    date_of_birth?: string | null;
                     email?: string | null;
                     first_name?: string | null;
                     full_address?: string | null;
@@ -1174,6 +1185,7 @@ export type Database = {
                     profile_image_url?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
+                    street_address?: string | null;
                     updated_at?: string | null;
                     username?: string | null;
                 };

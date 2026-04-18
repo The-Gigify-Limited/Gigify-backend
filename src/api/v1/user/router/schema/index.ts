@@ -36,6 +36,10 @@ const updateUserSchema = {
         gender: Joi.string().valid('male', 'female', 'non_binary', 'prefer_not_to_say').allow(null),
         username: Joi.string().alphanum().min(3).max(32).allow(null),
         onboardingStep: Joi.number().integer().min(0).allow(null),
+        dateOfBirth: Joi.date().iso().less('now').allow(null),
+        streetAddress: Joi.string().max(255).allow(null, ''),
+        acquisitionSource: Joi.string().max(120).allow(null, ''),
+        bio: Joi.string().max(2000).allow(null, ''),
     }),
 };
 
