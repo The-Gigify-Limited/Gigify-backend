@@ -1,4 +1,4 @@
-import { BadRequestError, ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
+import { ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
 import { CreateTalentReviewDto } from '~/talents/interfaces';
 import { TalentReviewRepository } from '~/talents/repository';
 
@@ -12,8 +12,6 @@ export class CreateTalentReview {
         const reviewerId = request.user?.id;
 
         if (!reviewerId) throw new UnAuthorizedError('User not authenticated');
-
-        if (reviewerId === talentId) throw new BadRequestError('You cannot review yourself');
 
         const createdReview = await this.talentReviewRepository.createTalentReview(talentId, {
             ...input,

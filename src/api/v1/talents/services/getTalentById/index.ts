@@ -16,24 +16,21 @@ export class GetTalentById {
 
         if (!talent) throw new RouteNotFoundError('Talent profile not found');
 
-        const [portfolios, reviews, averageRating, totalGigsCompleted] = await Promise.all([
-            this.talentPortfolioRepository.findByTalentId(talent.id),
-            this.talentReviewRepository.findMany({
-                filters: {
-                    talent_id: params.id,
-                },
-                pagination: {
-                    page: 1,
-                    pageSize: 20,
-                },
-                orderBy: {
-                    column: 'created_at',
-                    ascending: false,
-                },
-            }),
-            this.talentReviewRepository.findTalentAverageRating(params.id),
-            this.talentRepository.countCompletedGigs(params.id),
-        ]);
+        const portfolios = await this.talentPortfolioRepository.findByTalentId(talent.id);
+        const reviews = await this.talentReviewRepository.findMany({
+            filters: {
+                talent_id: params.id,
+            },
+            pagination: {
+                page: 1,
+                pageSize: 20,
+            },
+            orderBy: {
+                column: 'created_at',
+                ascending: false,
+            },
+        });
+        const averageRating = await this.talentReviewRepository.findTalentAverageRating(params.id);
 
         return {
             code: HttpStatus.OK,
@@ -43,7 +40,6 @@ export class GetTalentById {
                 portfolios,
                 reviews: reviews.map(this.talentReviewRepository.mapToCamelCase),
                 averageRating,
-                totalGigsCompleted,
             },
         };
     };

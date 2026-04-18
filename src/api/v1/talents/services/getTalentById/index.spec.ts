@@ -18,14 +18,13 @@ jest.mock('~/talents/repository', () => ({
 import { GetTalentById } from './index';
 
 describe('GetTalentById service', () => {
-    it('retrieves talent profile with portfolios, reviews, and completed gigs count', async () => {
+    it('retrieves talent profile with portfolios and reviews', async () => {
         const talentRepository = {
             findByUserId: jest.fn().mockResolvedValue({
                 id: 'talent-1',
                 userId: 'user-1',
                 bio: 'Talented designer',
             }),
-            countCompletedGigs: jest.fn().mockResolvedValue(7),
         };
         const talentPortfolioRepository = {
             findByTalentId: jest.fn().mockResolvedValue([{ id: 'port-1', title: 'Project A', imageUrl: 'image.jpg' }]),
@@ -43,7 +42,6 @@ describe('GetTalentById service', () => {
         } as never);
 
         expect(talentRepository.findByUserId).toHaveBeenCalledWith('user-1');
-        expect(talentRepository.countCompletedGigs).toHaveBeenCalledWith('user-1');
         expect(talentPortfolioRepository.findByTalentId).toHaveBeenCalledWith('talent-1');
         expect(talentReviewRepository.findMany).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -54,13 +52,11 @@ describe('GetTalentById service', () => {
         expect(response.message).toBe('Talent Retrieved Successfully');
         expect(response.data.portfolios).toHaveLength(1);
         expect(response.data.averageRating).toBe(4.8);
-        expect(response.data.totalGigsCompleted).toBe(7);
     });
 
     it('throws when talent id is not provided', async () => {
         const talentRepository = {
             findByUserId: jest.fn(),
-            countCompletedGigs: jest.fn(),
         };
         const talentPortfolioRepository = {
             findByTalentId: jest.fn(),
@@ -85,7 +81,6 @@ describe('GetTalentById service', () => {
     it('throws when talent profile not found', async () => {
         const talentRepository = {
             findByUserId: jest.fn().mockResolvedValue(null),
-            countCompletedGigs: jest.fn(),
         };
         const talentPortfolioRepository = {
             findByTalentId: jest.fn(),
@@ -114,7 +109,6 @@ describe('GetTalentById service', () => {
                 userId: 'user-1',
                 bio: 'Talented designer',
             }),
-            countCompletedGigs: jest.fn().mockResolvedValue(0),
         };
         const talentPortfolioRepository = {
             findByTalentId: jest.fn().mockResolvedValue([]),
