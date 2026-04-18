@@ -1244,7 +1244,7 @@ export type Database = {
                 | 'payout_requested'
                 | 'review_posted';
             audit_result: 'success' | 'failure';
-            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled';
+            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
             identity_document_type: 'passport' | 'drivers_license' | 'national_id' | 'selfie_video';
             notification_channel: 'in_app' | 'email' | 'push' | 'sms';
             notification_type: 'gig_update' | 'application_update' | 'payment_update' | 'message_received' | 'security_alert' | 'marketing';
@@ -1383,7 +1383,7 @@ export const Constants = {
                 'review_posted',
             ],
             audit_result: ['success', 'failure'],
-            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled'],
+            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'],
             identity_document_type: ['passport', 'drivers_license', 'national_id', 'selfie_video'],
             notification_channel: ['in_app', 'email', 'push', 'sms'],
             notification_type: ['gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing'],

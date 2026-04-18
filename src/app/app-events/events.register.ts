@@ -1,10 +1,11 @@
 import { config, logger } from '@/core';
 import { createEmployerProfileListener, getEmployerProfileByUserIdEventListener } from '~/employers/listeners';
 import {
+    findApplicationByGigAndTalentEventListener,
     getAllGigsEventListener,
     getGigByIdEventListener,
+    gigExpiredEventListener,
     updateGigReportStatusEventListener,
-    findApplicationByGigAndTalentEventListener,
 } from '~/gigs/listeners';
 import { dispatchNotificationEventListener } from '~/notifications/listeners';
 import {
@@ -45,6 +46,7 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('gig:get-all', ({ query }) => getAllGigsEventListener(query));
     bus.onEvent('gig:update-report-status', (input) => updateGigReportStatusEventListener(input));
     bus.onEvent('gig:find-application', (input) => findApplicationByGigAndTalentEventListener(input));
+    bus.onEvent('gig:expired', (input) => gigExpiredEventListener(input));
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
     bus.onEvent('user:onboarding-step-completed', (input) => onboardingStepCompletedEventListener(input));
     bus.onEvent('earnings:create-record', (input) => createEarningsRecordEventListener(input));

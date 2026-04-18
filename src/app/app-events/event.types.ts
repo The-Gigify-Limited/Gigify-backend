@@ -69,6 +69,13 @@ export interface AppEventsInterface {
         },
         GigApplication | null
     >;
+    'gig:expired': EventDefinition<
+        {
+            gigId: string;
+            employerId: string;
+        },
+        void
+    >;
     'user:create-activity': EventDefinition<
         {
             userId: string;

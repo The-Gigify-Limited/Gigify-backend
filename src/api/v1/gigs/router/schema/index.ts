@@ -1,7 +1,7 @@
 import Joi from 'joi';
 
 const uuid = Joi.string().uuid();
-const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled'] as const;
+const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'] as const;
 const applicationStatusEnum = ['submitted', 'reviewing', 'shortlisted', 'hired', 'rejected', 'withdrawn'] as const;
 
 export const gigFiltersSchema = {
