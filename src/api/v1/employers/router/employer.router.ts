@@ -136,6 +136,7 @@ employerRouter.patch(
             ...getEmployerParamsSchema,
             ...upsertEmployerProfileSchema,
         })
+        .checkResourceOwnership('user', 'id')
         .setHandler(upsertEmployerProfile.handle)
         .handle(),
 );
