@@ -53,8 +53,6 @@ export interface ForgotPasswordPayload extends ControllerArgsTypes {
 
 export interface ResetPasswordPayload extends ControllerArgsTypes {
     input: {
-        email: string;
-        code: string;
         password: string;
     };
 }

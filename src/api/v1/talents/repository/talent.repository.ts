@@ -16,6 +16,19 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         return data ? this.mapToCamelCase(data) : null;
     }
 
+    async countCompletedGigs(userId: string): Promise<number> {
+        const { count, error } = await supabaseAdmin
+            .from('gig_applications')
+            .select('id, gigs!inner(status)', { count: 'exact', head: true })
+            .eq('talent_id', userId)
+            .eq('status', 'hired')
+            .eq('gigs.status', 'completed');
+
+        if (error) throw error;
+
+        return count ?? 0;
+    }
+
     async createTalentProfile(user_id: string): Promise<Talent> {
         const { data, error } = await supabaseAdmin
             .from(this.table)

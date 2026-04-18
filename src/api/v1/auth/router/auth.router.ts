@@ -13,6 +13,7 @@ import {
     refreshToken,
     register,
     requestPhoneOtp,
+    resetPassword,
     setUserRole,
     verifyEmail,
     verifyPhoneOtp,
@@ -26,6 +27,7 @@ import {
     phoneOtpVerifySchema,
     refreshTokenSchema,
     resendVerifyEmailMessageSchema,
+    resetPasswordSchema,
     setUserRoleSchema,
     signUpSchema,
     verifyEmailValidateSchema,
@@ -91,6 +93,7 @@ authRouter
         ControlBuilder.builder()
             .setValidator(loginSchema)
             .setHandler(login.handle)
+            .only('talent')
             .handle(),
     )
 
@@ -506,13 +509,56 @@ authRouter
             .handle(),
     )
 
-    // .post(
-    //     '/reset-password',
-    //     ControlBuilder.builder()
-    //         .setHandler(resetPassword.handle)
-    //         .setValidator(resetPasswordSchema)
-    //         .handle(),
-    // )
+    /**
+     * @swagger
+     * /auth/reset-password:
+     *   post:
+     *     tags: [Authentication]
+     *     summary: Reset password using a Supabase recovery session
+     *     description: |
+     *       Completes the password recovery flow initiated by `/auth/forgot-password`.
+     *       The client must include the Supabase recovery `access_token` returned by the
+     *       email callback as a `Bearer` token in the `Authorization` header.
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - password
+     *             properties:
+     *               password:
+     *                 type: string
+     *                 format: password
+     *                 description: |
+     *                   New password. Must be at least 8 characters and contain an
+     *                   uppercase letter, a lowercase letter, a digit, and a special character.
+     *           example:
+     *             password: StrongPassword123!
+     *     responses:
+     *       200:
+     *         description: Password reset successful
+     *         content:
+     *           application/json:
+     *             example:
+     *               message: Your password has been reset successfully.
+     *               data: null
+     *       401:
+     *         description: Missing, invalid, or expired recovery session
+     *       422:
+     *         description: Password does not meet strength requirements
+     */
+    .post(
+        '/reset-password',
+        passwordResetRateLimiter,
+        ControlBuilder.builder()
+            .setHandler(resetPassword.handle)
+            .setValidator(resetPasswordSchema)
+            .handle(),
+    )
 
     /**
      * @swagger

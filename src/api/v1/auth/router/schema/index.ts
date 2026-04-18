@@ -1,5 +1,14 @@
 import Joi from 'joi';
 
+const passwordStrengthPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+
+const passwordSchema = Joi.string().min(8).pattern(passwordStrengthPattern, 'password-strength').required().messages({
+    'string.empty': 'Password is required.',
+    'string.min': 'Password must be at least 8 characters long.',
+    'string.pattern.name': 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.',
+    'any.required': 'Password is required.',
+});
+
 const signUpSchema = {
     inputSchema: Joi.object().keys({
         email: Joi.string()
@@ -7,12 +16,7 @@ const signUpSchema = {
             .email({ tlds: { allow: false } })
             .label('Valid email is required'),
 
-        password: Joi.string()
-            .min(8)
-            .required()
-            .label(
-                'Password is required and must be at least 8 characters. It should include at least one uppercase letter, one lowercase letter, one digit, and one special character (@#$%^&+=!.).',
-            ),
+        password: passwordSchema,
     }),
 };
 
@@ -92,11 +96,7 @@ const forgotPasswordSchema = {
 
 const resetPasswordSchema = {
     inputSchema: Joi.object().keys({
-        code: Joi.string().length(6).required(),
-        password: Joi.string().required(),
-        email: Joi.string()
-            .required()
-            .email({ tlds: { allow: false } }),
+        password: passwordSchema,
     }),
 };
 
