@@ -20,6 +20,7 @@ import {
     reportTalent,
     saveGig,
     searchGigs,
+    updateApplicationStatus,
     updateGig,
     updateGigOffer,
     updateGigStatus,
@@ -38,6 +39,7 @@ import {
     myGigsSchema,
     reportTalentSchema,
     savedGigsSchema,
+    updateApplicationStatusSchema,
     updateGigSchema,
     updateGigOfferSchema,
     updateGigStatusSchema,
@@ -423,6 +425,64 @@ gigRouter.get(
         .checkResourceOwnership('gig', 'id')
         .setValidator(gigApplicationsSchema)
         .setHandler(getGigApplications.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /gig/{gigId}/application/{applicationId}/status:
+ *   patch:
+ *     tags: [Gigs]
+ *     summary: Employer shortlists or rejects a talent's application
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gigId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [shortlisted, rejected]
+ *               employerNotes:
+ *                 type: string
+ *           example:
+ *             status: shortlisted
+ *             employerNotes: Great portfolio, booking for interview.
+ *     responses:
+ *       200:
+ *         description: Application status updated
+ *       401:
+ *         description: Unauthenticated
+ *       403:
+ *         description: Caller does not own the gig, or role is not employer
+ *       409:
+ *         description: Invalid transition (e.g. already rejected, already hired)
+ */
+gigRouter.patch(
+    '/:gigId/application/:applicationId/status',
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'gigId')
+        .setValidator(updateApplicationStatusSchema)
+        .setHandler(updateApplicationStatus.handle)
         .handle(),
 );
 

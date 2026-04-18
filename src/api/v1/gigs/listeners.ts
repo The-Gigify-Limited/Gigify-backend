@@ -29,6 +29,13 @@ export async function findApplicationByGigAndTalentEventListener(input: { gigId:
     return application;
 }
 
+export function applicationShortlistedEventListener(input: { gigId: string; applicationId: string; talentId: string; employerId: string }): void {
+    logger.info('Gig application shortlisted', input);
+}
+
+export function applicationRejectedEventListener(input: { gigId: string; applicationId: string; talentId: string; employerId: string }): void {
+    logger.info('Gig application rejected', input);
+}
 export function gigExpiredEventListener(input: { gigId: string; employerId: string }): void {
     logger.info('Gig expired', {
         gigId: input.gigId,

@@ -124,6 +124,17 @@ export const gigApplicationsSchema = {
     }),
 };
 
+export const updateApplicationStatusSchema = {
+    paramsSchema: Joi.object({
+        gigId: uuid.required(),
+        applicationId: uuid.required(),
+    }),
+    inputSchema: Joi.object({
+        status: Joi.string().valid('shortlisted', 'rejected').required(),
+        employerNotes: Joi.string().max(2000).allow(null, '').optional(),
+    }),
+};
+
 export const updateGigStatusSchema = {
     paramsSchema: Joi.object({
         id: uuid.required(),

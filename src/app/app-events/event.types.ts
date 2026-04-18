@@ -69,6 +69,22 @@ export interface AppEventsInterface {
         },
         GigApplication | null
     >;
+    'gig:application-shortlisted': EventDefinition<
+        {
+            gigId: string;
+            applicationId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:application-rejected': EventDefinition<
+        {
+            gigId: string;
+            applicationId: string;
+            talentId: string;
+        }
+    >
     'gig:expired': EventDefinition<
         {
             gigId: string;

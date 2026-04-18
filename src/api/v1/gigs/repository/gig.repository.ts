@@ -209,6 +209,14 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return null;
     }
 
+    async getApplicationById(applicationId: string): Promise<GigApplication | null> {
+        const { data, error } = await supabaseAdmin.from('gig_applications').select('*').eq('id', applicationId).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapRow<GigApplication>(data as unknown as DatabaseGigApplication) : null;
+    }
+
     async findApplicationByGigAndTalent(gigId: string, talentId: string): Promise<GigApplication | null> {
         const { data, error } = await supabaseAdmin.from('gig_applications').select('*').eq('gig_id', gigId).eq('talent_id', talentId).maybeSingle();
 
