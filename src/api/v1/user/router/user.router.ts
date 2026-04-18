@@ -1,6 +1,7 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    advanceOnboardingStep,
     createKycSession,
     createUserReview,
     deleteUserById,
@@ -16,6 +17,7 @@ import {
     updateUserById,
 } from '../services';
 import {
+    advanceOnboardingSchema,
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
@@ -30,6 +32,88 @@ import {
 export const userRouter = Router();
 
 userRouter
+    /**
+     * @swagger
+     * /user/onboarding/step:
+     *   patch:
+     *     tags: [User Profile]
+     *     summary: Advance the authenticated user's onboarding to the next step
+     *     description: |
+     *       Accepts the step being completed (1, 2, or 3) and the payload for that
+     *       step. The user must currently be at `step - 1` (or 0 if advancing to
+     *       step 1). Required fields are validated server-side per step and role;
+     *       missing fields return 422. Advancing out of order returns 409. After
+     *       a successful step-3 submission, the computed `onboarded` flag on
+     *       `/user/:id` becomes `true`.
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - step
+     *               - payload
+     *             properties:
+     *               step:
+     *                 type: integer
+     *                 enum: [1, 2, 3]
+     *               payload:
+     *                 type: object
+     *           examples:
+     *             step1:
+     *               summary: Basic info
+     *               value:
+     *                 step: 1
+     *                 payload:
+     *                   firstName: Maxwell
+     *                   lastName: Adeyemi
+     *                   dateOfBirth: "1995-06-15"
+     *             step2:
+     *               summary: Location + contact
+     *               value:
+     *                 step: 2
+     *                 payload:
+     *                   locationCountry: Nigeria
+     *                   locationCity: Lagos
+     *                   streetAddress: 24 Allen Avenue
+     *                   phoneNumber: "+234810000001"
+     *             step3Talent:
+     *               summary: Role-specific (talent)
+     *               value:
+     *                 step: 3
+     *                 payload:
+     *                   stageName: DJ Maxell
+     *                   primaryRole: DJ
+     *                   skills: [afrobeat, wedding]
+     *                   minRate: 120000
+     *             step3Employer:
+     *               summary: Role-specific (employer)
+     *               value:
+     *                 step: 3
+     *                 payload:
+     *                   organizationName: Pulse Live
+     *                   industry: Entertainment
+     *     responses:
+     *       200:
+     *         description: Step completed
+     *       401:
+     *         description: Unauthenticated
+     *       409:
+     *         description: Current step does not match expected precondition
+     *       422:
+     *         description: Missing required fields for this step
+     */
+    .patch(
+        '/onboarding/step',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setValidator(advanceOnboardingSchema)
+            .setHandler(advanceOnboardingStep.handle)
+            .handle(),
+    )
     /**
      * @swagger
      * /user/{id}:

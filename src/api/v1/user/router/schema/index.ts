@@ -79,6 +79,13 @@ const kycSessionSchema = {
     }),
 };
 
+const advanceOnboardingSchema = {
+    inputSchema: Joi.object({
+        step: Joi.number().integer().valid(1, 2, 3).required(),
+        payload: Joi.object().required(),
+    }),
+};
+
 const notificationPreferencesSchema = {
     inputSchema: Joi.object({
         emailEnabled: Joi.boolean().optional(),
@@ -93,6 +100,7 @@ const notificationPreferencesSchema = {
 };
 
 export {
+    advanceOnboardingSchema,
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
