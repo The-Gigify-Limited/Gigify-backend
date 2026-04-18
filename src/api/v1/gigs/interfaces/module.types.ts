@@ -8,7 +8,7 @@ export type DatabaseSavedGig = DatabaseTable['saved_gigs']['Row'];
 export type DatabaseServiceCatalog = DatabaseTable['services_catalog']['Row'];
 
 export type GigStatusEnum = DatabaseEnum['gig_status'];
-export type GigFrontendStatus = 'unpublished' | 'active' | 'booked' | 'completed' | 'cancelled';
+export type GigFrontendStatus = 'unpublished' | 'active' | 'booked' | 'completed' | 'cancelled' | 'expired';
 export type ApplicationStatusEnum = DatabaseEnum['application_status'];
 export type OfferStatusEnum = DatabaseEnum['offer_status'];
 export type PaymentProviderEnum = DatabaseEnum['payment_provider'];
@@ -31,6 +31,13 @@ export type Gig = {
     requiredTalentCount: number;
     createdAt: string | null;
     updatedAt: string | null;
+    eventType: string | null;
+    startTime: string | null;
+    endTime: string | null;
+    durationMinutes: number | null;
+    equipmentProvided: boolean | null;
+    dressCode: string | null;
+    additionalNotes: string | null;
 };
 
 export type GigApplication = {

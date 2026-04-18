@@ -140,6 +140,13 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 is_remote: input.isRemote ?? false,
                 required_talent_count: input.requiredTalentCount ?? 1,
                 status: input.status ?? 'open',
+                event_type: input.eventType ?? null,
+                start_time: input.startTime ?? null,
+                end_time: input.endTime ?? null,
+                duration_minutes: input.durationMinutes ?? null,
+                equipment_provided: input.equipmentProvided ?? false,
+                dress_code: input.dressCode ?? null,
+                additional_notes: input.additionalNotes ?? null,
             })
             .select('*')
             .single();
@@ -167,6 +174,27 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (error) throw error;
 
         return this.mapToCamelCase(data);
+    }
+
+    async findStaleOpenGigs(now: Date = new Date()): Promise<Gig[]> {
+        const nowIso = now.toISOString();
+        const { data = [], error } = await supabaseAdmin.from(this.table).select('*').eq('status', 'open').lt('gig_date', nowIso);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
+    }
+
+    async markGigsExpired(gigIds: string[]): Promise<void> {
+        if (!gigIds.length) return;
+
+        const { error } = await supabaseAdmin
+            .from(this.table)
+            .update({ status: 'expired' as any, updated_at: new Date().toISOString() })
+            .in('id', gigIds)
+            .eq('status', 'open');
+
+        if (error) throw error;
     }
 
     async deleteGig(gigId: string): Promise<null> {

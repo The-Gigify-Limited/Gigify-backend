@@ -5,6 +5,14 @@ import { DatabaseGigOffer, GigOffer, OfferStatusEnum } from '../interfaces';
 export class GigOfferRepository extends BaseRepository<DatabaseGigOffer, GigOffer> {
     protected readonly table = 'gig_offers';
 
+    async countOffersForGig(gigId: string): Promise<number> {
+        const { count, error } = await supabaseAdmin.from(this.table).select('id', { count: 'exact', head: true }).eq('gig_id', gigId);
+
+        if (error) throw error;
+
+        return count ?? 0;
+    }
+
     async createOffer(input: {
         gigId: string;
         employerId: string;

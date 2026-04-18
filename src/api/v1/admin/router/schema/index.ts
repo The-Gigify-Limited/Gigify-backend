@@ -100,7 +100,7 @@ export const adminGigsQuerySchema = {
     querySchema: Joi.object({
         page: Joi.number().integer().min(1).optional(),
         pageSize: Joi.number().integer().min(1).max(100).optional(),
-        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled').optional(),
+        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired').optional(),
         employerId: uuid.optional(),
         search: Joi.string().max(120).optional(),
     }),
@@ -111,6 +111,6 @@ export const adminGigStatusSchema = {
         id: uuid.required(),
     }),
     inputSchema: Joi.object({
-        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled').required(),
+        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired').required(),
     }),
 };

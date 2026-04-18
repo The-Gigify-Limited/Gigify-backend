@@ -12,6 +12,7 @@ function mapGigStatus(status: GigStatusEnum | null): GigFrontendStatus | null {
         in_progress: 'booked',
         completed: 'completed',
         cancelled: 'cancelled',
+        expired: 'expired',
     };
     return statusMap[status];
 }

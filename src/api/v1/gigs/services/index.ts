@@ -2,6 +2,7 @@ export { default as applyToGig } from './applyToGig';
 export { default as createGig } from './createGig';
 export { default as createGigOffer } from './createGigOffer';
 export { default as deleteGig } from './deleteGig';
+export { default as expireStaleGigs } from './expireStaleGigs';
 export { default as exploreGigs } from './exploreGigs';
 export { default as getAllGigs } from './getAllGigs';
 export { default as getGigApplications } from './getGigApplications';

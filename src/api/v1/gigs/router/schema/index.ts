@@ -1,8 +1,10 @@
 import Joi from 'joi';
 
 const uuid = Joi.string().uuid();
-const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled'] as const;
+const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'] as const;
 const applicationStatusEnum = ['submitted', 'reviewing', 'shortlisted', 'hired', 'rejected', 'withdrawn'] as const;
+const timeOfDayPattern = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+const timeOfDay = Joi.string().pattern(timeOfDayPattern, 'HH:MM or HH:MM:SS');
 
 export const gigFiltersSchema = {
     querySchema: Joi.object({
@@ -53,6 +55,13 @@ export const createGigSchema = {
             then: Joi.string().max(160).allow(null, ''),
             otherwise: Joi.string().max(160).required(),
         }),
+        eventType: Joi.string().max(80).allow(null, '').optional(),
+        startTime: timeOfDay.allow(null, '').optional(),
+        endTime: timeOfDay.allow(null, '').optional(),
+        durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
+        equipmentProvided: Joi.boolean().optional(),
+        dressCode: Joi.string().max(120).allow(null, '').optional(),
+        additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
 
@@ -75,6 +84,13 @@ export const updateGigSchema = {
         status: Joi.string()
             .valid(...statusEnum)
             .optional(),
+        eventType: Joi.string().max(80).allow(null, '').optional(),
+        startTime: timeOfDay.allow(null, '').optional(),
+        endTime: timeOfDay.allow(null, '').optional(),
+        durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
+        equipmentProvided: Joi.boolean().optional(),
+        dressCode: Joi.string().max(120).allow(null, '').optional(),
+        additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
 
