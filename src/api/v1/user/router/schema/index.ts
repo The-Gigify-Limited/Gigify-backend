@@ -32,10 +32,9 @@ const updateUserSchema = {
         locationLongitude: Joi.number().min(-180).max(180).allow(null),
         fullAddress: Joi.string().max(255).allow(null),
         postCode: Joi.number().integer().min(0).allow(null),
-        profileImageUrl: Joi.string().uri().allow(null, ''),
+        profileImageUrl: Joi.string().uri().allow(null),
         gender: Joi.string().valid('male', 'female', 'non_binary', 'prefer_not_to_say').allow(null),
         username: Joi.string().alphanum().min(3).max(32).allow(null),
-        onboardingStep: Joi.number().integer().min(0).allow(null),
     }),
 };
 
