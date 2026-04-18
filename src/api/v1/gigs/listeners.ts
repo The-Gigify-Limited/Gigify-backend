@@ -42,3 +42,21 @@ export function gigExpiredEventListener(input: { gigId: string; employerId: stri
         employerId: input.employerId,
     });
 }
+
+type OfferEventInput = { gigId: string; offerId: string; talentId: string; employerId: string };
+
+export function offerSentEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer sent', input);
+}
+
+export function offerAcceptedEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer accepted', input);
+}
+
+export function offerDeclinedEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer declined', input);
+}
+
+export function offerCounteredEventListener(input: OfferEventInput & { counterAmount: number; counterMessage: string | null }): void {
+    logger.info('Gig offer countered', input);
+}

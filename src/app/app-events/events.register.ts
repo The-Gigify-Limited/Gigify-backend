@@ -7,6 +7,10 @@ import {
     getAllGigsEventListener,
     getGigByIdEventListener,
     gigExpiredEventListener,
+    offerAcceptedEventListener,
+    offerCounteredEventListener,
+    offerDeclinedEventListener,
+    offerSentEventListener,
     updateGigReportStatusEventListener,
 } from '~/gigs/listeners';
 import { dispatchNotificationEventListener } from '~/notifications/listeners';
@@ -51,6 +55,10 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('gig:application-shortlisted', (input) => applicationShortlistedEventListener(input));
     bus.onEvent('gig:application-rejected', (input) => applicationRejectedEventListener(input));
     bus.onEvent('gig:expired', (input) => gigExpiredEventListener(input));
+    bus.onEvent('gig:offer-sent', (input) => offerSentEventListener(input));
+    bus.onEvent('gig:offer-accepted', (input) => offerAcceptedEventListener(input));
+    bus.onEvent('gig:offer-declined', (input) => offerDeclinedEventListener(input));
+    bus.onEvent('gig:offer-countered', (input) => offerCounteredEventListener(input));
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
     bus.onEvent('user:onboarding-step-completed', (input) => onboardingStepCompletedEventListener(input));
     bus.onEvent('earnings:create-record', (input) => createEarningsRecordEventListener(input));

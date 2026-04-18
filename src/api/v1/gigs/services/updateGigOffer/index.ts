@@ -30,7 +30,7 @@ export class UpdateGigOffer {
             throw new ConflictError('Only the employer can withdraw this offer');
         }
 
-        if ((input.status === 'accepted' || input.status === 'declined') && userId !== offer.talentId) {
+        if ((input.status === 'accepted' || input.status === 'declined' || input.status === 'countered') && userId !== offer.talentId) {
             throw new ConflictError('Only the recipient can respond to this offer');
         }
 
@@ -38,18 +38,81 @@ export class UpdateGigOffer {
 
         if (!gig) throw new RouteNotFoundError('Gig not found');
 
+        if (input.status === 'countered') {
+            if (input.counterAmount === undefined || input.counterAmount === null) {
+                throw new BadRequestError('counterAmount is required when countering an offer');
+            }
+
+            const now = new Date().toISOString();
+            const updatedOffer = await this.gigOfferRepository.updateOffer(offer.id, {
+                status: 'countered',
+                respondedAt: now,
+                counterAmount: input.counterAmount,
+                counterMessage: input.counterMessage ?? null,
+            } as never);
+
+            await Promise.all([
+                dispatch('gig:offer-countered', {
+                    gigId: gig.id,
+                    offerId: updatedOffer.id,
+                    talentId: offer.talentId,
+                    employerId: offer.employerId,
+                    counterAmount: input.counterAmount,
+                    counterMessage: input.counterMessage ?? null,
+                }),
+                dispatch('notification:dispatch', {
+                    userId: offer.employerId,
+                    type: 'application_update',
+                    title: 'Gig offer countered',
+                    message: `The talent countered your offer for "${gig.title}".`,
+                    payload: {
+                        gigId: gig.id,
+                        offerId: updatedOffer.id,
+                        counterAmount: input.counterAmount,
+                    },
+                    preferenceKey: 'gigUpdates',
+                }),
+                auditService.log({
+                    userId,
+                    action: 'gig_offer_countered',
+                    resourceType: 'gig_offer',
+                    resourceId: updatedOffer.id,
+                    changes: {
+                        gigId: gig.id,
+                        employerId: offer.employerId,
+                        talentId: offer.talentId,
+                        counterAmount: input.counterAmount,
+                        counterMessage: input.counterMessage ?? null,
+                    },
+                    ipAddress: request.ip ?? null,
+                    userAgent: Array.isArray(request.headers['user-agent'])
+                        ? request.headers['user-agent'][0] ?? null
+                        : request.headers['user-agent'] ?? null,
+                }),
+            ]);
+
+            return {
+                code: HttpStatus.OK,
+                message: 'Gig Offer Countered Successfully',
+                data: updatedOffer,
+            };
+        }
+
         if (input.status === 'withdrawn' || input.status === 'declined') {
+            const now = new Date().toISOString();
+            const declinedUpdates = input.status === 'declined' ? { declinedAt: now } : {};
             const updatedOffer = await this.gigOfferRepository.updateOffer(offer.id, {
                 status: input.status,
-                respondedAt: new Date().toISOString(),
-            });
+                respondedAt: now,
+                ...declinedUpdates,
+            } as never);
 
             const counterpartId = input.status === 'withdrawn' ? offer.talentId : offer.employerId;
             const title = input.status === 'withdrawn' ? 'Gig offer withdrawn' : 'Gig offer declined';
             const message =
                 input.status === 'withdrawn' ? `An offer for "${gig.title}" is no longer available.` : `Your offer for "${gig.title}" was declined.`;
 
-            await Promise.all([
+            const settlementPromises: Promise<unknown>[] = [
                 dispatch('notification:dispatch', {
                     userId: counterpartId,
                     type: 'application_update',
@@ -76,7 +139,20 @@ export class UpdateGigOffer {
                         ? request.headers['user-agent'][0] ?? null
                         : request.headers['user-agent'] ?? null,
                 }),
-            ]);
+            ];
+
+            if (input.status === 'declined') {
+                settlementPromises.push(
+                    dispatch('gig:offer-declined', {
+                        gigId: gig.id,
+                        offerId: updatedOffer.id,
+                        talentId: offer.talentId,
+                        employerId: offer.employerId,
+                    }),
+                );
+            }
+
+            await Promise.all(settlementPromises);
 
             return {
                 code: HttpStatus.OK,
@@ -139,11 +215,13 @@ export class UpdateGigOffer {
         const shouldCloseHiring = alreadyHired.length + 1 >= requiredTalentCount;
         const nextGigStatus = shouldCloseHiring ? 'in_progress' : gig.status === 'draft' ? 'open' : gig.status ?? 'open';
 
+        const acceptNow = new Date().toISOString();
         const [updatedOffer, updatedGig] = await Promise.all([
             this.gigOfferRepository.updateOffer(offer.id, {
                 status: 'accepted',
-                respondedAt: new Date().toISOString(),
-            }),
+                respondedAt: acceptNow,
+                acceptedAt: acceptNow,
+            } as never),
             this.gigRepository.updateGigById(gig.id, {
                 status: nextGigStatus,
             }),
@@ -207,6 +285,15 @@ export class UpdateGigOffer {
                 userAgent: Array.isArray(request.headers['user-agent'])
                     ? request.headers['user-agent'][0] ?? null
                     : request.headers['user-agent'] ?? null,
+            }),
+        );
+
+        activitiesAndNotifs.push(
+            dispatch('gig:offer-accepted', {
+                gigId: gig.id,
+                offerId: updatedOffer.id,
+                talentId: offer.talentId,
+                employerId: offer.employerId,
             }),
         );
 

@@ -338,8 +338,12 @@ export type Database = {
             };
             gig_offers: {
                 Row: {
+                    accepted_at: string | null;
+                    counter_amount: number | null;
+                    counter_message: string | null;
                     created_at: string;
                     currency: string;
+                    declined_at: string | null;
                     employer_id: string;
                     expires_at: string | null;
                     gig_id: string;
@@ -352,8 +356,12 @@ export type Database = {
                     updated_at: string;
                 };
                 Insert: {
+                    accepted_at?: string | null;
+                    counter_amount?: number | null;
+                    counter_message?: string | null;
                     created_at?: string;
                     currency?: string;
+                    declined_at?: string | null;
                     employer_id: string;
                     expires_at?: string | null;
                     gig_id: string;
@@ -366,8 +374,12 @@ export type Database = {
                     updated_at?: string;
                 };
                 Update: {
+                    accepted_at?: string | null;
+                    counter_amount?: number | null;
+                    counter_message?: string | null;
                     created_at?: string;
                     currency?: string;
+                    declined_at?: string | null;
                     employer_id?: string;
                     expires_at?: string | null;
                     gig_id?: string;
@@ -1272,7 +1284,7 @@ export type Database = {
             identity_document_type: 'passport' | 'drivers_license' | 'national_id' | 'selfie_video';
             notification_channel: 'in_app' | 'email' | 'push' | 'sms';
             notification_type: 'gig_update' | 'application_update' | 'payment_update' | 'message_received' | 'security_alert' | 'marketing';
-            offer_status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired';
+            offer_status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired' | 'countered';
             payment_provider: 'manual' | 'paystack' | 'flutterwave' | 'stripe';
             payment_status: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded' | 'cancelled';
             payout_status: 'requested' | 'approved' | 'paid' | 'rejected';
@@ -1411,7 +1423,7 @@ export const Constants = {
             identity_document_type: ['passport', 'drivers_license', 'national_id', 'selfie_video'],
             notification_channel: ['in_app', 'email', 'push', 'sms'],
             notification_type: ['gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing'],
-            offer_status: ['pending', 'accepted', 'declined', 'withdrawn', 'expired'],
+            offer_status: ['pending', 'accepted', 'declined', 'withdrawn', 'expired', 'countered'],
             payment_provider: ['manual', 'paystack', 'flutterwave', 'stripe'],
             payment_status: ['pending', 'processing', 'paid', 'failed', 'refunded', 'cancelled'],
             payout_status: ['requested', 'approved', 'paid', 'rejected'],

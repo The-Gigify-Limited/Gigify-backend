@@ -198,6 +198,8 @@ export interface UpdateGigOfferDto extends ControllerArgsTypes {
         offerId: string;
     };
     input: {
-        status: Extract<OfferStatusEnum, 'accepted' | 'declined' | 'withdrawn'>;
+        status: Extract<OfferStatusEnum, 'accepted' | 'declined' | 'withdrawn' | 'countered'>;
+        counterAmount?: number;
+        counterMessage?: string | null;
     };
 }
