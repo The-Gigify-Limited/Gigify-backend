@@ -98,6 +98,17 @@ export interface UpdateGigStatusDto extends ControllerArgsTypes {
     };
 }
 
+export interface UpdateApplicationStatusDto extends ControllerArgsTypes {
+    params: {
+        gigId: string;
+        applicationId: string;
+    };
+    input: {
+        status: Extract<ApplicationStatusEnum, 'shortlisted' | 'rejected'>;
+        employerNotes?: string | null;
+    };
+}
+
 export interface HireTalentDto extends ControllerArgsTypes {
     params: {
         id: string;

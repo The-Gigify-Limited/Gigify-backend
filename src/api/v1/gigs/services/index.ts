@@ -17,6 +17,7 @@ export { default as removeSavedGig } from './removeSavedGig';
 export { default as reportTalent } from './reportTalent';
 export { default as saveGig } from './saveGig';
 export { default as searchGigs } from './searchGigs';
+export { default as updateApplicationStatus } from './updateApplicationStatus';
 export { default as updateGig } from './updateGig';
 export { default as updateGigOffer } from './updateGigOffer';
 export { default as updateGigStatus } from './updateGigStatus';
