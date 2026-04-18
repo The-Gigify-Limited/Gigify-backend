@@ -76,6 +76,11 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         dateTo?: string;
         isRemote?: boolean;
         employerId?: string;
+        latitude?: number | string;
+        longitude?: number | string;
+        radiusKm?: number | string;
+        eventType?: string;
+        genres?: string[];
     }): Promise<Gig[]> {
         const { offset, rangeEnd } = normalizePagination({
             page: query.page,
@@ -88,6 +93,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.serviceId) request = request.eq('service_id', query.serviceId);
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
+        if (query.eventType) request = request.eq('event_type', query.eventType);
         if (query.search) {
             const escaped = `%${query.search}%`;
             request = request.or(`title.ilike.${escaped},description.ilike.${escaped}`);
@@ -97,6 +103,44 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.maxBudget !== undefined) request = request.lte('budget_amount', Number(query.maxBudget));
         if (query.dateFrom) request = request.gte('gig_date', query.dateFrom);
         if (query.dateTo) request = request.lte('gig_date', query.dateTo);
+
+        // Genre filter: resolve genre strings to service IDs via services_catalog
+        // name matching, then restrict gigs to those services. This matches what
+        // the Figma filter sheet surfaces (talent-type labels like "DJ", "Drummer");
+        // a future product decision may add a dedicated gigs.genres column.
+        if (query.genres?.length) {
+            const { data: services, error: servicesError } = await supabaseAdmin.from('services_catalog').select('id').in('name', query.genres);
+
+            if (servicesError) throw servicesError;
+
+            const serviceIds = (services ?? []).map((s) => s.id);
+            if (serviceIds.length === 0) {
+                return [];
+            }
+
+            request = request.in('service_id', serviceIds);
+        }
+
+        // Radius filter: bounding-box approximation in degrees. PostGIS's
+        // ST_DWithin would be more accurate, but is not confirmed enabled on
+        // staging/prod, so we do a simple lat/lng box. 1° lat ≈ 111 km; 1° lng
+        // ≈ 111 km × cos(latitude). Requires all three: latitude, longitude,
+        // radiusKm. Silently no-op if only some are provided.
+        const lat = query.latitude !== undefined ? Number(query.latitude) : undefined;
+        const lng = query.longitude !== undefined ? Number(query.longitude) : undefined;
+        const radiusKm = query.radiusKm !== undefined ? Number(query.radiusKm) : undefined;
+
+        if (lat !== undefined && lng !== undefined && radiusKm !== undefined && radiusKm > 0) {
+            const latDelta = radiusKm / 111;
+            const cosLat = Math.cos((lat * Math.PI) / 180);
+            const lngDelta = cosLat !== 0 ? radiusKm / (111 * cosLat) : 180;
+
+            request = request
+                .gte('location_latitude', lat - latDelta)
+                .lte('location_latitude', lat + latDelta)
+                .gte('location_longitude', lng - lngDelta)
+                .lte('location_longitude', lng + lngDelta);
+        }
 
         const { data = [], error } = await request.order('created_at', { ascending: false }).range(offset, rangeEnd);
 

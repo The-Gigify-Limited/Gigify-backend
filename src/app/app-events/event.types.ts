@@ -83,8 +83,10 @@ export interface AppEventsInterface {
             gigId: string;
             applicationId: string;
             talentId: string;
-        }
-    >
+            employerId: string;
+        },
+        void
+    >;
     'gig:expired': EventDefinition<
         {
             gigId: string;
