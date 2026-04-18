@@ -5,7 +5,7 @@ import { NotificationPreferenceTopic } from '~/notifications/listeners';
 import winston from 'winston';
 import { Talent, TalentProfile, TalentReview, TalentReviewSummary } from '~/talents/interfaces';
 import { Json } from '@/core/types';
-import { Activity, User } from '~/user/interfaces';
+import { Activity, User, UserRoleEnum } from '~/user/interfaces';
 import { Payment } from '~/earnings/interfaces';
 import { AppEventManager } from './app.events';
 
@@ -78,6 +78,14 @@ export interface AppEventsInterface {
             description?: string;
         },
         Activity
+    >;
+    'user:onboarding-step-completed': EventDefinition<
+        {
+            userId: string;
+            step: 1 | 2 | 3;
+            role: UserRoleEnum | null;
+        },
+        void
     >;
     'earnings:create-record': EventDefinition<
         {

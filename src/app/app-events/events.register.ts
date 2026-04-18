@@ -13,7 +13,12 @@ import {
     getTalentReviewsEventListener,
     createTalentReviewEventListener,
 } from '~/talents/listeners';
-import { checkNotificationPreferenceEventListener, getUserByIdEventListener, createActivityEventListener } from '~/user/listeners';
+import {
+    checkNotificationPreferenceEventListener,
+    createActivityEventListener,
+    getUserByIdEventListener,
+    onboardingStepCompletedEventListener,
+} from '~/user/listeners';
 import { updatePayoutRequestStatusEventListener, createEarningsRecordEventListener } from '~/earnings/listeners';
 import { AppEventManager } from './app.events';
 
@@ -41,6 +46,7 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('gig:update-report-status', (input) => updateGigReportStatusEventListener(input));
     bus.onEvent('gig:find-application', (input) => findApplicationByGigAndTalentEventListener(input));
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
+    bus.onEvent('user:onboarding-step-completed', (input) => onboardingStepCompletedEventListener(input));
     bus.onEvent('earnings:create-record', (input) => createEarningsRecordEventListener(input));
     bus.onEvent('notification:dispatch', (input) => dispatchNotificationEventListener(input));
 }

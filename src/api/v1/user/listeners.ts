@@ -1,3 +1,4 @@
+import { logger } from '@/core';
 import { Activity, ActivityTypeEnum, User } from './interfaces';
 import { NotificationPreferenceRepository, UserRepository, ActivityRepository } from './repository';
 
@@ -44,4 +45,12 @@ export async function createActivityEventListener(input: {
         input.description ? { description: input.description, targetType: input.targetType } : undefined,
     );
     return activity;
+}
+
+export function onboardingStepCompletedEventListener(input: { userId: string; step: 1 | 2 | 3; role: User['role'] | null }): void {
+    logger.info('Onboarding step completed', {
+        userId: input.userId,
+        step: input.step,
+        role: input.role,
+    });
 }
