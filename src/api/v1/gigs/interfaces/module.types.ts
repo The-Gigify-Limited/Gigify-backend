@@ -31,6 +31,13 @@ export type Gig = {
     requiredTalentCount: number;
     createdAt: string | null;
     updatedAt: string | null;
+    eventType: string | null;
+    startTime: string | null;
+    endTime: string | null;
+    durationMinutes: number | null;
+    equipmentProvided: boolean | null;
+    dressCode: string | null;
+    additionalNotes: string | null;
 };
 
 export type GigApplication = {

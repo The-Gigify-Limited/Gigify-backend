@@ -136,11 +136,17 @@ export type Database = {
             };
             gigs: {
                 Row: {
+                    additional_notes: string | null;
                     budget_amount: number;
                     created_at: string | null;
                     currency: string | null;
                     description: string | null;
+                    dress_code: string | null;
+                    duration_minutes: number | null;
                     employer_id: string;
+                    end_time: string | null;
+                    equipment_provided: boolean | null;
+                    event_type: string | null;
                     gig_date: string;
                     id: string;
                     is_remote: boolean | null;
@@ -149,16 +155,23 @@ export type Database = {
                     location_name: string | null;
                     required_talent_count: number;
                     service_id: string | null;
+                    start_time: string | null;
                     status: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at: string | null;
                 };
                 Insert: {
+                    additional_notes?: string | null;
                     budget_amount: number;
                     created_at?: string | null;
                     currency?: string | null;
                     description?: string | null;
+                    dress_code?: string | null;
+                    duration_minutes?: number | null;
                     employer_id: string;
+                    end_time?: string | null;
+                    equipment_provided?: boolean | null;
+                    event_type?: string | null;
                     gig_date: string;
                     id?: string;
                     is_remote?: boolean | null;
@@ -167,16 +180,23 @@ export type Database = {
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
+                    start_time?: string | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at?: string | null;
                 };
                 Update: {
+                    additional_notes?: string | null;
                     budget_amount?: number;
                     created_at?: string | null;
                     currency?: string | null;
                     description?: string | null;
+                    dress_code?: string | null;
+                    duration_minutes?: number | null;
                     employer_id?: string;
+                    end_time?: string | null;
+                    equipment_provided?: boolean | null;
+                    event_type?: string | null;
                     gig_date?: string;
                     id?: string;
                     is_remote?: boolean | null;
@@ -185,6 +205,7 @@ export type Database = {
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
+                    start_time?: string | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title?: string;
                     updated_at?: string | null;

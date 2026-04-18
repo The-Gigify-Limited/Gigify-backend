@@ -70,6 +70,57 @@ describe('CreateGig service', () => {
         expect(response.data.id).toBe('gig-1');
     });
 
+    it('forwards the seven event fields to the repository on create', async () => {
+        const gigRepository = {
+            createGig: jest.fn().mockResolvedValue({
+                id: 'gig-1',
+                employerId: 'employer-1',
+                title: 'Lagos rooftop set',
+                eventType: 'private_party',
+                startTime: '18:00',
+                endTime: '22:00',
+                durationMinutes: 240,
+                equipmentProvided: true,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+            }),
+        };
+
+        (dispatch as jest.Mock).mockResolvedValueOnce([undefined]).mockResolvedValueOnce([undefined]);
+
+        const service = new CreateGig(gigRepository as never);
+
+        await service.handle({
+            input: {
+                title: 'Lagos rooftop set',
+                budgetAmount: 200000,
+                gigDate: '2026-05-20',
+                venueName: 'Sky Lounge',
+                eventType: 'private_party',
+                startTime: '18:00',
+                endTime: '22:00',
+                durationMinutes: 240,
+                equipmentProvided: true,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+            },
+            request: { user: { id: 'employer-1' } },
+        } as never);
+
+        expect(gigRepository.createGig).toHaveBeenCalledWith(
+            'employer-1',
+            expect.objectContaining({
+                eventType: 'private_party',
+                startTime: '18:00',
+                endTime: '22:00',
+                durationMinutes: 240,
+                equipmentProvided: true,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+            }),
+        );
+    });
+
     it('throws when user is not authenticated', async () => {
         const gigRepository = {
             createGig: jest.fn(),

@@ -342,6 +342,13 @@ gigRouter.delete(
  *             locationLongitude: 3.472
  *             isRemote: false
  *             requiredTalentCount: 1
+ *             eventType: club_night
+ *             startTime: "21:00"
+ *             endTime: "02:00"
+ *             durationMinutes: 300
+ *             equipmentProvided: true
+ *             dressCode: all_black
+ *             additionalNotes: Two set breaks. MC will cue you.
  *     responses:
  *       201:
  *         description: Gig created
@@ -727,6 +734,13 @@ gigRouter.get(
  *             title: Afrobeat Night Drummer
  *             budgetAmount: 200000
  *             requiredTalentCount: 2
+ *             eventType: club_night
+ *             startTime: "21:00"
+ *             endTime: "02:00"
+ *             durationMinutes: 300
+ *             equipmentProvided: true
+ *             dressCode: all_black
+ *             additionalNotes: Two set breaks. MC will cue you.
  *     responses:
  *       200:
  *         description: Gig updated
