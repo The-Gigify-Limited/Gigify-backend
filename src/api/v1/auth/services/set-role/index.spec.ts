@@ -33,6 +33,7 @@ jest.mock('@/core/services/mails', () => ({
 }));
 
 import { dispatch } from '@/app';
+import { ConflictError } from '@/core';
 import { sendEmail, welcomeOnboardingMail } from '@/core/services/mails';
 import { SetUserRole } from './index';
 
@@ -126,6 +127,59 @@ describe('SetUserRole service', () => {
         expect(dispatch).toHaveBeenCalledWith('employer:create-profile', { user_id: 'user-1' });
         expect(sendEmail).toHaveBeenCalledWith(expect.objectContaining({ to: 'employer@example.com' }));
         expect(response.data.role).toBe('employer');
+    });
+
+    it('rejects switching from talent to employer with a clear ConflictError', async () => {
+        const userRepository = {
+            findById: jest.fn().mockResolvedValue({
+                id: 'user-1',
+                email: 'ada@example.com',
+                role: 'talent',
+                onboarding_step: 3,
+            }),
+            updateById: jest.fn(),
+            mapToCamelCase: jest.fn(),
+        };
+
+        const service = new SetUserRole(userRepository as never, sendEmail as never);
+
+        await expect(
+            service.handle({
+                input: { userId: 'user-1', role: 'employer' },
+            } as never),
+        ).rejects.toBeInstanceOf(ConflictError);
+
+        await expect(
+            service.handle({
+                input: { userId: 'user-1', role: 'employer' },
+            } as never),
+        ).rejects.toThrow('Role switching is not supported.');
+
+        expect(userRepository.updateById).not.toHaveBeenCalled();
+        expect(dispatch).not.toHaveBeenCalled();
+    });
+
+    it('rejects re-setting the same role with a distinct error message', async () => {
+        const userRepository = {
+            findById: jest.fn().mockResolvedValue({
+                id: 'user-1',
+                email: 'ada@example.com',
+                role: 'talent',
+                onboarding_step: 2,
+            }),
+            updateById: jest.fn(),
+            mapToCamelCase: jest.fn(),
+        };
+
+        const service = new SetUserRole(userRepository as never, sendEmail as never);
+
+        await expect(
+            service.handle({
+                input: { userId: 'user-1', role: 'talent' },
+            } as never),
+        ).rejects.toThrow('User role already set.');
+
+        expect(userRepository.updateById).not.toHaveBeenCalled();
     });
 
     it('does not block role assignment if the welcome email fails', async () => {
