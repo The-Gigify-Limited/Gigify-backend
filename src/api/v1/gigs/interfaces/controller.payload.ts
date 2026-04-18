@@ -72,8 +72,9 @@ export interface ApplyToGigDto extends ControllerArgsTypes {
         id: string;
     };
     input: {
-        coverMessage?: string;
+        proposalMessage?: string;
         proposedRate?: number;
+        proposedCurrency?: string;
     };
 }
 

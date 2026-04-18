@@ -206,14 +206,19 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return (data ?? []).map((row) => this.mapRow<GigApplication>(row as unknown as DatabaseGigApplication));
     }
 
-    async createApplication(gigId: string, talentId: string, input: Pick<GigApplication, 'coverMessage' | 'proposedRate'>): Promise<GigApplication> {
+    async createApplication(
+        gigId: string,
+        talentId: string,
+        input: Pick<GigApplication, 'proposalMessage' | 'proposedRate' | 'proposedCurrency'>,
+    ): Promise<GigApplication> {
         const { data, error } = await supabaseAdmin
             .from('gig_applications')
             .insert({
                 gig_id: gigId,
                 talent_id: talentId,
-                cover_message: input.coverMessage ?? null,
+                proposal_message: input.proposalMessage ?? null,
                 proposed_rate: input.proposedRate ?? null,
+                proposed_currency: input.proposedCurrency ?? null,
             })
             .select('*')
             .single();

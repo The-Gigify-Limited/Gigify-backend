@@ -116,8 +116,9 @@ export class UpdateGigOffer {
               })
             : await (async () => {
                   const createdApplication = await this.gigRepository.createApplication(gig.id, offer.talentId, {
-                      coverMessage: offer.message ?? null,
+                      proposalMessage: offer.message ?? null,
                       proposedRate: offer.proposedRate ?? null,
+                      proposedCurrency: offer.currency ?? null,
                   });
 
                   return this.gigRepository.updateApplication(createdApplication.id, {

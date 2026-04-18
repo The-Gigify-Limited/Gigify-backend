@@ -209,11 +209,12 @@ export type Database = {
             gig_applications: {
                 Row: {
                     applied_at: string;
-                    cover_message: string | null;
                     employer_notes: string | null;
                     gig_id: string;
                     hired_at: string | null;
                     id: string;
+                    proposal_message: string | null;
+                    proposed_currency: string | null;
                     proposed_rate: number | null;
                     status: Database['public']['Enums']['application_status'];
                     talent_id: string;
@@ -221,11 +222,12 @@ export type Database = {
                 };
                 Insert: {
                     applied_at?: string;
-                    cover_message?: string | null;
                     employer_notes?: string | null;
                     gig_id: string;
                     hired_at?: string | null;
                     id?: string;
+                    proposal_message?: string | null;
+                    proposed_currency?: string | null;
                     proposed_rate?: number | null;
                     status?: Database['public']['Enums']['application_status'];
                     talent_id: string;
@@ -233,11 +235,12 @@ export type Database = {
                 };
                 Update: {
                     applied_at?: string;
-                    cover_message?: string | null;
                     employer_notes?: string | null;
                     gig_id?: string;
                     hired_at?: string | null;
                     id?: string;
+                    proposal_message?: string | null;
+                    proposed_currency?: string | null;
                     proposed_rate?: number | null;
                     status?: Database['public']['Enums']['application_status'];
                     talent_id?: string;

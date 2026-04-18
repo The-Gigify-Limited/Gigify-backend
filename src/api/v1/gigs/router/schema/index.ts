@@ -89,8 +89,9 @@ export const applyToGigSchema = {
         id: uuid.required(),
     }),
     inputSchema: Joi.object({
-        coverMessage: Joi.string().max(2000).allow(null, ''),
+        proposalMessage: Joi.string().max(1000).allow(null, ''),
         proposedRate: Joi.number().min(0).optional(),
+        proposedCurrency: Joi.string().max(8).allow(null, '').optional(),
     }),
 };
 

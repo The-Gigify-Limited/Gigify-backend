@@ -29,8 +29,9 @@ export class ApplyToGig {
         if (existingApp && existingApp.status !== 'withdrawn') throw new ConflictError('You have already applied to this gig');
 
         const application = await this.gigRepository.createApplication(params.id, talentId, {
-            coverMessage: input.coverMessage ?? null,
+            proposalMessage: input.proposalMessage ?? null,
             proposedRate: input.proposedRate ?? null,
+            proposedCurrency: input.proposedCurrency ?? null,
         });
 
         await dispatch('user:create-activity', {

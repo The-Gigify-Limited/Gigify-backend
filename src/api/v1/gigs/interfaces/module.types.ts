@@ -38,8 +38,9 @@ export type GigApplication = {
     gigId: string;
     talentId: string;
     status: ApplicationStatusEnum;
-    coverMessage: string | null;
+    proposalMessage: string | null;
     proposedRate: number | null;
+    proposedCurrency: string | null;
     employerNotes: string | null;
     appliedAt: string;
     hiredAt: string | null;
