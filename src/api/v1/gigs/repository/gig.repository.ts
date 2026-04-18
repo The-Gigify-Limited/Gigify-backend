@@ -140,6 +140,13 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 is_remote: input.isRemote ?? false,
                 required_talent_count: input.requiredTalentCount ?? 1,
                 status: input.status ?? 'open',
+                event_type: input.eventType ?? null,
+                start_time: input.startTime ?? null,
+                end_time: input.endTime ?? null,
+                duration_minutes: input.durationMinutes ?? null,
+                equipment_provided: input.equipmentProvided ?? false,
+                dress_code: input.dressCode ?? null,
+                additional_notes: input.additionalNotes ?? null,
             })
             .select('*')
             .single();
