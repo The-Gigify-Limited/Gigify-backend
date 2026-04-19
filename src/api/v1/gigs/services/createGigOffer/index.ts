@@ -53,6 +53,12 @@ export class CreateGigOffer {
         });
 
         await Promise.all([
+            dispatch('gig:offer-sent', {
+                gigId: gig.id,
+                offerId: offer.id,
+                talentId: input.talentId,
+                employerId,
+            }),
             dispatch('notification:dispatch', {
                 userId: input.talentId,
                 type: 'application_update',

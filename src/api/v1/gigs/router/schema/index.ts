@@ -189,8 +189,8 @@ export const reportTalentSchema = {
     }),
 };
 
-const offerStatusEnum = ['pending', 'accepted', 'declined', 'withdrawn', 'expired'] as const;
-const offerMutableStatusEnum = ['accepted', 'declined', 'withdrawn'] as const;
+const offerStatusEnum = ['pending', 'accepted', 'declined', 'withdrawn', 'expired', 'countered'] as const;
+const offerMutableStatusEnum = ['accepted', 'declined', 'withdrawn', 'countered'] as const;
 
 export const createGigOfferSchema = {
     paramsSchema: Joi.object({
@@ -237,5 +237,15 @@ export const updateGigOfferSchema = {
         status: Joi.string()
             .valid(...offerMutableStatusEnum)
             .required(),
+        counterAmount: Joi.when('status', {
+            is: 'countered',
+            then: Joi.number().min(0).required(),
+            otherwise: Joi.forbidden(),
+        }),
+        counterMessage: Joi.when('status', {
+            is: 'countered',
+            then: Joi.string().max(1000).allow(null, '').optional(),
+            otherwise: Joi.forbidden(),
+        }),
     }),
 };

@@ -125,4 +125,121 @@ describe('UpdateGigOffer service', () => {
         );
         expect(response.data.remainingTalentSlots).toBe(0);
     });
+
+    it('counters a pending offer with counterAmount and dispatches gig:offer-countered', async () => {
+        const gigRepository = {
+            getGigById: jest.fn().mockResolvedValue({
+                id: 'gig-1',
+                employerId: 'employer-1',
+                title: 'Lagos Rooftop Set',
+                status: 'open',
+            }),
+        };
+        const gigOfferRepository = {
+            getOfferById: jest.fn().mockResolvedValue({
+                id: 'offer-1',
+                gigId: 'gig-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                status: 'pending',
+                proposedRate: 120000,
+                currency: 'NGN',
+                expiresAt: null,
+            }),
+            updateOffer: jest.fn().mockResolvedValue({
+                id: 'offer-1',
+                status: 'countered',
+                counterAmount: 150000,
+                counterMessage: 'Can we do 150k instead?',
+            }),
+        };
+
+        (dispatch as jest.Mock).mockResolvedValue([undefined]);
+
+        const service = new UpdateGigOffer(gigRepository as never, gigOfferRepository as never);
+
+        const response = await service.handle({
+            params: { offerId: 'offer-1' },
+            input: {
+                status: 'countered',
+                counterAmount: 150000,
+                counterMessage: 'Can we do 150k instead?',
+            },
+            request: {
+                user: { id: 'talent-1' },
+                ip: '127.0.0.1',
+                headers: { 'user-agent': 'jest' },
+            },
+        } as never);
+
+        expect(gigOfferRepository.updateOffer).toHaveBeenCalledWith(
+            'offer-1',
+            expect.objectContaining({
+                status: 'countered',
+                counterAmount: 150000,
+                counterMessage: 'Can we do 150k instead?',
+            }),
+        );
+        expect(dispatch).toHaveBeenCalledWith(
+            'gig:offer-countered',
+            expect.objectContaining({
+                gigId: 'gig-1',
+                offerId: 'offer-1',
+                counterAmount: 150000,
+            }),
+        );
+        expect(response.message).toBe('Gig Offer Countered Successfully');
+    });
+
+    it('rejects counter without a counterAmount at schema level (BadRequestError at service if bypassed)', async () => {
+        const gigRepository = {
+            getGigById: jest.fn().mockResolvedValue({ id: 'gig-1', employerId: 'employer-1', status: 'open', title: 'x' }),
+        };
+        const gigOfferRepository = {
+            getOfferById: jest.fn().mockResolvedValue({
+                id: 'offer-1',
+                gigId: 'gig-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                status: 'pending',
+                expiresAt: null,
+            }),
+        };
+
+        const service = new UpdateGigOffer(gigRepository as never, gigOfferRepository as never);
+
+        await expect(
+            service.handle({
+                params: { offerId: 'offer-1' },
+                input: { status: 'countered' } as never,
+                request: { user: { id: 'talent-1' }, ip: '1', headers: {} },
+            } as never),
+        ).rejects.toThrow('counterAmount is required when countering an offer');
+    });
+
+    it('refuses counter from the employer side', async () => {
+        const gigRepository = {
+            getGigById: jest.fn(),
+        };
+        const gigOfferRepository = {
+            getOfferById: jest.fn().mockResolvedValue({
+                id: 'offer-1',
+                gigId: 'gig-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                status: 'pending',
+                expiresAt: null,
+            }),
+        };
+
+        const service = new UpdateGigOffer(gigRepository as never, gigOfferRepository as never);
+
+        await expect(
+            service.handle({
+                params: { offerId: 'offer-1' },
+                input: { status: 'countered', counterAmount: 150000 },
+                request: { user: { id: 'employer-1' }, ip: '1', headers: {} },
+            } as never),
+        ).rejects.toThrow('Only the recipient can respond');
+    });
 });

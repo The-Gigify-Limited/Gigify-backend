@@ -83,12 +83,52 @@ export interface AppEventsInterface {
             gigId: string;
             applicationId: string;
             talentId: string;
-        }
-    >
+            employerId: string;
+        },
+        void
+    >;
     'gig:expired': EventDefinition<
         {
             gigId: string;
             employerId: string;
+        },
+        void
+    >;
+    'gig:offer-sent': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-accepted': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-declined': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-countered': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+            counterAmount: number;
+            counterMessage: string | null;
         },
         void
     >;

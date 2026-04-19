@@ -65,6 +65,10 @@ export type GigOffer = {
     status: OfferStatusEnum;
     expiresAt: string | null;
     respondedAt: string | null;
+    acceptedAt: string | null;
+    declinedAt: string | null;
+    counterAmount: number | null;
+    counterMessage: string | null;
     createdAt: string;
     updatedAt: string;
 };
