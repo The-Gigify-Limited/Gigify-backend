@@ -4,6 +4,14 @@ import { PayoutRequest } from '~/earnings/interfaces';
 import { AdminPayoutRequestUpdateDto } from '../../interfaces';
 import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
 
+// PR 3.6 adds external_transfer_id + external_provider onto PayoutRequest;
+// this PR merges independently of 3.6, so we soft-read those fields via a
+// narrowed view type. Post-3.6 merge they just become always-present.
+type PayoutRequestMaybeExternal = {
+    externalTransferId?: string | null;
+    externalProvider?: string | null;
+};
+
 export class UpdateAdminPayoutRequest {
     constructor(private readonly earningsRepository: EarningsRepository) {}
 
@@ -73,6 +81,16 @@ export class UpdateAdminPayoutRequest {
                 },
                 preferenceKey: 'paymentUpdates',
             }),
+            input.status === 'paid'
+                ? dispatch('earnings:payout-paid', {
+                      payoutRequestId: updatedRequest.id,
+                      talentId: updatedRequest.talentId,
+                      amount: updatedRequest.amount,
+                      currency: updatedRequest.currency,
+                      externalTransferId: (updatedRequest as PayoutRequestMaybeExternal).externalTransferId ?? null,
+                      externalProvider: (updatedRequest as PayoutRequestMaybeExternal).externalProvider ?? null,
+                  })
+                : Promise.resolve(),
         ]);
 
         return {

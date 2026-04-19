@@ -47,6 +47,53 @@ type WelcomeEmployerMailOptions = {
     supportEmail?: string;
 };
 
+type PaymentReceivedMailOptions = {
+    firstName: string;
+    gigTitle: string;
+    amount: string;
+    currency: string;
+    supportEmail?: string;
+};
+
+type PaymentReleasedMailOptions = {
+    firstName: string;
+    gigTitle: string;
+    amount: string;
+    currency: string;
+    withdrawUrl?: string;
+    supportEmail?: string;
+};
+
+type PayoutRequestedMailOptions = {
+    firstName: string;
+    amount: string;
+    currency: string;
+    supportEmail?: string;
+};
+
+type PayoutPaidMailOptions = {
+    firstName: string;
+    amount: string;
+    currency: string;
+    externalTransferId: string;
+    externalProvider: string;
+    supportEmail?: string;
+};
+
+type DisputeOpenedMailOptions = {
+    firstName: string;
+    gigTitle: string;
+    reason: string;
+    supportEmail?: string;
+};
+
+type DisputeResolvedMailOptions = {
+    firstName: string;
+    gigTitle: string;
+    resolution: 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+    supportEmail?: string;
+};
+
 const defaultSupportEmail = 'support@gigify.com';
 
 const escapeHtml = (value: string) =>
@@ -458,6 +505,123 @@ export const notificationMail = ({ firstName, title, message, actionUrl, actionL
 
     return renderLayout({
         title,
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+const paragraph = (text: string) =>
+    `<p style="margin: 0 0 22px; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">${text}</p>`;
+
+const signoff = `
+      <p style="margin: 0; color: #333333; font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 22px;">Best Regards,</p>
+      <p style="margin: 0; color: #0055E8; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: 600; line-height: 22px;">The Gigify Team.</p>`;
+
+export const paymentReceivedMail = ({ firstName, gigTitle, amount, currency, supportEmail }: PaymentReceivedMailOptions) => {
+    const contentHtml = `
+      ${paragraph(`Great news — the employer has funded escrow for <strong>${escapeHtml(gigTitle)}</strong>.`)}
+      ${paragraph(`<strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> is now safely held on Gigify until the gig is complete.`)}
+      ${paragraph(
+          `We’ll release the funds to you as soon as the employer confirms the work is done, so you can request a payout from your earnings dashboard.`,
+      )}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: `Funds secured in escrow for ${gigTitle}`,
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const paymentReleasedMail = ({ firstName, gigTitle, amount, currency, withdrawUrl, supportEmail }: PaymentReleasedMailOptions) => {
+    const contentHtml = `
+      ${paragraph(`The employer has released payment for <strong>${escapeHtml(gigTitle)}</strong>.`)}
+      ${paragraph(`<strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> is now available in your Gigify earnings — ready to withdraw.`)}
+      ${withdrawUrl ? renderButton('Request a payout', withdrawUrl) : ''}
+      ${paragraph(`Thanks for delivering great work on this booking.`)}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: `${currency} ${amount} released, ready to withdraw`,
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const payoutRequestedMail = ({ firstName, amount, currency, supportEmail }: PayoutRequestedMailOptions) => {
+    const contentHtml = `
+      ${paragraph(`We’ve received your payout request for <strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong>.`)}
+      ${paragraph(
+          `Our finance team will review it and move the funds to your default payout method. You’ll get another email the moment the transfer goes out.`,
+      )}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: 'Payout request received',
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const payoutPaidMail = ({ firstName, amount, currency, externalTransferId, externalProvider, supportEmail }: PayoutPaidMailOptions) => {
+    const contentHtml = `
+      ${paragraph(`Your payout of <strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> has been sent.`)}
+      ${paragraph(
+          `Transfer reference: <code>${escapeHtml(externalTransferId)}</code> via ${escapeHtml(
+              externalProvider,
+          )}. Save this reference in case your bank asks for it.`,
+      )}
+      ${paragraph(`Funds typically settle within 1–3 business days depending on your provider.`)}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: `Payout of ${currency} ${amount} sent`,
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const disputeOpenedMail = ({ firstName, gigTitle, reason, supportEmail }: DisputeOpenedMailOptions) => {
+    const contentHtml = `
+      ${paragraph(`A dispute has been opened on <strong>${escapeHtml(gigTitle)}</strong>.`)}
+      ${paragraph(`Reason: <em>${escapeHtml(reason)}</em>.`)}
+      ${paragraph(`Payment release is on hold until our team reviews the case. You can upload supporting evidence from your Gigify dashboard.`)}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: `Dispute opened on ${gigTitle}`,
+        greetingName: firstName,
+        contentHtml,
+        supportEmail,
+    });
+};
+
+export const disputeResolvedMail = ({ firstName, gigTitle, resolution, supportEmail }: DisputeResolvedMailOptions) => {
+    const outcomeCopy = {
+        resolved_talent: 'Our team ruled in the talent’s favour; funds have been released.',
+        resolved_employer: 'Our team ruled in the employer’s favour; funds were returned.',
+        withdrawn: 'The dispute was withdrawn and the gig is back on its normal track.',
+    }[resolution];
+
+    const contentHtml = `
+      ${paragraph(`The dispute on <strong>${escapeHtml(gigTitle)}</strong> has been resolved.`)}
+      ${paragraph(`Outcome: <strong>${escapeHtml(outcomeCopy)}</strong>`)}
+      ${paragraph(`If you have any questions about this decision, reply to this email and our team will follow up.`)}
+      ${signoff}
+    `;
+
+    return renderLayout({
+        title: `Dispute on ${gigTitle} resolved`,
         greetingName: firstName,
         contentHtml,
         supportEmail,

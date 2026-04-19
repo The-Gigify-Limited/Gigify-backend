@@ -1,3 +1,7 @@
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('@/core', () => {
     class BadRequestError extends Error {}
     class ConflictError extends Error {}

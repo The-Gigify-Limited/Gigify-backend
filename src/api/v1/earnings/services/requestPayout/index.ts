@@ -1,3 +1,4 @@
+import { dispatch } from '@/app';
 import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
 import { RequestPayoutDto } from '~/earnings/interfaces';
 import { EarningsRepository } from '~/earnings/repository';
@@ -20,9 +21,17 @@ export class RequestPayout {
 
         const payoutRequest = await this.earningsRepository.createPayoutRequest(talentId, input);
 
-        await this.activityRepository.logActivity(talentId, 'payout_requested', payoutRequest.id, {
-            amount: payoutRequest.amount,
-        });
+        await Promise.all([
+            this.activityRepository.logActivity(talentId, 'payout_requested', payoutRequest.id, {
+                amount: payoutRequest.amount,
+            }),
+            dispatch('earnings:payout-requested', {
+                payoutRequestId: payoutRequest.id,
+                talentId: payoutRequest.talentId,
+                amount: payoutRequest.amount,
+                currency: payoutRequest.currency,
+            }),
+        ]);
 
         return {
             code: HttpStatus.CREATED,

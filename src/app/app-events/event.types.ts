@@ -159,6 +159,48 @@ export interface AppEventsInterface {
         },
         Payment
     >;
+    'earnings:payment-held': EventDefinition<
+        {
+            paymentId: string;
+            employerId: string;
+            talentId: string;
+            gigId: string | null;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payment-released': EventDefinition<
+        {
+            paymentId: string;
+            employerId: string;
+            talentId: string;
+            gigId: string | null;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payout-requested': EventDefinition<
+        {
+            payoutRequestId: string;
+            talentId: string;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payout-paid': EventDefinition<
+        {
+            payoutRequestId: string;
+            talentId: string;
+            amount: number;
+            currency: string;
+            externalTransferId: string | null;
+            externalProvider: string | null;
+        },
+        void
+    >;
     'earnings:dispute-opened': EventDefinition<
         {
             disputeId: string;
