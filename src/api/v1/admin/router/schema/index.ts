@@ -114,3 +114,25 @@ export const adminGigStatusSchema = {
         status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired').required(),
     }),
 };
+
+const adminDisputeStatusEnum = ['open', 'in_review', 'resolved_talent', 'resolved_employer', 'withdrawn'] as const;
+
+export const adminDisputesQuerySchema = {
+    querySchema: Joi.object({
+        page: Joi.number().integer().min(1).optional(),
+        pageSize: Joi.number().integer().min(1).max(100).optional(),
+        status: Joi.string()
+            .valid(...adminDisputeStatusEnum)
+            .optional(),
+    }),
+};
+
+export const adminResolveDisputeSchema = {
+    paramsSchema: Joi.object({
+        id: uuid.required(),
+    }),
+    inputSchema: Joi.object({
+        resolution: Joi.string().valid('resolved_talent', 'resolved_employer', 'withdrawn').required(),
+        adminNotes: Joi.string().max(5000).allow(null, '').optional(),
+    }),
+};
