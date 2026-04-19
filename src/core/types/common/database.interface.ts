@@ -700,6 +700,42 @@ export type Database = {
                     },
                 ];
             };
+            payout_methods: {
+                Row: {
+                    created_at: string | null;
+                    display_label: string | null;
+                    external_account_id: string | null;
+                    id: string;
+                    is_default: boolean | null;
+                    is_verified: boolean | null;
+                    metadata: Json | null;
+                    provider: string;
+                    user_id: string | null;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    display_label?: string | null;
+                    external_account_id?: string | null;
+                    id?: string;
+                    is_default?: boolean | null;
+                    is_verified?: boolean | null;
+                    metadata?: Json | null;
+                    provider: string;
+                    user_id?: string | null;
+                };
+                Update: {
+                    created_at?: string | null;
+                    display_label?: string | null;
+                    external_account_id?: string | null;
+                    id?: string;
+                    is_default?: boolean | null;
+                    is_verified?: boolean | null;
+                    metadata?: Json | null;
+                    provider?: string;
+                    user_id?: string | null;
+                };
+                Relationships: [];
+            };
             payments: {
                 Row: {
                     amount: number;

@@ -2,7 +2,7 @@ import { ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, TooManyR
 import { paymentReleaseOtpMail } from '@/core/services/mails/views';
 import { sendEmail } from '@/core/services/mails';
 import { PaymentReleaseParamsDto } from '../../interfaces';
-import { EarningsRepository } from '../../repository';
+import { DisputeRepository, EarningsRepository } from '../../repository';
 import {
     buildPaymentReleaseOtpExpiry,
     generatePaymentReleaseOtpCode,
@@ -17,6 +17,7 @@ export class RequestPaymentReleaseOtp {
         private readonly earningsRepository: EarningsRepository,
         private readonly gigRepository: GigRepository,
         private readonly userRepository: UserRepository,
+        private readonly disputeRepository: DisputeRepository,
     ) {}
 
     handle = async ({ params, request }: ControllerArgs<PaymentReleaseParamsDto>) => {
@@ -31,6 +32,17 @@ export class RequestPaymentReleaseOtp {
         if (payment.status === 'paid') throw new ConflictError('This payment has already been released');
         if (payment.status === 'cancelled' || payment.status === 'refunded' || payment.status === 'failed') {
             throw new ConflictError('This payment cannot be released');
+        }
+
+        const openDispute = await this.disputeRepository.findOpenDisputeForPayment(payment.id);
+        if (openDispute) {
+            throw new ConflictError('Cannot request payment release while a dispute is open');
+        }
+        if (payment.gigId) {
+            const gig = await this.gigRepository.getGigById(payment.gigId);
+            if (gig?.status === 'disputed') {
+                throw new ConflictError('Cannot request payment release while the gig is in dispute');
+            }
         }
 
         const userRow = await this.userRepository.findById(employer.id);
@@ -106,5 +118,10 @@ export class RequestPaymentReleaseOtp {
     };
 }
 
-const requestPaymentReleaseOtp = new RequestPaymentReleaseOtp(new EarningsRepository(), new GigRepository(), new UserRepository());
+const requestPaymentReleaseOtp = new RequestPaymentReleaseOtp(
+    new EarningsRepository(),
+    new GigRepository(),
+    new UserRepository(),
+    new DisputeRepository(),
+);
 export default requestPaymentReleaseOtp;
