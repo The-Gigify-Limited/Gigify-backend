@@ -1,3 +1,4 @@
+import { logger } from '@/core';
 import { Payment, PayoutRequest } from './interfaces';
 import { EarningsRepository } from './repository';
 
@@ -25,4 +26,23 @@ export async function createEarningsRecordEventListener(input: {
         provider: 'manual',
     });
     return earning;
+}
+
+export function disputeOpenedEventListener(input: {
+    disputeId: string;
+    paymentId: string | null;
+    gigId: string | null;
+    raisedBy: string | null;
+}): void {
+    logger.info('Dispute opened', input);
+}
+
+export function disputeResolvedEventListener(input: {
+    disputeId: string;
+    paymentId: string | null;
+    gigId: string | null;
+    resolution: 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+    resolvedBy: string | null;
+}): void {
+    logger.info('Dispute resolved', input);
 }

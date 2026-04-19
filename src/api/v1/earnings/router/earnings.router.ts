@@ -1,18 +1,26 @@
 import { ControlBuilder, paymentReleaseOtpRateLimiter } from '@/core';
 import { Router } from 'express';
 import {
+    addDisputeEvidence,
     confirmPaymentRelease,
     createStripeCheckoutSession,
+    getDispute,
     getMyEarnings,
     getPaymentHistory,
     handleStripeWebhook,
+    listDisputes,
+    openDispute,
     processPayment,
     requestPaymentReleaseOtp,
     requestPayout,
 } from '../services';
 import {
+    addDisputeEvidenceSchema,
     confirmPaymentReleaseSchema,
     createStripeCheckoutSessionSchema,
+    disputeIdParamsSchema,
+    listDisputesQuerySchema,
+    openDisputeSchema,
     paymentHistorySchema,
     paymentReleaseParamsSchema,
     processPaymentSchema,
@@ -310,5 +318,102 @@ earningsRouter.post(
         .only('employer')
         .setValidator(confirmPaymentReleaseSchema)
         .setHandler(confirmPaymentRelease.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payments/{id}/dispute:
+ *   post:
+ *     tags: [Earnings]
+ *     summary: Open a dispute against a payment
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             reason: Service not delivered
+ *             description: Talent cancelled the day-of. We have screenshots in chat.
+ *     responses:
+ *       201:
+ *         description: Dispute opened; gig status flipped to disputed
+ */
+earningsRouter.post(
+    '/payments/:id/dispute',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(openDisputeSchema)
+        .setHandler(openDispute.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/disputes:
+ *   get:
+ *     tags: [Earnings]
+ *     summary: List disputes the current user is a party to
+ *     security:
+ *       - bearerAuth: []
+ */
+earningsRouter.get(
+    '/disputes',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(listDisputesQuerySchema)
+        .setHandler(listDisputes.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/disputes/{id}:
+ *   get:
+ *     tags: [Earnings]
+ *     summary: Get a dispute the current user is a party to
+ *     security:
+ *       - bearerAuth: []
+ */
+earningsRouter.get(
+    '/disputes/:id',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(disputeIdParamsSchema)
+        .setHandler(getDispute.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/disputes/{id}/evidence:
+ *   post:
+ *     tags: [Earnings]
+ *     summary: Attach evidence to a dispute via a file URL
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             evidenceType: screenshot
+ *             fileUrl: https://cdn.gigify.app/evidence/abc.png
+ *             notes: Chat confirms the cancellation timestamp
+ */
+earningsRouter.post(
+    '/disputes/:id/evidence',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(addDisputeEvidenceSchema)
+        .setHandler(addDisputeEvidence.handle)
         .handle(),
 );

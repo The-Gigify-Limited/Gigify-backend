@@ -3,6 +3,36 @@ import { DatabaseEnum, DatabaseTable, Json } from '@/core/types';
 export type DatabasePayment = DatabaseTable['payments']['Row'];
 export type DatabasePayoutRequest = DatabaseTable['payout_requests']['Row'];
 export type DatabasePaymentReleaseOtp = DatabaseTable['payment_release_otps']['Row'];
+export type DatabaseDispute = DatabaseTable['disputes']['Row'];
+export type DatabaseDisputeEvidence = DatabaseTable['dispute_evidence']['Row'];
+
+export type DisputeStatusEnum = 'open' | 'in_review' | 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+export type DisputeEvidenceTypeEnum = 'screenshot' | 'message' | 'document' | 'other';
+
+export type Dispute = {
+    id: string;
+    paymentId: string | null;
+    gigId: string | null;
+    raisedBy: string | null;
+    reason: string;
+    description: string | null;
+    status: DisputeStatusEnum;
+    adminNotes: string | null;
+    resolvedAt: string | null;
+    resolvedBy: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+};
+
+export type DisputeEvidence = {
+    id: string;
+    disputeId: string | null;
+    uploadedBy: string | null;
+    evidenceType: DisputeEvidenceTypeEnum | null;
+    fileUrl: string | null;
+    notes: string | null;
+    createdAt: string | null;
+};
 
 export type PaymentStatusEnum = DatabaseEnum['payment_status'];
 export type PaymentProviderEnum = DatabaseEnum['payment_provider'];

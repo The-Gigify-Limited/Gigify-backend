@@ -284,6 +284,81 @@ export type Database = {
                     },
                 ];
             };
+            disputes: {
+                Row: {
+                    admin_notes: string | null;
+                    created_at: string | null;
+                    description: string | null;
+                    gig_id: string | null;
+                    id: string;
+                    payment_id: string | null;
+                    raised_by: string | null;
+                    reason: string;
+                    resolved_at: string | null;
+                    resolved_by: string | null;
+                    status: string;
+                    updated_at: string | null;
+                };
+                Insert: {
+                    admin_notes?: string | null;
+                    created_at?: string | null;
+                    description?: string | null;
+                    gig_id?: string | null;
+                    id?: string;
+                    payment_id?: string | null;
+                    raised_by?: string | null;
+                    reason: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: string;
+                    updated_at?: string | null;
+                };
+                Update: {
+                    admin_notes?: string | null;
+                    created_at?: string | null;
+                    description?: string | null;
+                    gig_id?: string | null;
+                    id?: string;
+                    payment_id?: string | null;
+                    raised_by?: string | null;
+                    reason?: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: string;
+                    updated_at?: string | null;
+                };
+                Relationships: [];
+            };
+            dispute_evidence: {
+                Row: {
+                    created_at: string | null;
+                    dispute_id: string | null;
+                    evidence_type: string | null;
+                    file_url: string | null;
+                    id: string;
+                    notes: string | null;
+                    uploaded_by: string | null;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    dispute_id?: string | null;
+                    evidence_type?: string | null;
+                    file_url?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    uploaded_by?: string | null;
+                };
+                Update: {
+                    created_at?: string | null;
+                    dispute_id?: string | null;
+                    evidence_type?: string | null;
+                    file_url?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    uploaded_by?: string | null;
+                };
+                Relationships: [];
+            };
             conversations: {
                 Row: {
                     created_at: string;
@@ -1280,7 +1355,7 @@ export type Database = {
                 | 'payout_requested'
                 | 'review_posted';
             audit_result: 'success' | 'failure';
-            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired';
+            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired' | 'disputed';
             identity_document_type: 'passport' | 'drivers_license' | 'national_id' | 'selfie_video';
             notification_channel: 'in_app' | 'email' | 'push' | 'sms';
             notification_type: 'gig_update' | 'application_update' | 'payment_update' | 'message_received' | 'security_alert' | 'marketing';
@@ -1419,7 +1494,7 @@ export const Constants = {
                 'review_posted',
             ],
             audit_result: ['success', 'failure'],
-            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'],
+            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired', 'disputed'],
             identity_document_type: ['passport', 'drivers_license', 'national_id', 'selfie_video'],
             notification_channel: ['in_app', 'email', 'push', 'sms'],
             notification_type: ['gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing'],

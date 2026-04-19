@@ -159,6 +159,25 @@ export interface AppEventsInterface {
         },
         Payment
     >;
+    'earnings:dispute-opened': EventDefinition<
+        {
+            disputeId: string;
+            paymentId: string | null;
+            gigId: string | null;
+            raisedBy: string | null;
+        },
+        void
+    >;
+    'earnings:dispute-resolved': EventDefinition<
+        {
+            disputeId: string;
+            paymentId: string | null;
+            gigId: string | null;
+            resolution: 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+            resolvedBy: string | null;
+        },
+        void
+    >;
     'notification:dispatch': EventDefinition<
         {
             userId: string;

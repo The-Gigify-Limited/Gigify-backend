@@ -13,6 +13,7 @@ function mapGigStatus(status: GigStatusEnum | null): GigFrontendStatus | null {
         completed: 'completed',
         cancelled: 'cancelled',
         expired: 'expired',
+        disputed: 'disputed',
     };
     return statusMap[status];
 }
