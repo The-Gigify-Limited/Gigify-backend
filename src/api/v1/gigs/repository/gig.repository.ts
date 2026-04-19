@@ -229,6 +229,30 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
+    async findGigsStartingWithin(fromDate: string, toDate: string): Promise<Gig[]> {
+        // gig_date is a DATE (not timestamptz) so we compare on the date
+        // portion — the service layer narrows further using start_time /
+        // end_time to decide whether we're actually inside the reminder
+        // window.
+        const { data = [], error } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .in('status', ['open', 'in_progress'])
+            .gte('gig_date', fromDate)
+            .lte('gig_date', toDate);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
+    }
+
+    async findHiredTalentIdsForGig(gigId: string): Promise<string[]> {
+        const { data = [], error } = await supabaseAdmin.from('gig_applications').select('talent_id').eq('gig_id', gigId).eq('status', 'hired');
+
+        if (error) throw error;
+        return (data ?? []).map((row) => row.talent_id);
+    }
+
     async markGigsExpired(gigIds: string[]): Promise<void> {
         if (!gigIds.length) return;
 

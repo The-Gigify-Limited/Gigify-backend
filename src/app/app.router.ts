@@ -3,7 +3,7 @@ import { authRouter } from '@/api/v1/auth';
 import { chatRouter } from '@/api/v1/chat';
 import { earningsRouter } from '@/api/v1/earnings';
 import { employerRouter } from '@/api/v1/employers';
-import { expireStaleGigs } from '@/api/v1/gigs/services';
+import { expireStaleGigs, sendGigReminders } from '@/api/v1/gigs/services';
 import { gigRouter } from '@/api/v1/gigs';
 import { notificationRouter } from '@/api/v1/notifications';
 import { realtimeRouter } from '@/api/v1/realtime';
@@ -60,6 +60,23 @@ appRouter.post(
             });
         } catch (error) {
             logger.error(`Internal expire-gigs job failed: ${error}`);
+            next(error);
+        }
+    },
+);
+
+appRouter.post(
+    '/internal/jobs/gig-reminders',
+    requireInternalJobSecret,
+    async (_req, res, next) => {
+        try {
+            const result = await sendGigReminders.handle();
+            res.status(result.code ?? HttpStatus.OK).send({
+                message: result.message,
+                data: result.data,
+            });
+        } catch (error) {
+            logger.error(`Internal gig-reminders job failed: ${error}`);
             next(error);
         }
     },

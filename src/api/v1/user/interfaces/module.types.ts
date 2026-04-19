@@ -58,6 +58,13 @@ export type NotificationPreferences = {
     paymentUpdates: boolean;
     messageUpdates: boolean;
     securityAlerts: boolean;
+    smsGigUpdates: boolean;
+    smsPaymentUpdates: boolean;
+    smsSecurityAlerts: boolean;
+    pushGigUpdates: boolean;
+    pushMessageUpdates: boolean;
+    pushPaymentUpdates: boolean;
+    pushSecurityAlerts: boolean;
     createdAt: string | null;
     updatedAt: string | null;
 };

@@ -63,7 +63,21 @@ export interface UpdateNotificationPreferencesDto extends ControllerArgsTypes {
     input: Partial<
         Pick<
             NotificationPreferences,
-            'emailEnabled' | 'pushEnabled' | 'smsEnabled' | 'marketingEnabled' | 'gigUpdates' | 'paymentUpdates' | 'messageUpdates' | 'securityAlerts'
+            | 'emailEnabled'
+            | 'pushEnabled'
+            | 'smsEnabled'
+            | 'marketingEnabled'
+            | 'gigUpdates'
+            | 'paymentUpdates'
+            | 'messageUpdates'
+            | 'securityAlerts'
+            | 'smsGigUpdates'
+            | 'smsPaymentUpdates'
+            | 'smsSecurityAlerts'
+            | 'pushGigUpdates'
+            | 'pushMessageUpdates'
+            | 'pushPaymentUpdates'
+            | 'pushSecurityAlerts'
         >
     >;
 }

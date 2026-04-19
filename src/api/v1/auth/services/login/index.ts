@@ -21,7 +21,8 @@ export class Login extends BaseService {
     handle = async ({ input, request }: ControllerArgs<LoginPayload>) => {
         if (!input) throw new BadRequestError('Invalid credentials');
 
-        const { email, password } = input;
+        const { email, password, remember } = input;
+        const persistent = remember === true;
 
         const normalizedEmail = email.trim().toLowerCase();
 
@@ -53,6 +54,7 @@ export class Login extends BaseService {
                 user: data.user,
                 accessToken: data.session?.access_token,
                 refreshToken: data.session?.refresh_token,
+                sessionHint: { persistent },
             },
             code: HttpStatus.OK,
             message: 'Login successful',

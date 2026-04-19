@@ -134,6 +134,42 @@ export type Database = {
                     },
                 ];
             };
+            gig_reminders_sent: {
+                Row: {
+                    gig_id: string;
+                    sent_at: string;
+                    user_id: string;
+                    window_hours: number;
+                };
+                Insert: {
+                    gig_id: string;
+                    sent_at?: string;
+                    user_id: string;
+                    window_hours: number;
+                };
+                Update: {
+                    gig_id?: string;
+                    sent_at?: string;
+                    user_id?: string;
+                    window_hours?: number;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'gig_reminders_sent_gig_id_fkey';
+                        columns: ['gig_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gigs';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'gig_reminders_sent_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             gigs: {
                 Row: {
                     additional_notes: string | null;
@@ -720,8 +756,15 @@ export type Database = {
                     message_updates: boolean;
                     payment_updates: boolean;
                     push_enabled: boolean;
+                    push_gig_updates: boolean;
+                    push_message_updates: boolean;
+                    push_payment_updates: boolean;
+                    push_security_alerts: boolean;
                     security_alerts: boolean;
                     sms_enabled: boolean;
+                    sms_gig_updates: boolean;
+                    sms_payment_updates: boolean;
+                    sms_security_alerts: boolean;
                     updated_at: string;
                     user_id: string;
                 };
@@ -733,8 +776,15 @@ export type Database = {
                     message_updates?: boolean;
                     payment_updates?: boolean;
                     push_enabled?: boolean;
+                    push_gig_updates?: boolean;
+                    push_message_updates?: boolean;
+                    push_payment_updates?: boolean;
+                    push_security_alerts?: boolean;
                     security_alerts?: boolean;
                     sms_enabled?: boolean;
+                    sms_gig_updates?: boolean;
+                    sms_payment_updates?: boolean;
+                    sms_security_alerts?: boolean;
                     updated_at?: string;
                     user_id: string;
                 };
@@ -746,8 +796,15 @@ export type Database = {
                     message_updates?: boolean;
                     payment_updates?: boolean;
                     push_enabled?: boolean;
+                    push_gig_updates?: boolean;
+                    push_message_updates?: boolean;
+                    push_payment_updates?: boolean;
+                    push_security_alerts?: boolean;
                     security_alerts?: boolean;
                     sms_enabled?: boolean;
+                    sms_gig_updates?: boolean;
+                    sms_payment_updates?: boolean;
+                    sms_security_alerts?: boolean;
                     updated_at?: string;
                     user_id?: string;
                 };
@@ -1150,6 +1207,42 @@ export type Database = {
                     },
                 ];
             };
+            saved_talents: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    talent_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    talent_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    talent_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'saved_talents_talent_id_fkey';
+                        columns: ['talent_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'saved_talents_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             role_permissions: {
                 Row: {
                     created_at: string;
@@ -1200,6 +1293,54 @@ export type Database = {
                     name?: string;
                 };
                 Relationships: [];
+            };
+            talent_availability: {
+                Row: {
+                    created_at: string;
+                    gig_id: string | null;
+                    id: string;
+                    reason: string | null;
+                    source: string;
+                    talent_user_id: string;
+                    unavailable_from: string;
+                    unavailable_until: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    gig_id?: string | null;
+                    id?: string;
+                    reason?: string | null;
+                    source?: string;
+                    talent_user_id: string;
+                    unavailable_from: string;
+                    unavailable_until: string;
+                };
+                Update: {
+                    created_at?: string;
+                    gig_id?: string | null;
+                    id?: string;
+                    reason?: string | null;
+                    source?: string;
+                    talent_user_id?: string;
+                    unavailable_from?: string;
+                    unavailable_until?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'talent_availability_gig_id_fkey';
+                        columns: ['gig_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gigs';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'talent_availability_talent_user_id_fkey';
+                        columns: ['talent_user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
             };
             talent_portfolios: {
                 Row: {
