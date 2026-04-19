@@ -25,6 +25,8 @@ export const gigFiltersSchema = {
         dateTo: Joi.string().isoDate().optional(),
         isRemote: Joi.boolean().optional(),
         employerId: uuid.optional(),
+        eventType: Joi.string().max(80).optional(),
+        genres: Joi.array().items(Joi.string().max(80)).single().optional(),
     }),
 };
 

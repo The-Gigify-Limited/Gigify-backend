@@ -24,6 +24,8 @@ export interface GetGigsQueryDto extends ControllerArgsTypes {
         dateTo?: string;
         isRemote?: boolean;
         employerId?: string;
+        eventType?: string;
+        genres?: string[];
     };
 }
 
