@@ -1,4 +1,11 @@
+export { default as addAvailability } from './addAvailability';
+export { default as browseTalents } from './browseTalents';
+export { default as deleteAvailability } from './deleteAvailability';
+export { default as getSavedTalents } from './getSavedTalents';
 export { default as getTalentById } from './getTalentById';
+export { default as listAvailability } from './listAvailability';
+export { default as removeSavedTalent } from './removeSavedTalent';
+export { default as saveTalent } from './saveTalent';
 export * from './talentPortfolio';
 export * from './talentReview';
 export { default as updateTalent } from './updateTalentById';

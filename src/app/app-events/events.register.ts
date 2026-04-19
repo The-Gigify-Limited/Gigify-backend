@@ -15,10 +15,12 @@ import {
 } from '~/gigs/listeners';
 import { dispatchNotificationEventListener } from '~/notifications/listeners';
 import {
+    autoBlockAvailabilityOnOfferAcceptedListener,
     createTalentEventListener,
     getTalentProfileByUserId,
     getTalentReviewsEventListener,
     createTalentReviewEventListener,
+    unblockAvailabilityOnDisputeResolvedListener,
 } from '~/talents/listeners';
 import {
     checkNotificationPreferenceEventListener,
@@ -66,6 +68,7 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('gig:expired', (input) => gigExpiredEventListener(input));
     bus.onEvent('gig:offer-sent', (input) => offerSentEventListener(input));
     bus.onEvent('gig:offer-accepted', (input) => offerAcceptedEventListener(input));
+    bus.onEvent('gig:offer-accepted', (input) => autoBlockAvailabilityOnOfferAcceptedListener(input));
     bus.onEvent('gig:offer-declined', (input) => offerDeclinedEventListener(input));
     bus.onEvent('gig:offer-countered', (input) => offerCounteredEventListener(input));
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
@@ -77,5 +80,6 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('earnings:payout-paid', (input) => payoutPaidEventListener(input));
     bus.onEvent('earnings:dispute-opened', (input) => disputeOpenedEventListener(input));
     bus.onEvent('earnings:dispute-resolved', (input) => disputeResolvedEventListener(input));
+    bus.onEvent('earnings:dispute-resolved', (input) => unblockAvailabilityOnDisputeResolvedListener(input));
     bus.onEvent('notification:dispatch', (input) => dispatchNotificationEventListener(input));
 }

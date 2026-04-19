@@ -5,6 +5,7 @@ export interface LoginPayload extends ControllerArgsTypes {
     input: {
         email: string;
         password: string;
+        remember?: boolean;
     };
 }
 

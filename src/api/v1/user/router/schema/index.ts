@@ -100,6 +100,13 @@ const notificationPreferencesSchema = {
         paymentUpdates: Joi.boolean().optional(),
         messageUpdates: Joi.boolean().optional(),
         securityAlerts: Joi.boolean().optional(),
+        smsGigUpdates: Joi.boolean().optional(),
+        smsPaymentUpdates: Joi.boolean().optional(),
+        smsSecurityAlerts: Joi.boolean().optional(),
+        pushGigUpdates: Joi.boolean().optional(),
+        pushMessageUpdates: Joi.boolean().optional(),
+        pushPaymentUpdates: Joi.boolean().optional(),
+        pushSecurityAlerts: Joi.boolean().optional(),
     }),
 };
 

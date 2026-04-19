@@ -1,23 +1,135 @@
 import { Router } from 'express';
 import { ControlBuilder } from '@/core';
 import {
+    addAvailability,
+    browseTalents,
     createTalentReview,
+    deleteAvailability,
     deleteTalentPortfolio,
     getAllTalentReviews,
+    getSavedTalents,
     getTalentById,
     getTalentPortfolio,
+    listAvailability,
+    removeSavedTalent,
+    saveTalent,
     updateTalent,
     uploadTalentPortfolio,
 } from '../services';
 import {
+    availabilityCreateSchema,
+    availabilityDeleteSchema,
+    availabilityListSchema,
+    browseTalentsQuerySchema,
     createTalentReviewSchema,
     getUserParamsSchema,
+    savedTalentsQuerySchema,
     talentPortfolioParamSchema,
     talentReviewsQuerySchema,
     updateTalentSchema,
 } from './schema';
 
 export const talentRouter = Router();
+
+/**
+ * @swagger
+ * /talent:
+ *   get:
+ *     tags: [Talent]
+ *     summary: Browse / search the talent directory
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+ *       - in: query
+ *         name: search
+ *         schema: { type: string }
+ *       - in: query
+ *         name: primaryRole
+ *         schema: { type: string }
+ *       - in: query
+ *         name: minRate
+ *         schema: { type: number }
+ *       - in: query
+ *         name: maxRate
+ *         schema: { type: number }
+ *       - in: query
+ *         name: minRating
+ *         schema: { type: number, minimum: 0, maximum: 5 }
+ *       - in: query
+ *         name: availableOn
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: sortBy
+ *         schema: { type: string, enum: [rating, priceAsc, priceDesc, recent], default: rating }
+ */
+talentRouter.get(
+    '/',
+    ControlBuilder.builder()
+        .setValidator(browseTalentsQuerySchema)
+        .setHandler(browseTalents.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/saved:
+ *   get:
+ *     tags: [Talent]
+ *     summary: List the current employer's saved talents
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.get(
+    '/saved',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(savedTalentsQuerySchema)
+        .setHandler(getSavedTalents.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/availability:
+ *   post:
+ *     tags: [Talent]
+ *     summary: Mark the current talent unavailable for a window
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.post(
+    '/availability',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('talent')
+        .setValidator(availabilityCreateSchema)
+        .setHandler(addAvailability.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/availability/{id}:
+ *   delete:
+ *     tags: [Talent]
+ *     summary: Delete a manual availability entry (auto rows are read-only)
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.delete(
+    '/availability/:id',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('talent')
+        .setValidator(availabilityDeleteSchema)
+        .setHandler(deleteAvailability.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -282,5 +394,65 @@ talentRouter.post(
         .isPrivate()
         .setValidator(createTalentReviewSchema)
         .setHandler(createTalentReview.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/save:
+ *   post:
+ *     tags: [Talent]
+ *     summary: Bookmark a talent for the current employer
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.post(
+    '/:id/save',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(getUserParamsSchema)
+        .setHandler(saveTalent.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/save:
+ *   delete:
+ *     tags: [Talent]
+ *     summary: Remove a bookmarked talent
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.delete(
+    '/:id/save',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(getUserParamsSchema)
+        .setHandler(removeSavedTalent.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/availability:
+ *   get:
+ *     tags: [Talent]
+ *     summary: Read a talent's busy windows (for employer availability filters)
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date-time }
+ */
+talentRouter.get(
+    '/:id/availability',
+    ControlBuilder.builder()
+        .setValidator(availabilityListSchema)
+        .setHandler(listAvailability.handle)
         .handle(),
 );
