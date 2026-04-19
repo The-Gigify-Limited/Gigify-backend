@@ -26,6 +26,7 @@ jest.mock('@/core/services/mails/views', () => ({
 
 jest.mock('~/earnings/repository', () => ({
     EarningsRepository: class EarningsRepository {},
+    DisputeRepository: class DisputeRepository {},
 }));
 
 jest.mock('~/gigs/repository', () => ({
@@ -47,6 +48,10 @@ import { sendEmail } from '@/core/services/mails';
 import { RequestPaymentReleaseOtp } from './index';
 
 describe('RequestPaymentReleaseOtp service', () => {
+    beforeEach(() => {
+        jest.clearAllMocks();
+    });
+
     it('creates an OTP record and emails the employer verification code', async () => {
         const earningsRepository = {
             getPaymentById: jest.fn().mockResolvedValue({
@@ -82,7 +87,16 @@ describe('RequestPaymentReleaseOtp service', () => {
             }),
         };
 
-        const service = new RequestPaymentReleaseOtp(earningsRepository as never, gigRepository as never, userRepository as never);
+        const disputeRepository = {
+            findOpenDisputeForPayment: jest.fn().mockResolvedValue(null),
+        };
+
+        const service = new RequestPaymentReleaseOtp(
+            earningsRepository as never,
+            gigRepository as never,
+            userRepository as never,
+            disputeRepository as never,
+        );
 
         const response = await service.handle({
             params: { id: 'payment-1' },
@@ -108,5 +122,74 @@ describe('RequestPaymentReleaseOtp service', () => {
             }),
         );
         expect(response.message).toBe('Payment Release Verification Code Sent Successfully');
+    });
+
+    it('409s when a dispute is open on the payment', async () => {
+        const earningsRepository = {
+            getPaymentById: jest.fn().mockResolvedValue({
+                id: 'payment-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                gigId: 'gig-1',
+                currency: 'NGN',
+                status: 'pending',
+            }),
+            getActivePaymentReleaseOtp: jest.fn(),
+            createPaymentReleaseOtp: jest.fn(),
+        };
+        const gigRepository = { getGigById: jest.fn() };
+        const userRepository = { findById: jest.fn(), mapToCamelCase: jest.fn() };
+        const disputeRepository = {
+            findOpenDisputeForPayment: jest.fn().mockResolvedValue({ id: 'dispute-1', status: 'open' }),
+        };
+
+        const service = new RequestPaymentReleaseOtp(
+            earningsRepository as never,
+            gigRepository as never,
+            userRepository as never,
+            disputeRepository as never,
+        );
+
+        await expect(
+            service.handle({
+                params: { id: 'payment-1' },
+                request: { user: { id: 'employer-1' }, headers: {}, ip: '1' },
+            } as never),
+        ).rejects.toThrow('Cannot request payment release while a dispute is open');
+
+        expect(earningsRepository.createPaymentReleaseOtp).not.toHaveBeenCalled();
+        expect(sendEmail).not.toHaveBeenCalled();
+    });
+
+    it('409s when the gig itself is flagged disputed even without a dispute row', async () => {
+        const earningsRepository = {
+            getPaymentById: jest.fn().mockResolvedValue({
+                id: 'payment-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                gigId: 'gig-1',
+                currency: 'NGN',
+                status: 'pending',
+            }),
+            getActivePaymentReleaseOtp: jest.fn(),
+            createPaymentReleaseOtp: jest.fn(),
+        };
+        const gigRepository = { getGigById: jest.fn().mockResolvedValue({ id: 'gig-1', status: 'disputed' }) };
+        const userRepository = { findById: jest.fn(), mapToCamelCase: jest.fn() };
+        const disputeRepository = { findOpenDisputeForPayment: jest.fn().mockResolvedValue(null) };
+
+        const service = new RequestPaymentReleaseOtp(
+            earningsRepository as never,
+            gigRepository as never,
+            userRepository as never,
+            disputeRepository as never,
+        );
+
+        await expect(
+            service.handle({
+                params: { id: 'payment-1' },
+                request: { user: { id: 'employer-1' }, headers: {}, ip: '1' },
+            } as never),
+        ).rejects.toThrow('Cannot request payment release while the gig is in dispute');
     });
 });
