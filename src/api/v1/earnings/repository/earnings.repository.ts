@@ -65,6 +65,26 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
+    async findPaymentByStripeIntent(intentId: string): Promise<Payment | null> {
+        // Payment reference holds the PI id once a Stripe webhook has
+        // stamped it, so a direct eq-lookup is the cheap path. Fall back to
+        // a metadata scan only if the reference path misses (older rows).
+        const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('payment_reference', intentId).maybeSingle();
+
+        if (error) throw error;
+        if (data) return this.mapToCamelCase(data);
+
+        const { data: metaRows = [], error: metaError } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .contains('metadata', { stripePaymentIntentId: intentId })
+            .limit(1);
+
+        if (metaError) throw metaError;
+
+        return metaRows && metaRows.length ? this.mapToCamelCase(metaRows[0]) : null;
+    }
+
     async findPendingPaymentByContext(input: { talentId: string; gigId?: string; applicationId?: string }): Promise<Payment | null> {
         let request = supabaseAdmin.from(this.table).select('*').eq('talent_id', input.talentId).in('status', ['pending', 'processing']);
 
