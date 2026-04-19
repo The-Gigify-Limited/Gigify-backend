@@ -6,6 +6,11 @@ export const paymentHistorySchema = {
     querySchema: Joi.object({
         page: Joi.number().integer().min(1).optional(),
         pageSize: Joi.number().integer().min(1).max(100).optional(),
+        dateFrom: Joi.string().isoDate().optional(),
+        dateTo: Joi.string().isoDate().optional(),
+        status: Joi.string().valid('pending', 'processing', 'paid', 'released', 'failed', 'disputed', 'refunded', 'cancelled').optional(),
+        direction: Joi.string().valid('incoming', 'outgoing').optional(),
+        gigId: uuid.optional(),
     }),
 };
 

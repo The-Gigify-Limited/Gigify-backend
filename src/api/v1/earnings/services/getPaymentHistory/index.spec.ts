@@ -9,87 +9,96 @@ jest.mock('@/core', () => {
 
 jest.mock('~/earnings/repository', () => ({
     EarningsRepository: class EarningsRepository {},
+    DisputeRepository: class DisputeRepository {},
 }));
 
 import { GetPaymentHistory } from './index';
 
-describe('GetPaymentHistory service', () => {
-    it('retrieves payment history for authenticated talent', async () => {
-        const earningsRepository = {
-            getPaymentHistoryForTalent: jest.fn().mockResolvedValue([
-                {
-                    id: 'payment-1',
-                    amount: 1000,
-                    status: 'completed',
-                    createdAt: '2024-01-01T00:00:00Z',
-                },
-                {
-                    id: 'payment-2',
-                    amount: 1500,
-                    status: 'completed',
-                    createdAt: '2024-01-15T00:00:00Z',
-                },
-            ]),
-        };
+function buildDeps(overrides: { disputedPaymentIds?: string[] } = {}) {
+    const earningsRepository = {
+        getPaymentHistoryForUser: jest.fn().mockResolvedValue([]),
+    };
+    const disputeRepository = {
+        findPaymentIdsWithOpenDispute: jest.fn().mockResolvedValue(overrides.disputedPaymentIds ?? []),
+    };
+    return { earningsRepository, disputeRepository };
+}
 
-        const service = new GetPaymentHistory(earningsRepository as never);
+describe('GetPaymentHistory service', () => {
+    it('retrieves payment history for the authenticated user', async () => {
+        const { earningsRepository, disputeRepository } = buildDeps();
+        earningsRepository.getPaymentHistoryForUser.mockResolvedValue([
+            { id: 'payment-1', amount: 1000, status: 'paid' },
+            { id: 'payment-2', amount: 1500, status: 'pending' },
+        ]);
+
+        const service = new GetPaymentHistory(earningsRepository as never, disputeRepository as never);
 
         const response = await service.handle({
-            query: { limit: 10 },
-            request: {
-                user: { id: 'talent-1' },
-            },
+            query: { page: 1, pageSize: 10 },
+            request: { user: { id: 'talent-1' } },
         } as never);
 
-        expect(earningsRepository.getPaymentHistoryForTalent).toHaveBeenCalledWith('talent-1', { limit: 10 });
-        expect(response.message).toBe('Payment History Retrieved Successfully');
+        expect(earningsRepository.getPaymentHistoryForUser).toHaveBeenCalledWith('talent-1', expect.objectContaining({ page: 1, pageSize: 10 }));
         expect(response.data).toHaveLength(2);
     });
 
-    it('returns empty list when no payment history exists', async () => {
-        const earningsRepository = {
-            getPaymentHistoryForTalent: jest.fn().mockResolvedValue([]),
-        };
-
-        const service = new GetPaymentHistory(earningsRepository as never);
-
-        const response = await service.handle({
-            query: {},
-            request: {
-                user: { id: 'talent-1' },
-            },
-        } as never);
-
-        expect(response.data).toEqual([]);
-    });
-
-    it('passes query parameters to repository', async () => {
-        const earningsRepository = {
-            getPaymentHistoryForTalent: jest.fn().mockResolvedValue([]),
-        };
-
-        const service = new GetPaymentHistory(earningsRepository as never);
+    it('translates the frontend status "released" to payment status "paid"', async () => {
+        const { earningsRepository, disputeRepository } = buildDeps();
+        const service = new GetPaymentHistory(earningsRepository as never, disputeRepository as never);
 
         await service.handle({
-            query: { limit: 20, offset: 10, status: 'completed' },
-            request: {
-                user: { id: 'talent-1' },
-            },
+            query: { status: 'released' },
+            request: { user: { id: 'talent-1' } },
         } as never);
 
-        expect(earningsRepository.getPaymentHistoryForTalent).toHaveBeenCalledWith('talent-1', {
-            limit: 20,
-            offset: 10,
-            status: 'completed',
-        });
+        expect(earningsRepository.getPaymentHistoryForUser).toHaveBeenCalledWith('talent-1', expect.objectContaining({ status: 'paid' }));
     });
 
-    it('throws when user is not authenticated', async () => {
-        const earningsRepository = {
-            getPaymentHistoryForTalent: jest.fn(),
-        };
+    it('resolves status "disputed" by scoping to payments with an open dispute row', async () => {
+        const { earningsRepository, disputeRepository } = buildDeps({ disputedPaymentIds: ['payment-9', 'payment-42'] });
+        const service = new GetPaymentHistory(earningsRepository as never, disputeRepository as never);
 
-        const service = new GetPaymentHistory(earningsRepository as never);
+        await service.handle({
+            query: { status: 'disputed' },
+            request: { user: { id: 'talent-1' } },
+        } as never);
+
+        expect(disputeRepository.findPaymentIdsWithOpenDispute).toHaveBeenCalled();
+        expect(earningsRepository.getPaymentHistoryForUser).toHaveBeenCalledWith(
+            'talent-1',
+            expect.objectContaining({ paymentIdsFilter: ['payment-9', 'payment-42'], status: undefined }),
+        );
+    });
+
+    it('forwards dateFrom, dateTo, direction, and gigId through to the repo', async () => {
+        const { earningsRepository, disputeRepository } = buildDeps();
+        const service = new GetPaymentHistory(earningsRepository as never, disputeRepository as never);
+
+        await service.handle({
+            query: {
+                dateFrom: '2026-01-01',
+                dateTo: '2026-02-01',
+                direction: 'outgoing',
+                gigId: 'gig-1',
+            },
+            request: { user: { id: 'employer-1' } },
+        } as never);
+
+        expect(earningsRepository.getPaymentHistoryForUser).toHaveBeenCalledWith(
+            'employer-1',
+            expect.objectContaining({
+                dateFrom: '2026-01-01',
+                dateTo: '2026-02-01',
+                direction: 'outgoing',
+                gigId: 'gig-1',
+            }),
+        );
+    });
+
+    it('throws when the user is not authenticated', async () => {
+        const { earningsRepository, disputeRepository } = buildDeps();
+        const service = new GetPaymentHistory(earningsRepository as never, disputeRepository as never);
 
         await expect(
             service.handle({
@@ -98,6 +107,6 @@ describe('GetPaymentHistory service', () => {
             } as never),
         ).rejects.toThrow('User not authenticated');
 
-        expect(earningsRepository.getPaymentHistoryForTalent).not.toHaveBeenCalled();
+        expect(earningsRepository.getPaymentHistoryForUser).not.toHaveBeenCalled();
     });
 });

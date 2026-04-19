@@ -115,18 +115,51 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     }
 
     async getPaymentHistoryForTalent(talentId: string, query: { page?: number | string; pageSize?: number | string }): Promise<Payment[]> {
-        const { offset, rangeEnd } = normalizePagination(query);
+        return this.getPaymentHistoryForUser(talentId, { ...query, direction: 'incoming' });
+    }
 
-        const { data = [], error } = await supabaseAdmin
-            .from(this.table)
-            .select('*')
-            .eq('talent_id', talentId)
-            .order('created_at', { ascending: false })
-            .range(offset, rangeEnd);
+    async getPaymentHistoryForUser(
+        userId: string,
+        query: {
+            page?: number | string;
+            pageSize?: number | string;
+            dateFrom?: string;
+            dateTo?: string;
+            status?: Payment['status'];
+            direction?: 'incoming' | 'outgoing';
+            gigId?: string;
+            paymentIdsFilter?: string[];
+        },
+    ): Promise<Payment[]> {
+        const { offset, rangeEnd } = normalizePagination(query);
+        const direction = query.direction ?? 'incoming';
+
+        let request = supabaseAdmin.from(this.table).select('*');
+
+        if (direction === 'outgoing') {
+            request = request.eq('employer_id', userId);
+        } else {
+            request = request.eq('talent_id', userId);
+        }
+
+        if (query.gigId) request = request.eq('gig_id', query.gigId);
+        if (query.status) request = request.eq('status', query.status);
+        if (query.dateFrom) request = request.gte('created_at', query.dateFrom);
+        if (query.dateTo) request = request.lte('created_at', query.dateTo);
+
+        // paymentIdsFilter lets the service scope to a pre-computed id set
+        // (e.g. the subset currently under open dispute). An empty array means
+        // "no matches" — short-circuit to preserve that intent.
+        if (query.paymentIdsFilter) {
+            if (query.paymentIdsFilter.length === 0) return [];
+            request = request.in('id', query.paymentIdsFilter);
+        }
+
+        const { data = [], error } = await request.order('created_at', { ascending: false }).range(offset, rangeEnd);
 
         if (error) throw error;
 
-        return (data ?? []).map(this.mapToCamelCase);
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
     async createPayoutRequest(talentId: string, input: { amount: number; currency?: string; note?: string }): Promise<PayoutRequest> {
