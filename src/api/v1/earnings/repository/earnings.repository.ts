@@ -177,6 +177,10 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
                 processed_at: input.processedAt,
                 status: input.status,
                 talent_id: input.talentId,
+                external_transfer_id: input.externalTransferId,
+                external_provider: input.externalProvider,
+                paid_at: input.paidAt,
+                paid_by: input.paidBy,
                 updated_at: new Date().toISOString(),
             }).filter(([, value]) => value !== undefined),
         );

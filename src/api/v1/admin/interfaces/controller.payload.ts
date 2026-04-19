@@ -2,7 +2,7 @@ import type { ControllerArgsTypes } from '@/core';
 import { AuditResultEnum, UserStatusEnum } from './module.types';
 import { NotificationChannelEnum, NotificationTypeEnum } from '~/notifications/interfaces';
 import { ReportStatusEnum } from '~/gigs/interfaces';
-import { PayoutStatusEnum } from '~/earnings/interfaces';
+import { PayoutExternalProviderEnum, PayoutStatusEnum } from '~/earnings/interfaces';
 import { IdentityVerificationStatusEnum, UserRoleEnum } from '~/user/interfaces';
 import { GigStatusEnum } from '~/gigs/interfaces';
 
@@ -57,6 +57,8 @@ export interface AdminPayoutRequestUpdateDto extends ControllerArgsTypes {
     };
     input: {
         status: PayoutStatusEnum;
+        externalTransferId?: string;
+        externalProvider?: PayoutExternalProviderEnum;
     };
 }
 
