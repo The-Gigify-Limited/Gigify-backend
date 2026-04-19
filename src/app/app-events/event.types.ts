@@ -28,6 +28,7 @@ export interface AppEventsInterface {
         {
             userId: string;
             preferenceKey: NotificationPreferenceTopic;
+            channel?: 'email' | 'push' | 'sms' | 'in_app';
         },
         boolean
     >;

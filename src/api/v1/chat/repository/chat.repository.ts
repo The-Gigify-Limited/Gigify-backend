@@ -1,7 +1,16 @@
 import { AppEventManager } from '@/app/app-events/app.events';
 import { BaseRepository, supabaseAdmin } from '@/core';
 import { normalizePagination } from '@/core/utils/pagination';
-import { Counterpart, DatabaseConversation, DatabaseMessage, Conversation, ConversationThread, GigSummary, Message } from '../interfaces';
+import {
+    ConversationTab,
+    Counterpart,
+    DatabaseConversation,
+    DatabaseMessage,
+    Conversation,
+    ConversationThread,
+    GigSummary,
+    Message,
+} from '../interfaces';
 
 export class ChatRepository extends BaseRepository<DatabaseConversation, Conversation> {
     protected readonly table = 'conversations';
@@ -135,15 +144,24 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
 
     async getConversationsForUser(
         userId: string,
-        query: { page?: number | string; pageSize?: number | string },
+        query: { page?: number | string; pageSize?: number | string; tab?: ConversationTab },
         appEventManager: AppEventManager,
     ): Promise<ConversationThread[]> {
         const { offset, rangeEnd } = normalizePagination(query);
+        const tab: ConversationTab = query.tab ?? 'all';
 
-        const { data = [], error } = await supabaseAdmin
-            .from(this.table)
-            .select('*')
-            .or(`employer_id.eq.${userId},talent_id.eq.${userId}`)
+        const archivedIds = await this.getArchivedConversationIds(userId);
+
+        let request = supabaseAdmin.from(this.table).select('*').or(`employer_id.eq.${userId},talent_id.eq.${userId}`);
+
+        if (tab === 'archived') {
+            if (archivedIds.length === 0) return [];
+            request = request.in('id', archivedIds);
+        } else if (archivedIds.length > 0) {
+            request = request.not('id', 'in', `(${archivedIds.join(',')})`);
+        }
+
+        const { data = [], error } = await request
             .order('last_message_at', { ascending: false, nullsFirst: false })
             .order('created_at', { ascending: false })
             .range(offset, rangeEnd);
@@ -183,7 +201,8 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
             }),
         );
 
-        return conversations.map((conversation) => {
+        const archivedSet = new Set(archivedIds);
+        const threads = conversations.map((conversation) => {
             const counterpartId = conversation.employerId === userId ? conversation.talentId : conversation.employerId;
             const metadata = messageRows.get(conversation.id) ?? { lastMessage: null, unreadCount: 0 };
 
@@ -193,8 +212,39 @@ export class ChatRepository extends BaseRepository<DatabaseConversation, Convers
                 gig: conversation.gigId ? gigMap.get(conversation.gigId) ?? null : null,
                 lastMessage: metadata.lastMessage,
                 unreadCount: metadata.unreadCount,
+                isArchived: archivedSet.has(conversation.id),
             };
         });
+
+        if (tab === 'unread') return threads.filter((thread) => thread.unreadCount > 0);
+        return threads;
+    }
+
+    async getArchivedConversationIds(userId: string): Promise<string[]> {
+        const { data = [], error } = await supabaseAdmin.from('conversation_archives').select('conversation_id').eq('user_id', userId);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => row.conversation_id);
+    }
+
+    async archiveConversationForUser(conversationId: string, userId: string): Promise<void> {
+        const { error } = await supabaseAdmin.from('conversation_archives').upsert(
+            {
+                conversation_id: conversationId,
+                user_id: userId,
+                archived_at: new Date().toISOString(),
+            },
+            { onConflict: 'conversation_id,user_id' },
+        );
+
+        if (error) throw error;
+    }
+
+    async unarchiveConversationForUser(conversationId: string, userId: string): Promise<void> {
+        const { error } = await supabaseAdmin.from('conversation_archives').delete().eq('conversation_id', conversationId).eq('user_id', userId);
+
+        if (error) throw error;
     }
 
     private async getMessageMetadata(conversationIds: string[], userId: string) {

@@ -7,6 +7,7 @@ export const notificationsQuerySchema = {
         page: Joi.number().integer().min(1).optional(),
         pageSize: Joi.number().integer().min(1).max(100).optional(),
         isRead: Joi.boolean().optional(),
+        type: Joi.string().valid('gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing').optional(),
     }),
 };
 

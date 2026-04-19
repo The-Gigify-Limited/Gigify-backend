@@ -35,6 +35,7 @@ jest.mock('~/notifications/utils/dispatchNotification', () => ({
 
 jest.mock('../../repository', () => ({
     ChatRepository: class ChatRepository {},
+    ModerationRepository: class ModerationRepository {},
 }));
 
 import { dispatch } from '@/app';
@@ -59,11 +60,16 @@ describe('SendMessage service', () => {
                 senderId: 'employer-1',
                 body: 'Hello there',
             }),
+            unarchiveConversationForUser: jest.fn().mockResolvedValue(undefined),
+        };
+
+        const moderationRepository = {
+            isBlockedEitherWay: jest.fn().mockResolvedValue(false),
         };
 
         (dispatch as jest.Mock).mockResolvedValue([undefined]);
 
-        const service = new SendMessage(chatRepository as never);
+        const service = new SendMessage(chatRepository as never, moderationRepository as never);
 
         const response = await service.handle({
             params: { id: 'conversation-1' },

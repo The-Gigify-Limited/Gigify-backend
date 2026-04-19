@@ -1,10 +1,10 @@
-import { BadRequestError, ConflictError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
+import { BadRequestError, ConflictError, ControllerArgs, ForbiddenError, HttpStatus, RouteNotFoundError, UnAuthorizedError } from '@/core';
 import { dispatch } from '@/app';
 import { OpenConversationDto } from '../../interfaces';
-import { ChatRepository } from '../../repository';
+import { ChatRepository, ModerationRepository } from '../../repository';
 
 export class OpenConversation {
-    constructor(private readonly chatRepository: ChatRepository) {}
+    constructor(private readonly chatRepository: ChatRepository, private readonly moderationRepository: ModerationRepository) {}
 
     handle = async ({ input, request }: ControllerArgs<OpenConversationDto>) => {
         const user = request.user;
@@ -14,10 +14,13 @@ export class OpenConversation {
 
         const [participant] = await dispatch('user:get-by-id', { id: input.participantId });
 
-        if (!participant) throw new RouteNotFoundError('Conversation participant not found');
+        if (!participant?.id) throw new RouteNotFoundError('Conversation participant not found');
 
         if (participant.id === user.id) throw new BadRequestError('You cannot start a conversation with yourself');
         if (!participant.role || participant.role === user.role) throw new ConflictError('Conversation must be between an employer and a talent');
+
+        const blocked = await this.moderationRepository.isBlockedEitherWay(user.id, participant.id);
+        if (blocked) throw new ForbiddenError('You cannot start a conversation with this user');
 
         const employerId = user.role === 'employer' ? user.id : participant.id;
         const talentId = user.role === 'talent' ? user.id : participant.id;
@@ -63,5 +66,5 @@ export class OpenConversation {
     };
 }
 
-const openConversation = new OpenConversation(new ChatRepository());
+const openConversation = new OpenConversation(new ChatRepository(), new ModerationRepository());
 export default openConversation;

@@ -1,10 +1,13 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    clearAllNotifications,
+    deleteNotification,
     getMyNotifications,
     getUnreadNotificationCount,
     markAllNotificationsRead,
     markNotificationRead,
+    markNotificationUnread,
 } from '../services';
 import { notificationIdSchema, notificationsQuerySchema } from './schema';
 
@@ -117,5 +120,58 @@ notificationRouter.patch(
         .isPrivate()
         .setValidator(notificationIdSchema)
         .setHandler(markNotificationRead.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /notifications/{id}/unread:
+ *   patch:
+ *     tags: [Notifications]
+ *     summary: Mark a single notification as unread
+ *     security:
+ *       - bearerAuth: []
+ */
+notificationRouter.patch(
+    '/:id/unread',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(notificationIdSchema)
+        .setHandler(markNotificationUnread.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /notifications/{id}:
+ *   delete:
+ *     tags: [Notifications]
+ *     summary: Delete a single notification
+ *     security:
+ *       - bearerAuth: []
+ */
+notificationRouter.delete(
+    '/:id',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(notificationIdSchema)
+        .setHandler(deleteNotification.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /notifications:
+ *   delete:
+ *     tags: [Notifications]
+ *     summary: Clear every notification for the current user
+ *     security:
+ *       - bearerAuth: []
+ */
+notificationRouter.delete(
+    '/',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(clearAllNotifications.handle)
         .handle(),
 );

@@ -17,6 +17,7 @@ export async function getUserByIdEventListener(id: string, fields?: (keyof User)
 export async function checkNotificationPreferenceEventListener(input: {
     userId: string;
     preferenceKey?: 'gigUpdates' | 'paymentUpdates' | 'messageUpdates' | 'securityAlerts' | 'marketingEnabled';
+    channel?: 'email' | 'push' | 'sms' | 'in_app';
 }): Promise<boolean> {
     const notificationPreferenceRepository = new NotificationPreferenceRepository();
     const preferences =
@@ -26,6 +27,13 @@ export async function checkNotificationPreferenceEventListener(input: {
     if (input.preferenceKey && preferences[input.preferenceKey] === false) {
         return false;
     }
+
+    // Per-channel global opt-out: even if a topic is allowed, the user can
+    // silence a whole channel (e.g. marketing emails off, payment push off).
+    // in_app is always allowed — it's the bell icon, not an opt-in surface.
+    if (input.channel === 'email' && preferences.emailEnabled === false) return false;
+    if (input.channel === 'push' && preferences.pushEnabled === false) return false;
+    if (input.channel === 'sms' && preferences.smsEnabled === false) return false;
 
     return true;
 }

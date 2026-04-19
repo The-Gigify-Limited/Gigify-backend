@@ -32,8 +32,8 @@ export async function dispatchNotificationEventListener(input: {
         const results = await input.appEventManager.dispatch('user:check-notification-preference', {
             userId: input.userId,
             preferenceKey: input.preferenceKey,
+            channel: 'email',
         });
-
         if (results.length > 0) {
             emailAllowed = results.every((result) => result !== false);
         }

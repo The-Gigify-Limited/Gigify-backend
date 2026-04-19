@@ -359,6 +359,39 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            conversation_archives: {
+                Row: {
+                    archived_at: string;
+                    conversation_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    archived_at?: string;
+                    conversation_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    archived_at?: string;
+                    conversation_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'conversation_archives_conversation_id_fkey';
+                        columns: ['conversation_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'conversations';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'conversation_archives_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             conversations: {
                 Row: {
                     created_at: string;
@@ -594,6 +627,84 @@ export type Database = {
                     {
                         foreignKeyName: 'messages_sender_id_fkey';
                         columns: ['sender_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            message_reports: {
+                Row: {
+                    conversation_id: string;
+                    created_at: string;
+                    description: string | null;
+                    id: string;
+                    message_id: string;
+                    reason: string;
+                    reported_user_id: string;
+                    reporter_id: string;
+                    resolved_at: string | null;
+                    resolved_by: string | null;
+                    status: Database['public']['Enums']['message_report_status'];
+                };
+                Insert: {
+                    conversation_id: string;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    message_id: string;
+                    reason: string;
+                    reported_user_id: string;
+                    reporter_id: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: Database['public']['Enums']['message_report_status'];
+                };
+                Update: {
+                    conversation_id?: string;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    message_id?: string;
+                    reason?: string;
+                    reported_user_id?: string;
+                    reporter_id?: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: Database['public']['Enums']['message_report_status'];
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'message_reports_conversation_id_fkey';
+                        columns: ['conversation_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'conversations';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_message_id_fkey';
+                        columns: ['message_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'messages';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_reported_user_id_fkey';
+                        columns: ['reported_user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_reporter_id_fkey';
+                        columns: ['reporter_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_resolved_by_fkey';
+                        columns: ['resolved_by'];
                         isOneToOne: false;
                         referencedRelation: 'users';
                         referencedColumns: ['id'];
@@ -1269,6 +1380,42 @@ export type Database = {
                     },
                 ];
             };
+            user_blocks: {
+                Row: {
+                    blocked_id: string;
+                    blocker_id: string;
+                    created_at: string;
+                    reason: string | null;
+                };
+                Insert: {
+                    blocked_id: string;
+                    blocker_id: string;
+                    created_at?: string;
+                    reason?: string | null;
+                };
+                Update: {
+                    blocked_id?: string;
+                    blocker_id?: string;
+                    created_at?: string;
+                    reason?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'user_blocks_blocked_id_fkey';
+                        columns: ['blocked_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'user_blocks_blocker_id_fkey';
+                        columns: ['blocker_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             users: {
                 Row: {
                     acquisition_source: string | null;
@@ -1405,6 +1552,7 @@ export type Database = {
             audit_result: 'success' | 'failure';
             gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired' | 'disputed';
             identity_document_type: 'passport' | 'drivers_license' | 'national_id' | 'selfie_video';
+            message_report_status: 'pending' | 'reviewing' | 'actioned' | 'dismissed';
             notification_channel: 'in_app' | 'email' | 'push' | 'sms';
             notification_type: 'gig_update' | 'application_update' | 'payment_update' | 'message_received' | 'security_alert' | 'marketing';
             offer_status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired' | 'countered';
@@ -1544,6 +1692,7 @@ export const Constants = {
             audit_result: ['success', 'failure'],
             gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired', 'disputed'],
             identity_document_type: ['passport', 'drivers_license', 'national_id', 'selfie_video'],
+            message_report_status: ['pending', 'reviewing', 'actioned', 'dismissed'],
             notification_channel: ['in_app', 'email', 'push', 'sms'],
             notification_type: ['gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing'],
             offer_status: ['pending', 'accepted', 'declined', 'withdrawn', 'expired', 'countered'],

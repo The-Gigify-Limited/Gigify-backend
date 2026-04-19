@@ -1,18 +1,29 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    archiveConversation,
+    blockUser,
     getConversationMessages,
     getMyConversations,
     getUnreadConversationCount,
+    listMyBlocks,
     markConversationRead,
     openConversation,
+    reportMessage,
     sendMessage,
+    sendTypingIndicator,
+    unarchiveConversation,
+    unblockUser,
 } from '../services';
 import {
+    blockUserSchema,
     conversationIdSchema,
     conversationsQuerySchema,
     openConversationSchema,
+    reportMessageSchema,
     sendMessageSchema,
+    typingIndicatorSchema,
+    unblockUserSchema,
 } from './schema';
 
 export const chatRouter = Router();
@@ -203,5 +214,156 @@ chatRouter.post(
         .isPrivate()
         .setValidator(conversationIdSchema)
         .setHandler(markConversationRead.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/conversations/{id}/archive:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Archive a conversation for the current user (personal inbox action)
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conversation archived
+ */
+chatRouter.post(
+    '/conversations/:id/archive',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(conversationIdSchema)
+        .setHandler(archiveConversation.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/conversations/{id}/unarchive:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Unarchive a conversation for the current user
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Conversation unarchived
+ */
+chatRouter.post(
+    '/conversations/:id/unarchive',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(conversationIdSchema)
+        .setHandler(unarchiveConversation.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/blocks:
+ *   get:
+ *     tags: [Chat]
+ *     summary: List users that the current user has blocked
+ *     security:
+ *       - bearerAuth: []
+ */
+chatRouter.get(
+    '/blocks',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(listMyBlocks.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/blocks:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Block a user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             userId: 20000000-0000-0000-0000-000000000001
+ *             reason: harassment
+ */
+chatRouter.post(
+    '/blocks',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(blockUserSchema)
+        .setHandler(blockUser.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/blocks/{userId}:
+ *   delete:
+ *     tags: [Chat]
+ *     summary: Unblock a user
+ *     security:
+ *       - bearerAuth: []
+ */
+chatRouter.delete(
+    '/blocks/:userId',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(unblockUserSchema)
+        .setHandler(unblockUser.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/messages/{id}/report:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Report a message
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             reason: spam
+ *             description: Unsolicited promotional content
+ */
+chatRouter.post(
+    '/messages/:id/report',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(reportMessageSchema)
+        .setHandler(reportMessage.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /chat/conversations/{id}/typing:
+ *   post:
+ *     tags: [Chat]
+ *     summary: Broadcast a typing indicator on the conversation channel
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             typing: true
+ */
+chatRouter.post(
+    '/conversations/:id/typing',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(typingIndicatorSchema)
+        .setHandler(sendTypingIndicator.handle)
         .handle(),
 );

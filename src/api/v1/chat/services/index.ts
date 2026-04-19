@@ -1,6 +1,13 @@
+export { default as archiveConversation } from './archiveConversation';
+export { default as blockUser } from './blockUser';
 export { default as getConversationMessages } from './getConversationMessages';
 export { default as getMyConversations } from './getMyConversations';
 export { default as getUnreadConversationCount } from './getUnreadConversationCount';
+export { default as listMyBlocks } from './listMyBlocks';
 export { default as markConversationRead } from './markConversationRead';
 export { default as openConversation } from './openConversation';
+export { default as reportMessage } from './reportMessage';
 export { default as sendMessage } from './sendMessage';
+export { default as sendTypingIndicator } from './sendTypingIndicator';
+export { default as unarchiveConversation } from './unarchiveConversation';
+export { default as unblockUser } from './unblockUser';

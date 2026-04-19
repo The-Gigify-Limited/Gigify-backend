@@ -1,10 +1,10 @@
 import { BadRequestError, ControllerArgs, ForbiddenError, HttpStatus, RouteNotFoundError, UnAuthorizedError, realtimeService } from '@/core';
 import { dispatch } from '@/app';
 import { SendMessageDto } from '../../interfaces';
-import { ChatRepository } from '../../repository';
+import { ChatRepository, ModerationRepository } from '../../repository';
 
 export class SendMessage {
-    constructor(private readonly chatRepository: ChatRepository) {}
+    constructor(private readonly chatRepository: ChatRepository, private readonly moderationRepository: ModerationRepository) {}
 
     handle = async ({ params, input, request }: ControllerArgs<SendMessageDto>) => {
         const userId = request.user?.id;
@@ -16,6 +16,12 @@ export class SendMessage {
         if (!conversation) throw new RouteNotFoundError('Conversation not found');
         if (conversation.employerId !== userId && conversation.talentId !== userId) {
             throw new ForbiddenError('You do not have access to this conversation');
+        }
+
+        const recipientId = conversation.employerId === userId ? conversation.talentId : conversation.employerId;
+        const blocked = await this.moderationRepository.isBlockedEitherWay(userId, recipientId);
+        if (blocked) {
+            throw new ForbiddenError('You cannot send messages to this user');
         }
 
         const body = input.body?.trim();
@@ -32,7 +38,10 @@ export class SendMessage {
             attachmentUrl,
         });
 
-        const recipientId = conversation.employerId === userId ? conversation.talentId : conversation.employerId;
+        // If the recipient archived this thread, a reply should pop it back to
+        // their main inbox — matches standard email/messaging UX and prevents
+        // archived threads from going permanently dark.
+        await this.chatRepository.unarchiveConversationForUser(conversation.id, recipientId);
 
         await Promise.all([
             dispatch('notification:dispatch', {
@@ -59,5 +68,5 @@ export class SendMessage {
     };
 }
 
-const sendMessage = new SendMessage(new ChatRepository());
+const sendMessage = new SendMessage(new ChatRepository(), new ModerationRepository());
 export default sendMessage;

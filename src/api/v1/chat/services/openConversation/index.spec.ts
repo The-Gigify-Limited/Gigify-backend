@@ -1,12 +1,14 @@
 jest.mock('@/core', () => {
     class BadRequestError extends Error {}
     class ConflictError extends Error {}
+    class ForbiddenError extends Error {}
     class RouteNotFoundError extends Error {}
     class UnAuthorizedError extends Error {}
 
     return {
         BadRequestError,
         ConflictError,
+        ForbiddenError,
         HttpStatus: { OK: 200 },
         RouteNotFoundError,
         UnAuthorizedError,
@@ -19,7 +21,12 @@ jest.mock('@/app', () => ({
 
 jest.mock('../../repository', () => ({
     ChatRepository: class ChatRepository {},
+    ModerationRepository: class ModerationRepository {},
 }));
+
+const buildModerationRepo = (blocked = false) => ({
+    isBlockedEitherWay: jest.fn().mockResolvedValue(blocked),
+});
 
 import { OpenConversation } from './index';
 import { dispatch } from '@/app';
@@ -45,7 +52,7 @@ describe('OpenConversation service', () => {
             .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1' }])
             .mockResolvedValueOnce([{ id: 'application-1' }]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         const response = await service.handle({
             input: {
@@ -83,7 +90,7 @@ describe('OpenConversation service', () => {
 
         (dispatch as jest.Mock).mockResolvedValueOnce([{ id: 'talent-1', role: 'talent' }]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         const response = await service.handle({
             input: {
@@ -104,7 +111,7 @@ describe('OpenConversation service', () => {
             createConversation: jest.fn(),
         };
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -120,7 +127,7 @@ describe('OpenConversation service', () => {
             createConversation: jest.fn(),
         };
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -140,7 +147,7 @@ describe('OpenConversation service', () => {
 
         (dispatch as jest.Mock).mockResolvedValueOnce([null]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -160,7 +167,7 @@ describe('OpenConversation service', () => {
 
         (dispatch as jest.Mock).mockResolvedValueOnce([{ id: 'user-1', role: 'talent' }]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -180,7 +187,7 @@ describe('OpenConversation service', () => {
 
         (dispatch as jest.Mock).mockResolvedValueOnce([{ id: 'talent-2', role: 'talent' }]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -200,7 +207,7 @@ describe('OpenConversation service', () => {
 
         (dispatch as jest.Mock).mockResolvedValueOnce([{ id: 'talent-1', role: 'talent' }]).mockResolvedValueOnce([null]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -222,7 +229,7 @@ describe('OpenConversation service', () => {
             .mockResolvedValueOnce([{ id: 'talent-1', role: 'talent' }])
             .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'different-employer' }]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
@@ -245,7 +252,7 @@ describe('OpenConversation service', () => {
             .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1' }])
             .mockResolvedValueOnce([null]);
 
-        const service = new OpenConversation(chatRepository as never);
+        const service = new OpenConversation(chatRepository as never, buildModerationRepo() as never);
 
         await expect(
             service.handle({
