@@ -11,7 +11,7 @@ import {
 import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
 import { ActivityRepository } from '~/user/repository';
 import { ConfirmPaymentReleaseDto } from '../../interfaces';
-import { EarningsRepository } from '../../repository';
+import { DisputeRepository, EarningsRepository } from '../../repository';
 import { hashPaymentReleaseOtpCode, PAYMENT_RELEASE_OTP_MAX_ATTEMPTS } from '../../utils/paymentReleaseOtp';
 import { GigRepository } from '~/gigs/repository';
 import { EmployerRepository } from '~/employers/repository';
@@ -22,6 +22,7 @@ export class ConfirmPaymentRelease {
         private readonly gigRepository: GigRepository,
         private readonly employerRepository: EmployerRepository,
         private readonly activityRepository: ActivityRepository,
+        private readonly disputeRepository: DisputeRepository,
     ) {}
 
     handle = async ({ params, input, request }: ControllerArgs<ConfirmPaymentReleaseDto>) => {
@@ -34,6 +35,8 @@ export class ConfirmPaymentRelease {
         if (!payment) throw new RouteNotFoundError('Payment not found');
         if (payment.employerId !== employer.id) throw new ConflictError('You do not own this payment');
         if (payment.status === 'paid') throw new ConflictError('This payment has already been released');
+
+        await this.assertNoOpenDispute(payment.id, payment.gigId);
 
         const otpRecord = await this.earningsRepository.getActivePaymentReleaseOtp(payment.id, employer.id);
 
@@ -152,6 +155,20 @@ export class ConfirmPaymentRelease {
             data: updatedPayment,
         };
     };
+
+    private async assertNoOpenDispute(paymentId: string, gigId: string | null): Promise<void> {
+        const openDispute = await this.disputeRepository.findOpenDisputeForPayment(paymentId);
+        if (openDispute) {
+            throw new ConflictError('Cannot release payment while a dispute is open');
+        }
+
+        if (gigId) {
+            const gig = await this.gigRepository.getGigById(gigId);
+            if (gig?.status === 'disputed') {
+                throw new ConflictError('Cannot release payment while the gig is in dispute');
+            }
+        }
+    }
 }
 
 const confirmPaymentRelease = new ConfirmPaymentRelease(
@@ -159,5 +176,6 @@ const confirmPaymentRelease = new ConfirmPaymentRelease(
     new GigRepository(),
     new EmployerRepository(),
     new ActivityRepository(),
+    new DisputeRepository(),
 );
 export default confirmPaymentRelease;
