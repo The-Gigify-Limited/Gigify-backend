@@ -5,6 +5,21 @@ export type DatabasePayoutRequest = DatabaseTable['payout_requests']['Row'];
 export type DatabasePaymentReleaseOtp = DatabaseTable['payment_release_otps']['Row'];
 export type DatabaseDispute = DatabaseTable['disputes']['Row'];
 export type DatabaseDisputeEvidence = DatabaseTable['dispute_evidence']['Row'];
+export type DatabasePayoutMethod = DatabaseTable['payout_methods']['Row'];
+
+export type PayoutMethodProviderEnum = 'stripe_connect' | 'bank' | 'paypal';
+
+export type PayoutMethod = {
+    id: string;
+    userId: string | null;
+    provider: PayoutMethodProviderEnum;
+    externalAccountId: string | null;
+    displayLabel: string | null;
+    isDefault: boolean;
+    isVerified: boolean;
+    metadata: Json | null;
+    createdAt: string | null;
+};
 
 export type DisputeStatusEnum = 'open' | 'in_review' | 'resolved_talent' | 'resolved_employer' | 'withdrawn';
 export type DisputeEvidenceTypeEnum = 'screenshot' | 'message' | 'document' | 'other';

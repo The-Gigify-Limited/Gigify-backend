@@ -1,12 +1,16 @@
 export { default as addDisputeEvidence } from './addDisputeEvidence';
+export { default as addPayoutMethod } from './addPayoutMethod';
 export { default as createStripeCheckoutSession } from './createStripeCheckoutSession';
 export { default as confirmPaymentRelease } from './confirmPaymentRelease';
+export { default as deletePayoutMethod } from './deletePayoutMethod';
 export { default as getDispute } from './getDispute';
 export { default as getMyEarnings } from './getMyEarnings';
 export { default as getPaymentHistory } from './getPaymentHistory';
 export { default as handleStripeWebhook } from './handleStripeWebhook';
 export { default as listDisputes } from './listDisputes';
+export { default as listPayoutMethods } from './listPayoutMethods';
 export { default as openDispute } from './openDispute';
 export { default as processPayment } from './processPayment';
 export { default as requestPaymentReleaseOtp } from './requestPaymentReleaseOtp';
 export { default as requestPayout } from './requestPayout';
+export { default as setDefaultPayoutMethod } from './setDefaultPayoutMethod';
