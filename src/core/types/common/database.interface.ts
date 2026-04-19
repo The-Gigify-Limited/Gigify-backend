@@ -824,8 +824,12 @@ export type Database = {
                     amount: number;
                     created_at: string;
                     currency: string;
+                    external_provider: string | null;
+                    external_transfer_id: string | null;
                     id: string;
                     note: string | null;
+                    paid_at: string | null;
+                    paid_by: string | null;
                     processed_at: string | null;
                     status: Database['public']['Enums']['payout_status'];
                     talent_id: string;
@@ -835,8 +839,12 @@ export type Database = {
                     amount: number;
                     created_at?: string;
                     currency?: string;
+                    external_provider?: string | null;
+                    external_transfer_id?: string | null;
                     id?: string;
                     note?: string | null;
+                    paid_at?: string | null;
+                    paid_by?: string | null;
                     processed_at?: string | null;
                     status?: Database['public']['Enums']['payout_status'];
                     talent_id: string;
@@ -846,8 +854,12 @@ export type Database = {
                     amount?: number;
                     created_at?: string;
                     currency?: string;
+                    external_provider?: string | null;
+                    external_transfer_id?: string | null;
                     id?: string;
                     note?: string | null;
+                    paid_at?: string | null;
+                    paid_by?: string | null;
                     processed_at?: string | null;
                     status?: Database['public']['Enums']['payout_status'];
                     talent_id?: string;
