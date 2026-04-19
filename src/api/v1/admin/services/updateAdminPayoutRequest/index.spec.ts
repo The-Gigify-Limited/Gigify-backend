@@ -1,5 +1,9 @@
 const mockAuditLog = jest.fn();
 
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('@/core', () => {
     class BadRequestError extends Error {}
     class RouteNotFoundError extends Error {}

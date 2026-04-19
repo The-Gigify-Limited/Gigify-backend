@@ -1,7 +1,11 @@
-import { DatabaseTable } from '@/core/types';
+import { DatabaseEnum, DatabaseTable } from '@/core/types';
 
 export type DatabaseConversation = DatabaseTable['conversations']['Row'];
+export type DatabaseConversationArchive = DatabaseTable['conversation_archives']['Row'];
 export type DatabaseMessage = DatabaseTable['messages']['Row'];
+export type DatabaseUserBlock = DatabaseTable['user_blocks']['Row'];
+export type DatabaseMessageReport = DatabaseTable['message_reports']['Row'];
+export type MessageReportStatus = DatabaseEnum['message_report_status'];
 
 export type Conversation = {
     id: string;
@@ -45,4 +49,26 @@ export type ConversationThread = {
     gig: GigSummary | null;
     lastMessage: Message | null;
     unreadCount: number;
+    isArchived: boolean;
+};
+
+export type UserBlock = {
+    blockerId: string;
+    blockedId: string;
+    reason: string | null;
+    createdAt: string;
+};
+
+export type MessageReport = {
+    id: string;
+    messageId: string;
+    conversationId: string;
+    reporterId: string;
+    reportedUserId: string;
+    reason: string;
+    description: string | null;
+    status: MessageReportStatus;
+    resolvedBy: string | null;
+    resolvedAt: string | null;
+    createdAt: string;
 };

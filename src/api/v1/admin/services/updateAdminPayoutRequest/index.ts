@@ -1,3 +1,4 @@
+import { dispatch } from '@/app';
 import { BadRequestError, ControllerArgs, HttpStatus, RouteNotFoundError, UnAuthorizedError, auditService } from '@/core';
 import { EarningsRepository } from '~/earnings/repository';
 import { PayoutRequest } from '~/earnings/interfaces';

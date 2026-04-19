@@ -36,7 +36,7 @@ export class NotificationRepository extends BaseRepository<DatabaseNotification,
 
     async getNotificationsForUser(
         userId: string,
-        query: { page?: number | string; pageSize?: number | string; isRead?: boolean },
+        query: { page?: number | string; pageSize?: number | string; isRead?: boolean; type?: NotificationTypeEnum },
     ): Promise<Notification[]> {
         const { offset, rangeEnd } = normalizePagination(query);
 
@@ -44,6 +44,10 @@ export class NotificationRepository extends BaseRepository<DatabaseNotification,
 
         if (typeof query.isRead === 'boolean') {
             request = request.eq('is_read', query.isRead);
+        }
+
+        if (query.type) {
+            request = request.eq('type', query.type);
         }
 
         const { data = [], error } = await request.order('created_at', { ascending: false }).range(offset, rangeEnd);
@@ -91,6 +95,35 @@ export class NotificationRepository extends BaseRepository<DatabaseNotification,
             })
             .eq('user_id', userId)
             .eq('is_read', false);
+
+        if (error) throw error;
+    }
+
+    async markAsUnread(notificationId: string, userId: string): Promise<Notification> {
+        const { data, error } = await supabaseAdmin
+            .from(this.table)
+            .update({
+                is_read: false,
+                read_at: null,
+            })
+            .eq('id', notificationId)
+            .eq('user_id', userId)
+            .select('*')
+            .single();
+
+        if (error) throw error;
+
+        return this.mapToCamelCase(data);
+    }
+
+    async deleteNotification(notificationId: string, userId: string): Promise<void> {
+        const { error } = await supabaseAdmin.from(this.table).delete().eq('id', notificationId).eq('user_id', userId);
+
+        if (error) throw error;
+    }
+
+    async deleteAllForUser(userId: string): Promise<void> {
+        const { error } = await supabaseAdmin.from(this.table).delete().eq('user_id', userId);
 
         if (error) throw error;
     }
