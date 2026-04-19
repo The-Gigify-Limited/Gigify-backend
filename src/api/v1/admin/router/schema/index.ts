@@ -53,6 +53,16 @@ export const adminPayoutRequestStatusSchema = {
     }),
     inputSchema: Joi.object({
         status: Joi.string().valid('requested', 'approved', 'paid', 'rejected').required(),
+        externalTransferId: Joi.when('status', {
+            is: 'paid',
+            then: Joi.string().trim().min(1).max(200).required(),
+            otherwise: Joi.string().max(200).allow(null, '').optional(),
+        }),
+        externalProvider: Joi.when('status', {
+            is: 'paid',
+            then: Joi.string().valid('stripe', 'bank_wire', 'paypal', 'manual').required(),
+            otherwise: Joi.string().valid('stripe', 'bank_wire', 'paypal', 'manual').optional(),
+        }),
     }),
 };
 

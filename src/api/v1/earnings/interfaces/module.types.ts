@@ -71,6 +71,8 @@ export type Payment = {
     updatedAt: string;
 };
 
+export type PayoutExternalProviderEnum = 'stripe' | 'bank_wire' | 'paypal' | 'manual';
+
 export type PayoutRequest = {
     id: string;
     amount: number;
@@ -81,6 +83,10 @@ export type PayoutRequest = {
     status: PayoutStatusEnum;
     talentId: string;
     updatedAt: string;
+    externalTransferId: string | null;
+    externalProvider: PayoutExternalProviderEnum | null;
+    paidAt: string | null;
+    paidBy: string | null;
 };
 
 export type PaymentReleaseOtp = {
