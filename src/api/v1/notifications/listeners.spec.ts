@@ -53,7 +53,7 @@ describe('dispatchNotificationEventListener', () => {
     it('broadcasts and persists even when the user has opted out of the topic', async () => {
         const appEventManager = buildAppEventManager({ preference: [false] });
 
-        await dispatchNotificationEventListener({
+        const result = await dispatchNotificationEventListener({
             userId: 'user-1',
             type: 'payment_update',
             title: 'Escrow funded',
@@ -62,12 +62,19 @@ describe('dispatchNotificationEventListener', () => {
             appEventManager: appEventManager as never,
         });
 
-        expect(mockCreateNotification).toHaveBeenCalled();
+        expect(mockCreateNotification).toHaveBeenCalledWith(
+            expect.objectContaining({
+                userId: 'user-1',
+                type: 'payment_update',
+                title: 'Escrow funded',
+            }),
+        );
         expect(mockBroadcastToUser).toHaveBeenCalledWith('user-1', 'new_notification', expect.objectContaining({ id: 'notif-1' }));
         expect(mockSendEmail).not.toHaveBeenCalled();
+        expect(result).not.toBeNull();
     });
 
-    it('sends the email when channel is email and topic+channel preference is on', async () => {
+    it('sends the email when channel is email and preference is on', async () => {
         const appEventManager = buildAppEventManager({ preference: [true] });
 
         await dispatchNotificationEventListener({
@@ -88,7 +95,7 @@ describe('dispatchNotificationEventListener', () => {
         );
     });
 
-    it('skips the email when channel=email is blocked by preference but still broadcasts', async () => {
+    it('skips the email when channel is email and preference is off, but still broadcasts', async () => {
         const appEventManager = buildAppEventManager({ preference: [false] });
 
         await dispatchNotificationEventListener({
@@ -104,8 +111,8 @@ describe('dispatchNotificationEventListener', () => {
         expect(mockSendEmail).not.toHaveBeenCalled();
     });
 
-    it('passes channel=email to the preference dispatch so per-channel opt-outs are respected', async () => {
-        const appEventManager = buildAppEventManager({ preference: [true] });
+    it('defaults to allowing the email when no preference listener is available', async () => {
+        const appEventManager = buildAppEventManager({ preference: [] });
 
         await dispatchNotificationEventListener({
             userId: 'user-1',
@@ -116,10 +123,7 @@ describe('dispatchNotificationEventListener', () => {
             appEventManager: appEventManager as never,
         });
 
-        expect(appEventManager.dispatch).toHaveBeenCalledWith(
-            'user:check-notification-preference',
-            expect.objectContaining({ channel: 'email', preferenceKey: 'paymentUpdates' }),
-        );
+        expect(mockSendEmail).toHaveBeenCalled();
     });
 
     it('broadcasts even when no preferenceKey is supplied', async () => {
