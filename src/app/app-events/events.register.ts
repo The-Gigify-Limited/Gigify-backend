@@ -30,6 +30,10 @@ import {
     createEarningsRecordEventListener,
     disputeOpenedEventListener,
     disputeResolvedEventListener,
+    paymentHeldEventListener,
+    paymentReleasedEventListener,
+    payoutPaidEventListener,
+    payoutRequestedEventListener,
     updatePayoutRequestStatusEventListener,
 } from '~/earnings/listeners';
 import { AppEventManager } from './app.events';
@@ -67,6 +71,10 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
     bus.onEvent('user:onboarding-step-completed', (input) => onboardingStepCompletedEventListener(input));
     bus.onEvent('earnings:create-record', (input) => createEarningsRecordEventListener(input));
+    bus.onEvent('earnings:payment-held', (input) => paymentHeldEventListener(input));
+    bus.onEvent('earnings:payment-released', (input) => paymentReleasedEventListener(input));
+    bus.onEvent('earnings:payout-requested', (input) => payoutRequestedEventListener(input));
+    bus.onEvent('earnings:payout-paid', (input) => payoutPaidEventListener(input));
     bus.onEvent('earnings:dispute-opened', (input) => disputeOpenedEventListener(input));
     bus.onEvent('earnings:dispute-resolved', (input) => disputeResolvedEventListener(input));
     bus.onEvent('notification:dispatch', (input) => dispatchNotificationEventListener(input));

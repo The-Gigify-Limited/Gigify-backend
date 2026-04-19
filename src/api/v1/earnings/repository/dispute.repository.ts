@@ -59,8 +59,8 @@ export class DisputeRepository extends BaseRepository<DatabaseDispute, Dispute> 
 
         return data ? this.mapToCamelCase(data as DatabaseDispute) : null;
     }
-  
-   async findLatestDisputeForPayment(paymentId: string): Promise<Dispute | null> {
+
+    async findLatestDisputeForPayment(paymentId: string): Promise<Dispute | null> {
         const { data, error } = await supabaseAdmin
             .from(this.table)
             .select('*')
@@ -73,7 +73,6 @@ export class DisputeRepository extends BaseRepository<DatabaseDispute, Dispute> 
 
         return data ? this.mapToCamelCase(data as DatabaseDispute) : null;
     }
-
 
     async findOpenDisputeForPayment(paymentId: string): Promise<Dispute | null> {
         const { data, error } = await supabaseAdmin

@@ -8,6 +8,7 @@ import {
     UnAuthorizedError,
     auditService,
 } from '@/core';
+import { dispatch } from '@/app';
 import { notificationDispatcher } from '~/notifications/utils/dispatchNotification';
 import { ActivityRepository } from '~/user/repository';
 import { ConfirmPaymentReleaseDto } from '../../interfaces';
@@ -118,6 +119,14 @@ export class ConfirmPaymentRelease {
                 userAgent: Array.isArray(request.headers['user-agent'])
                     ? request.headers['user-agent'][0] ?? null
                     : request.headers['user-agent'] ?? null,
+            }),
+            dispatch('earnings:payment-released', {
+                paymentId: updatedPayment.id,
+                employerId: updatedPayment.employerId,
+                talentId: updatedPayment.talentId,
+                gigId: updatedPayment.gigId,
+                amount: updatedPayment.amount,
+                currency: updatedPayment.currency,
             }),
         ]);
 

@@ -116,18 +116,28 @@ export class HandleStripeWebhook {
         });
 
         if (nextStatus === 'processing' && payment.status !== 'processing') {
-            await notificationDispatcher.dispatch({
-                userId: payment.talentId,
-                type: 'payment_update',
-                title: 'Escrow funded',
-                message: 'Your employer has funded this booking and payment is now held in escrow.',
-                payload: {
+            await Promise.all([
+                notificationDispatcher.dispatch({
+                    userId: payment.talentId,
+                    type: 'payment_update',
+                    title: 'Escrow funded',
+                    message: 'Your employer has funded this booking and payment is now held in escrow.',
+                    payload: {
+                        paymentId: updatedPayment.id,
+                        gigId: updatedPayment.gigId,
+                        status: updatedPayment.status,
+                    },
+                    preferenceKey: 'paymentUpdates',
+                }),
+                dispatch('earnings:payment-held', {
                     paymentId: updatedPayment.id,
+                    employerId: updatedPayment.employerId,
+                    talentId: updatedPayment.talentId,
                     gigId: updatedPayment.gigId,
-                    status: updatedPayment.status,
-                },
-                preferenceKey: 'paymentUpdates',
-            });
+                    amount: updatedPayment.amount,
+                    currency: updatedPayment.currency,
+                }),
+            ]);
         }
 
         logger.info('Stripe webhook processed', {
