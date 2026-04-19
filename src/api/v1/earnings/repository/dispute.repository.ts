@@ -60,6 +60,20 @@ export class DisputeRepository extends BaseRepository<DatabaseDispute, Dispute> 
         return data ? this.mapToCamelCase(data as DatabaseDispute) : null;
     }
 
+    async findLatestDisputeForPayment(paymentId: string): Promise<Dispute | null> {
+        const { data, error } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .eq('payment_id', paymentId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapToCamelCase(data as DatabaseDispute) : null;
+    }
+
     async updateDispute(id: string, updates: Partial<Dispute>): Promise<Dispute> {
         const payload = this.mapToSnakeCase({
             ...updates,
