@@ -60,6 +60,18 @@ export class DisputeRepository extends BaseRepository<DatabaseDispute, Dispute> 
         return data ? this.mapToCamelCase(data as DatabaseDispute) : null;
     }
 
+    async findPaymentIdsWithOpenDispute(): Promise<string[]> {
+        const { data = [], error } = await supabaseAdmin
+            .from(this.table)
+            .select('payment_id')
+            .in('status', ['open', 'in_review'])
+            .not('payment_id', 'is', null);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => (row as { payment_id: string | null }).payment_id).filter((id): id is string => Boolean(id));
+    }
+
     async updateDispute(id: string, updates: Partial<Dispute>): Promise<Dispute> {
         const payload = this.mapToSnakeCase({
             ...updates,
