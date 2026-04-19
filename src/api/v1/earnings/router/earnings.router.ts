@@ -2,20 +2,25 @@ import { ControlBuilder, paymentReleaseOtpRateLimiter } from '@/core';
 import { Router } from 'express';
 import {
     addDisputeEvidence,
+    addPayoutMethod,
     confirmPaymentRelease,
     createStripeCheckoutSession,
+    deletePayoutMethod,
     getDispute,
     getMyEarnings,
     getPaymentHistory,
     handleStripeWebhook,
     listDisputes,
+    listPayoutMethods,
     openDispute,
     processPayment,
     requestPaymentReleaseOtp,
     requestPayout,
+    setDefaultPayoutMethod,
 } from '../services';
 import {
     addDisputeEvidenceSchema,
+    addPayoutMethodSchema,
     confirmPaymentReleaseSchema,
     createStripeCheckoutSessionSchema,
     disputeIdParamsSchema,
@@ -23,6 +28,7 @@ import {
     openDisputeSchema,
     paymentHistorySchema,
     paymentReleaseParamsSchema,
+    payoutMethodIdParamsSchema,
     processPaymentSchema,
     requestPayoutSchema,
 } from './schema';
@@ -415,5 +421,87 @@ earningsRouter.post(
         .isPrivate()
         .setValidator(addDisputeEvidenceSchema)
         .setHandler(addDisputeEvidence.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payout-methods:
+ *   get:
+ *     tags: [Earnings]
+ *     summary: List the current user's payout methods
+ *     security:
+ *       - bearerAuth: []
+ */
+earningsRouter.get(
+    '/payout-methods',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setHandler(listPayoutMethods.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payout-methods:
+ *   post:
+ *     tags: [Earnings]
+ *     summary: Add a payout method
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             provider: bank
+ *             externalAccountId: "1234"
+ *             displayLabel: First Bank **** 1234
+ *             metadata:
+ *               accountName: Ada Lovelace
+ */
+earningsRouter.post(
+    '/payout-methods',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(addPayoutMethodSchema)
+        .setHandler(addPayoutMethod.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payout-methods/{id}/default:
+ *   patch:
+ *     tags: [Earnings]
+ *     summary: Mark a payout method as the user's default
+ *     security:
+ *       - bearerAuth: []
+ */
+earningsRouter.patch(
+    '/payout-methods/:id/default',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(payoutMethodIdParamsSchema)
+        .setHandler(setDefaultPayoutMethod.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /earnings/payout-methods/{id}:
+ *   delete:
+ *     tags: [Earnings]
+ *     summary: Delete a payout method
+ *     description: Blocked if this is the only verified method and the user has pending payouts.
+ *     security:
+ *       - bearerAuth: []
+ */
+earningsRouter.delete(
+    '/payout-methods/:id',
+    ControlBuilder.builder()
+        .isPrivate()
+        .setValidator(payoutMethodIdParamsSchema)
+        .setHandler(deletePayoutMethod.handle)
         .handle(),
 );

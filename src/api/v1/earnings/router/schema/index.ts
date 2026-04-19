@@ -101,3 +101,18 @@ export const addDisputeEvidenceSchema = {
         notes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
+
+export const addPayoutMethodSchema = {
+    inputSchema: Joi.object({
+        provider: Joi.string().valid('stripe_connect', 'bank', 'paypal').required(),
+        externalAccountId: Joi.string().max(120).allow(null, '').optional(),
+        displayLabel: Joi.string().max(120).allow(null, '').optional(),
+        metadata: Joi.object().unknown(true).optional(),
+    }),
+};
+
+export const payoutMethodIdParamsSchema = {
+    paramsSchema: Joi.object({
+        id: uuid.required(),
+    }),
+};
