@@ -20,14 +20,22 @@ export async function dispatchNotificationEventListener(input: {
 }): Promise<Notification | null> {
     const notificationRepository = new NotificationRepository();
 
+    // Realtime broadcast and the in-app notification row are the frontend's
+    // primary UI surface — they must fire even when the user has opted out
+    // of a given topic, otherwise the bell icon goes stale and the UI never
+    // learns about state changes. Only the email (and any other
+    // opt-in-style channel) is preference-gated below. Default allows the
+    // send when the preference listener is unavailable or returns nothing,
+    // so missing infrastructure never silently suppresses mail.
+    let emailAllowed = true;
     if (input.preferenceKey && input.appEventManager) {
-        const shouldSend = await input.appEventManager.dispatch('user:check-notification-preference', {
+        const results = await input.appEventManager.dispatch('user:check-notification-preference', {
             userId: input.userId,
             preferenceKey: input.preferenceKey,
         });
 
-        if (!shouldSend) {
-            return null;
+        if (results.length > 0) {
+            emailAllowed = results.every((result) => result !== false);
         }
     }
 
@@ -43,7 +51,7 @@ export async function dispatchNotificationEventListener(input: {
 
     await realtimeService.broadcastToUser(input.userId, 'new_notification', notification);
 
-    if (input.channel === 'email') {
+    if (input.channel === 'email' && emailAllowed) {
         await sendNotificationEmail(input.userId, input.title, input.message ?? '', input.appEventManager);
     }
 
