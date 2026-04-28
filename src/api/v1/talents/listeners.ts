@@ -19,26 +19,29 @@ export async function getTalentProfileByUserId(user_id: string): Promise<TalentP
 
     if (!existingTalent) return null;
 
-    const talentPortfolios = await talentPortfolioRepository.findByTalentId(existingTalent?.id ?? '');
-    const talentReviews = await talentReviewRepository.findMany({
-        filters: {
-            talent_id: user_id,
-        },
-        pagination: {
-            page: 1,
-            pageSize: 1,
-        },
-    });
+    const [talentPortfolios, talentReviews, averageRating, totalGigsCompleted] = await Promise.all([
+        talentPortfolioRepository.findByTalentId(existingTalent?.id ?? ''),
+        talentReviewRepository.findMany({
+            filters: {
+                talent_id: user_id,
+            },
+            pagination: {
+                page: 1,
+                pageSize: 1,
+            },
+        }),
+        talentReviewRepository.findTalentAverageRating(user_id),
+        talentRepository.countCompletedGigs(user_id),
+    ]);
 
     const convertedReviews = talentReviews?.map(talentReviewRepository.mapToCamelCase) ?? [];
-
-    const averageRating = await talentReviewRepository.findTalentAverageRating(user_id);
 
     return {
         ...existingTalent,
         averageRating,
         reviews: convertedReviews,
         portfolios: talentPortfolios,
+        totalGigsCompleted,
     };
 }
 

@@ -16,7 +16,7 @@ jest.mock('~/talents/repository', () => ({
 import { UpdateTalentById } from './index';
 
 describe('UpdateTalentById service', () => {
-    it('updates talent profile', async () => {
+    it('updates talent profile and surfaces totalGigsCompleted', async () => {
         const talentRepository = {
             findByUserId: jest.fn().mockResolvedValue({
                 id: 'talent-1',
@@ -35,6 +35,7 @@ describe('UpdateTalentById service', () => {
                 biography: 'Updated bio',
                 minRate: 50,
             } as never),
+            countCompletedGigs: jest.fn().mockResolvedValue(7),
         };
 
         const service = new UpdateTalentById(talentRepository as never);
@@ -52,8 +53,10 @@ describe('UpdateTalentById service', () => {
             }),
         );
         expect(talentRepository.mapToCamelCase).toHaveBeenCalled();
+        expect(talentRepository.countCompletedGigs).toHaveBeenCalledWith('user-1');
         expect(response.message).toBe('Talent Updated Successfully');
         expect(response.data.biography).toBe('Updated bio');
+        expect(response.data.totalGigsCompleted).toBe(7);
     });
 
     it('throws when talent id is not provided', async () => {

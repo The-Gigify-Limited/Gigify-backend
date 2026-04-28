@@ -9,11 +9,15 @@ export class UpsertEmployerProfile {
         if (!params?.id) throw new BadRequestError('No User ID Found!');
 
         const profile = await this.employerRepository.upsertEmployerProfile(params.id, input ?? {});
+        const totalApplicationsReceived = await this.employerRepository.countTotalApplicationsReceived(params.id);
 
         return {
             code: HttpStatus.OK,
             message: 'Employer Profile Updated Successfully',
-            data: profile,
+            data: {
+                ...profile,
+                totalApplicationsReceived,
+            },
         };
     };
 }

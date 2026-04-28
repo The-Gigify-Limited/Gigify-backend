@@ -18,7 +18,7 @@ jest.mock('~/employers/repository', () => ({
 import { GetEmployerProfile } from './index';
 
 describe('GetEmployerProfile service', () => {
-    it('retrieves employer profile for authenticated user', async () => {
+    it('retrieves employer profile and surfaces totalApplicationsReceived', async () => {
         const employerRepository = {
             findByUserId: jest.fn().mockResolvedValue({
                 id: 'employer-1',
@@ -30,6 +30,7 @@ describe('GetEmployerProfile service', () => {
                 totalSpent: 10000,
                 updatedAt: new Date().toISOString(),
             }),
+            countTotalApplicationsReceived: jest.fn().mockResolvedValue(42),
         };
 
         const service = new GetEmployerProfile(employerRepository as never);
@@ -42,8 +43,10 @@ describe('GetEmployerProfile service', () => {
         } as never);
 
         expect(employerRepository.findByUserId).toHaveBeenCalledWith('user-1');
+        expect(employerRepository.countTotalApplicationsReceived).toHaveBeenCalledWith('user-1');
         expect(response.message).toBe('Employer Profile Retrieved Successfully');
         expect(response.data.organizationName).toBe('Acme Corp');
+        expect(response.data.totalApplicationsReceived).toBe(42);
     });
 
     it('throws when user is not authenticated', async () => {

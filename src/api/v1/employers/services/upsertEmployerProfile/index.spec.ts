@@ -15,7 +15,7 @@ import { BadRequestError } from '@/core';
 import { UpsertEmployerProfile } from './index';
 
 describe('UpsertEmployerProfile service', () => {
-    it('creates or updates employer profile with all three fields', async () => {
+    it('creates or updates employer profile and surfaces totalApplicationsReceived', async () => {
         const employerRepository = {
             upsertEmployerProfile: jest.fn().mockResolvedValue({
                 id: 'employer-1',
@@ -27,6 +27,7 @@ describe('UpsertEmployerProfile service', () => {
                 totalSpent: null,
                 updatedAt: new Date().toISOString(),
             }),
+            countTotalApplicationsReceived: jest.fn().mockResolvedValue(12),
         };
 
         const service = new UpsertEmployerProfile(employerRepository as never);
@@ -45,9 +46,11 @@ describe('UpsertEmployerProfile service', () => {
             companyWebsite: 'https://acme.com',
             industry: 'Tech',
         });
+        expect(employerRepository.countTotalApplicationsReceived).toHaveBeenCalledWith('user-1');
         expect(response.message).toBe('Employer Profile Updated Successfully');
         expect(response.data.organizationName).toBe('Acme Corp');
         expect(response.data.industry).toBe('Tech');
+        expect(response.data.totalApplicationsReceived).toBe(12);
     });
 
     it('passes an empty payload through to the repository when input is missing', async () => {
@@ -56,6 +59,7 @@ describe('UpsertEmployerProfile service', () => {
                 id: 'employer-1',
                 userId: 'user-1',
             }),
+            countTotalApplicationsReceived: jest.fn().mockResolvedValue(0),
         };
 
         const service = new UpsertEmployerProfile(employerRepository as never);
