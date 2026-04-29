@@ -344,13 +344,18 @@ gigRouter.delete(
  *             locationLongitude: 3.472
  *             isRemote: false
  *             requiredTalentCount: 1
- *             eventType: club_night
- *             startTime: "21:00"
- *             endTime: "02:00"
+ *             gigType: club_night
+ *             gigStartTime: "21:00"
+ *             gigEndTime: "02:00"
  *             durationMinutes: 300
- *             equipmentProvided: true
+ *             isEquipmentRequired: false
  *             dressCode: all_black
  *             additionalNotes: Two set breaks. MC will cue you.
+ *             displayImage: https://cdn.example.com/gigs/afrobeat-night.jpg
+ *             gigLocation: Lekki, Lagos
+ *             gigAddress: 12 Admiralty Way
+ *             gigPostCode: "101231"
+ *             skillRequired: Drummer
  *     responses:
  *       201:
  *         description: Gig created
@@ -795,13 +800,18 @@ gigRouter.get(
  *             title: Afrobeat Night Drummer
  *             budgetAmount: 200000
  *             requiredTalentCount: 2
- *             eventType: club_night
- *             startTime: "21:00"
- *             endTime: "02:00"
+ *             gigType: club_night
+ *             gigStartTime: "21:00"
+ *             gigEndTime: "02:00"
  *             durationMinutes: 300
- *             equipmentProvided: true
+ *             isEquipmentRequired: false
  *             dressCode: all_black
  *             additionalNotes: Two set breaks. MC will cue you.
+ *             displayImage: https://cdn.example.com/gigs/afrobeat-night.jpg
+ *             gigLocation: Lekki, Lagos
+ *             gigAddress: 12 Admiralty Way
+ *             gigPostCode: "101231"
+ *             skillRequired: Drummer
  *     responses:
  *       200:
  *         description: Gig updated

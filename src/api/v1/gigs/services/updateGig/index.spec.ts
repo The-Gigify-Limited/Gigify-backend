@@ -41,17 +41,21 @@ describe('UpdateGig service', () => {
         expect(response.data.title).toBe('Updated Project');
     });
 
-    it('forwards the seven event fields through on update', async () => {
+    it('forwards the FE-aligned event fields through on update', async () => {
         const gigRepository = {
             updateGigById: jest.fn().mockResolvedValue({
                 id: 'gig-1',
-                eventType: 'corporate_event',
-                startTime: '17:30',
-                endTime: '20:30',
+                gigType: 'corporate_event',
+                gigStartTime: '17:30',
+                gigEndTime: '20:30',
                 durationMinutes: 180,
-                equipmentProvided: false,
+                isEquipmentRequired: true,
                 dressCode: 'formal',
                 additionalNotes: 'Live band, no DJ booth.',
+                gigAddress: '5 Marina Road',
+                gigLocation: 'Lagos',
+                gigPostCode: '100001',
+                skillRequired: 'Live Band',
             }),
         };
 
@@ -60,24 +64,32 @@ describe('UpdateGig service', () => {
         await service.handle({
             params: { id: 'gig-1' },
             input: {
-                eventType: 'corporate_event',
-                startTime: '17:30',
-                endTime: '20:30',
+                gigType: 'corporate_event',
+                gigStartTime: '17:30',
+                gigEndTime: '20:30',
                 durationMinutes: 180,
-                equipmentProvided: false,
+                isEquipmentRequired: true,
                 dressCode: 'formal',
                 additionalNotes: 'Live band, no DJ booth.',
+                gigAddress: '5 Marina Road',
+                gigLocation: 'Lagos',
+                gigPostCode: '100001',
+                skillRequired: 'Live Band',
             },
         } as never);
 
         expect(gigRepository.updateGigById).toHaveBeenCalledWith('gig-1', {
-            eventType: 'corporate_event',
-            startTime: '17:30',
-            endTime: '20:30',
+            gigType: 'corporate_event',
+            gigStartTime: '17:30',
+            gigEndTime: '20:30',
             durationMinutes: 180,
-            equipmentProvided: false,
+            isEquipmentRequired: true,
             dressCode: 'formal',
             additionalNotes: 'Live band, no DJ booth.',
+            gigAddress: '5 Marina Road',
+            gigLocation: 'Lagos',
+            gigPostCode: '100001',
+            skillRequired: 'Live Band',
         });
     });
 

@@ -15,7 +15,7 @@ interface SeedGig {
     currency: string;
     city: string;
     isRemote: boolean;
-    eventType: string;
+    gigType: string;
     gigDate: string;
 }
 
@@ -185,7 +185,7 @@ function g(
     currency: string,
     city: string,
     isRemote: boolean,
-    eventType: string,
+    gigType: string,
     relativeDate: string,
 ): SeedGig {
     return {
@@ -198,7 +198,7 @@ function g(
         currency,
         city,
         isRemote,
-        eventType,
+        gigType,
         gigDate: resolveDate(relativeDate),
     };
 }
@@ -330,7 +330,7 @@ export async function seedGigs(): Promise<void> {
         location_name: gig.city,
         location_country: 'Nigeria',
         is_remote: gig.isRemote,
-        event_type: gig.eventType,
+        gig_type: gig.gigType,
         gig_date: gig.gigDate,
         required_talent_count: 1,
     }));

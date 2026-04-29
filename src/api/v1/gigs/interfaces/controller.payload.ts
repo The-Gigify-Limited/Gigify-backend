@@ -24,7 +24,7 @@ export interface GetGigsQueryDto extends ControllerArgsTypes {
         dateTo?: string;
         isRemote?: boolean;
         employerId?: string;
-        eventType?: string;
+        gigType?: string;
         genres?: string[];
     };
 }
@@ -43,6 +43,16 @@ export interface CreateGigDto extends ControllerArgsTypes {
         | 'locationLongitude'
         | 'isRemote'
         | 'requiredTalentCount'
+        | 'displayImage'
+        | 'gigType'
+        | 'gigStartTime'
+        | 'gigEndTime'
+        | 'gigLocation'
+        | 'gigAddress'
+        | 'gigPostCode'
+        | 'isEquipmentRequired'
+        | 'skillRequired'
+        | 'additionalNotes'
     >;
 }
 
@@ -65,6 +75,16 @@ export interface UpdateGigDto extends ControllerArgsTypes {
             | 'isRemote'
             | 'status'
             | 'requiredTalentCount'
+            | 'displayImage'
+            | 'gigType'
+            | 'gigStartTime'
+            | 'gigEndTime'
+            | 'gigLocation'
+            | 'gigAddress'
+            | 'gigPostCode'
+            | 'isEquipmentRequired'
+            | 'skillRequired'
+            | 'additionalNotes'
         >
     >;
 }
