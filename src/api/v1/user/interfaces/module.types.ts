@@ -19,6 +19,8 @@ export type User = {
     gender: string | null;
     phoneNumber: string | null;
     profileImageUrl: string | null;
+    bannerImageUrl: string | null;
+    referral: string | null;
     fullAddress: string | null;
     locationCity: string | null;
     locationCountry: string | null;

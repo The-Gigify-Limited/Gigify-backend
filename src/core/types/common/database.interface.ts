@@ -1562,6 +1562,7 @@ export type Database = {
                     acquisition_source: string | null;
                     bio: string | null;
                     created_at: string | null;
+                    banner_image_url: string | null;
                     date_of_birth: string | null;
                     email: string | null;
                     first_name: string | null;
@@ -1578,6 +1579,7 @@ export type Database = {
                     phone_number: string | null;
                     post_code: number | null;
                     profile_image_url: string | null;
+                    referral: string | null;
                     role: Database['public']['Enums']['user_role'] | null;
                     status: Database['public']['Enums']['user_status'];
                     street_address: string | null;
@@ -1586,6 +1588,7 @@ export type Database = {
                 };
                 Insert: {
                     acquisition_source?: string | null;
+                    banner_image_url?: string | null;
                     bio?: string | null;
                     created_at?: string | null;
                     date_of_birth?: string | null;
@@ -1604,6 +1607,7 @@ export type Database = {
                     phone_number?: string | null;
                     post_code?: number | null;
                     profile_image_url?: string | null;
+                    referral?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
                     street_address?: string | null;
@@ -1612,6 +1616,7 @@ export type Database = {
                 };
                 Update: {
                     acquisition_source?: string | null;
+                    banner_image_url?: string | null;
                     bio?: string | null;
                     created_at?: string | null;
                     date_of_birth?: string | null;
@@ -1630,6 +1635,7 @@ export type Database = {
                     phone_number?: string | null;
                     post_code?: number | null;
                     profile_image_url?: string | null;
+                    referral?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
                     street_address?: string | null;

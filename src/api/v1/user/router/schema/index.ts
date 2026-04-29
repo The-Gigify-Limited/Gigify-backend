@@ -33,6 +33,8 @@ const updateUserSchema = {
         fullAddress: Joi.string().max(255).allow(null),
         postCode: Joi.number().integer().min(0).allow(null),
         profileImageUrl: Joi.string().uri().allow(null, ''),
+        bannerImageUrl: Joi.string().uri().allow(null, ''),
+        referral: Joi.string().max(120).allow(null, ''),
         gender: Joi.string().valid('male', 'female', 'non_binary', 'prefer_not_to_say').allow(null),
         username: Joi.string().alphanum().min(3).max(32).allow(null),
         onboardingStep: Joi.number().integer().min(0).allow(null),
