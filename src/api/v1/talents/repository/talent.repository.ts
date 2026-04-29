@@ -92,7 +92,27 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         }
         if (filters.search) {
             const pattern = `%${filters.search}%`;
-            request = request.or(`stage_name.ilike.${pattern},primary_role.ilike.${pattern}`);
+
+            // PostgREST `.or()` cannot reach an embedded table (the joined
+            // `users` row) within the same OR group, so first_name / last_name
+            // matches are resolved with a separate lookup against `users` and
+            // folded back in via `user_id.in.(...)`.
+            const { data: matchedUsers = [], error: matchedUsersError } = await supabaseAdmin
+                .from('users')
+                .select('id')
+                .eq('role', 'talent')
+                .or(`first_name.ilike.${pattern},last_name.ilike.${pattern}`);
+
+            if (matchedUsersError) throw matchedUsersError;
+
+            const matchedUserIds = (matchedUsers ?? []).map((row) => row.id);
+
+            const orParts = [`stage_name.ilike.${pattern}`, `primary_role.ilike.${pattern}`];
+            if (matchedUserIds.length > 0) {
+                orParts.push(`user_id.in.(${matchedUserIds.join(',')})`);
+            }
+
+            request = request.or(orParts.join(','));
         }
 
         // Sort — default rating desc, applied after merging the ratings
