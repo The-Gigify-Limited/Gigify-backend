@@ -2,12 +2,13 @@ import { ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
 import { GetMyGigsDto, TalentGigItem } from '~/gigs/interfaces';
 import { GigRepository } from '~/gigs/repository';
 
+// Each bucket keys off the gig's lifecycle status so a single gig can only
+// land in one bucket: open → upcoming, in_progress → active, completed /
+// cancelled → completed. Without this strict mapping a hired+in_progress
+// gig with a future date previously appeared in both `upcoming` and
+// `active`.
 const isAppliedItem = (item: TalentGigItem) => ['submitted', 'reviewing', 'shortlisted'].includes(item.application.status);
-const isUpcomingItem = (item: TalentGigItem) =>
-    item.application.status === 'hired' &&
-    Boolean(item.gig) &&
-    item.gig?.status !== 'completed' &&
-    new Date(item.gig?.gigDate ?? 0).getTime() > Date.now();
+const isUpcomingItem = (item: TalentGigItem) => item.application.status === 'hired' && item.gig?.status === 'open';
 const isActiveItem = (item: TalentGigItem) => item.application.status === 'hired' && item.gig?.status === 'in_progress';
 const isCompletedItem = (item: TalentGigItem) => item.application.status === 'hired' && ['completed', 'cancelled'].includes(item.gig?.status ?? '');
 
