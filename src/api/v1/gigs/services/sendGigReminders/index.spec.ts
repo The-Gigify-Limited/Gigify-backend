@@ -28,12 +28,12 @@ describe('SendGigReminders service', () => {
         const now = new Date();
         const in24h = new Date(now.getTime() + 24 * 60 * 60_000);
         const gigDate = in24h.toISOString().slice(0, 10);
-        const startTime = in24h.toISOString().slice(11, 19);
+        const gigStartTime = in24h.toISOString().slice(11, 19);
 
         const gigRepository = {
             findGigsStartingWithin: jest
                 .fn()
-                .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1', title: 'Gig 1', gigDate, startTime, endTime: null }])
+                .mockResolvedValueOnce([{ id: 'gig-1', employerId: 'employer-1', title: 'Gig 1', gigDate, gigStartTime, gigEndTime: null }])
                 // The 2h window returns nothing
                 .mockResolvedValueOnce([]),
             findHiredTalentIdsForGig: jest.fn().mockResolvedValue(['talent-1']),
@@ -57,13 +57,13 @@ describe('SendGigReminders service', () => {
         const now = new Date();
         const in2h = new Date(now.getTime() + 2 * 60 * 60_000);
         const gigDate = in2h.toISOString().slice(0, 10);
-        const startTime = in2h.toISOString().slice(11, 19);
+        const gigStartTime = in2h.toISOString().slice(11, 19);
 
         const gigRepository = {
             findGigsStartingWithin: jest
                 .fn()
                 .mockResolvedValueOnce([]) // 24h window: nothing
-                .mockResolvedValueOnce([{ id: 'gig-2', employerId: 'employer-2', title: 'Gig 2', gigDate, startTime, endTime: null }]),
+                .mockResolvedValueOnce([{ id: 'gig-2', employerId: 'employer-2', title: 'Gig 2', gigDate, gigStartTime, gigEndTime: null }]),
             findHiredTalentIdsForGig: jest.fn().mockResolvedValue([]),
         };
         const gigReminderRepository = {

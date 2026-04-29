@@ -105,7 +105,7 @@ export async function autoBlockAvailabilityOnOfferAcceptedListener(input: { gigI
             return;
         }
 
-        const { unavailableFrom, unavailableUntil } = resolveBusyWindow(gig.gigDate, gig.startTime ?? null, gig.endTime ?? null);
+        const { unavailableFrom, unavailableUntil } = resolveBusyWindow(gig.gigDate, gig.gigStartTime ?? null, gig.gigEndTime ?? null);
 
         await availabilityRepository.addAutoFromGig({
             talentUserId: input.talentId,

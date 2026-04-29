@@ -79,7 +79,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         latitude?: number | string;
         longitude?: number | string;
         radiusKm?: number | string;
-        eventType?: string;
+        gigType?: string;
         genres?: string[];
     }): Promise<Gig[]> {
         const { offset, rangeEnd } = normalizePagination({
@@ -93,7 +93,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.serviceId) request = request.eq('service_id', query.serviceId);
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
-        if (query.eventType) request = request.eq('event_type', query.eventType);
+        if (query.gigType) request = request.eq('gig_type', query.gigType);
         if (query.search) {
             const escaped = `%${query.search}%`;
             request = request.or(`title.ilike.${escaped},description.ilike.${escaped}`);
@@ -184,13 +184,18 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 is_remote: input.isRemote ?? false,
                 required_talent_count: input.requiredTalentCount ?? 1,
                 status: input.status ?? 'open',
-                event_type: input.eventType ?? null,
-                start_time: input.startTime ?? null,
-                end_time: input.endTime ?? null,
+                gig_type: input.gigType ?? null,
+                gig_start_time: input.gigStartTime ?? null,
+                gig_end_time: input.gigEndTime ?? null,
                 duration_minutes: input.durationMinutes ?? null,
-                equipment_provided: input.equipmentProvided ?? false,
+                is_equipment_required: input.isEquipmentRequired ?? null,
                 dress_code: input.dressCode ?? null,
                 additional_notes: input.additionalNotes ?? null,
+                display_image: input.displayImage ?? null,
+                gig_address: input.gigAddress ?? null,
+                gig_location: input.gigLocation ?? null,
+                gig_post_code: input.gigPostCode ?? null,
+                skill_required: input.skillRequired ?? null,
             })
             .select('*')
             .single();

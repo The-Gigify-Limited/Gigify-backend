@@ -85,14 +85,14 @@ export class SendGigReminders {
 
 function resolveGigStart(gig: Gig): Date | null {
     if (!gig.gigDate) return null;
-    // Combine the gig date (YYYY-MM-DD) with start_time if available.
+    // Combine the gig date (YYYY-MM-DD) with gig_start_time if available.
     // Interpret the combined timestamp as UTC — without the trailing 'Z',
     // Node parses it in the host's local timezone, which shifts the 24h /
     // 2h reminder windows by the TZ offset in non-UTC environments (CI, Fly
     // machines in different regions). Gigs don't yet carry a timezone column
     // so UTC is the least-wrong default.
     const base = gig.gigDate;
-    const time = gig.startTime ?? '00:00:00';
+    const time = gig.gigStartTime ?? '00:00:00';
     const combined = new Date(`${base}T${time}Z`);
     return Number.isNaN(combined.getTime()) ? null : combined;
 }

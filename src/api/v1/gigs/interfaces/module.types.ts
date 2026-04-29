@@ -31,11 +31,20 @@ export type Gig = {
     requiredTalentCount: number;
     createdAt: string | null;
     updatedAt: string | null;
-    eventType: string | null;
-    startTime: string | null;
-    endTime: string | null;
+    // Renamed/added fields aligned with the frontend's GigBaseSchema
+    // (server/apiTypes/gig.type.ts). The DB columns are gig_start_time,
+    // gig_end_time, gig_type, is_equipment_required, display_image,
+    // gig_address, gig_location, gig_post_code, skill_required.
+    gigType: string | null;
+    gigStartTime: string | null;
+    gigEndTime: string | null;
+    gigLocation: string | null;
+    gigAddress: string | null;
+    gigPostCode: string | null;
+    isEquipmentRequired: boolean | null;
+    skillRequired: string | null;
+    displayImage: string | null;
     durationMinutes: number | null;
-    equipmentProvided: boolean | null;
     dressCode: string | null;
     additionalNotes: string | null;
 };
