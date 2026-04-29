@@ -16,11 +16,15 @@ export class UpdateTalentById {
 
         const updatedTalent = await this.talentRepository.updateById(existingTalent.id, input);
         const convertedTalent = this.talentRepository.mapToCamelCase(updatedTalent);
+        const totalGigsCompleted = await this.talentRepository.countCompletedGigs(params.id);
 
         return {
             code: HttpStatus.OK,
             message: 'Talent Updated Successfully',
-            data: convertedTalent,
+            data: {
+                ...convertedTalent,
+                totalGigsCompleted,
+            },
         };
     };
 }

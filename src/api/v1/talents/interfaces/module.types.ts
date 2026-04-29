@@ -69,4 +69,5 @@ export type TalentProfile = Talent & {
     averageRating: number;
     portfolios: TalentPortfolio[];
     reviews: TalentReview[];
+    totalGigsCompleted: number;
 };
