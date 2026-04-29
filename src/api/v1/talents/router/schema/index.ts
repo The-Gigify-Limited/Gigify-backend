@@ -31,6 +31,8 @@ const updateTalentSchema = {
         rateCurrency: Joi.string().max(8).optional(),
         skills: Joi.array().items(Joi.string().max(80)).allow(null),
         stageName: Joi.string().min(1).max(60).allow(null),
+        bankName: Joi.string().max(120).allow(null, ''),
+        accountNumber: Joi.string().max(40).allow(null, ''),
         yearsExperience: Joi.number().integer().min(0).allow(null),
     }),
 };

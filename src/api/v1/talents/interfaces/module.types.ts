@@ -36,6 +36,8 @@ export type Talent = {
     rateCurrency: string;
     skills: string[] | null;
     stageName: string | null;
+    bankName: string | null;
+    accountNumber: string | null;
     updatedAt: string | null;
     yearsExperience: number | null;
 };
