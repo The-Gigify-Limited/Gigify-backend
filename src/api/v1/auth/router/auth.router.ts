@@ -93,7 +93,7 @@ authRouter
         ControlBuilder.builder()
             .setValidator(loginSchema)
             .setHandler(login.handle)
-            .only('talent')
+            // .only('talent')
             .handle(),
     )
 
