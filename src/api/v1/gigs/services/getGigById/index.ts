@@ -1,22 +1,7 @@
 import { BadRequestError, ControllerArgs, HttpStatus, RouteNotFoundError } from '@/core';
 import { dispatch } from '@/app';
-import { GetGigParamsDto, GigFrontendStatus } from '~/gigs/interfaces';
+import { GetGigParamsDto } from '~/gigs/interfaces';
 import { GigOfferRepository, GigRepository, SavedGigRepository } from '~/gigs/repository';
-import { GigStatusEnum } from '~/gigs/interfaces';
-
-function mapGigStatus(status: GigStatusEnum | null): GigFrontendStatus | null {
-    if (!status) return null;
-    const statusMap: Record<GigStatusEnum, GigFrontendStatus> = {
-        draft: 'unpublished',
-        open: 'active',
-        in_progress: 'booked',
-        completed: 'completed',
-        cancelled: 'cancelled',
-        expired: 'expired',
-        disputed: 'disputed',
-    };
-    return statusMap[status];
-}
 
 export class GetGigById {
     constructor(
@@ -82,7 +67,6 @@ export class GetGigById {
             message: 'Gig Retrieved Successfully',
             data: {
                 ...gig,
-                status: mapGigStatus(gig.status),
                 service: serviceResult,
                 employer: employer ?? null,
                 employerProfile: employerProfile ?? null,

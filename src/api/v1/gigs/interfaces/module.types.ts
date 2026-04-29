@@ -8,7 +8,6 @@ export type DatabaseSavedGig = DatabaseTable['saved_gigs']['Row'];
 export type DatabaseServiceCatalog = DatabaseTable['services_catalog']['Row'];
 
 export type GigStatusEnum = DatabaseEnum['gig_status'];
-export type GigFrontendStatus = 'unpublished' | 'active' | 'booked' | 'completed' | 'cancelled' | 'expired' | 'disputed';
 export type ApplicationStatusEnum = DatabaseEnum['application_status'];
 export type OfferStatusEnum = DatabaseEnum['offer_status'];
 export type PaymentProviderEnum = DatabaseEnum['payment_provider'];
