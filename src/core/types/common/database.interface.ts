@@ -1379,6 +1379,8 @@ export type Database = {
             };
             talent_profiles: {
                 Row: {
+                    account_number: string | null;
+                    bank_name: string | null;
                     banner_url: string | null;
                     biography: string | null;
                     date_of_birth: string | null;
@@ -1394,6 +1396,8 @@ export type Database = {
                     years_experience: number | null;
                 };
                 Insert: {
+                    account_number?: string | null;
+                    bank_name?: string | null;
                     banner_url?: string | null;
                     biography?: string | null;
                     date_of_birth?: string | null;
@@ -1409,6 +1413,8 @@ export type Database = {
                     years_experience?: number | null;
                 };
                 Update: {
+                    account_number?: string | null;
+                    bank_name?: string | null;
                     banner_url?: string | null;
                     biography?: string | null;
                     date_of_birth?: string | null;
