@@ -149,7 +149,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
 
         // paymentIdsFilter lets the service scope to a pre-computed id set
         // (e.g. the subset currently under open dispute). An empty array means
-        // "no matches" — short-circuit to preserve that intent.
+        // "no matches", short-circuit to preserve that intent.
         if (query.paymentIdsFilter) {
             if (query.paymentIdsFilter.length === 0) return [];
             request = request.in('id', query.paymentIdsFilter);
@@ -240,7 +240,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
 
         const { data, error } = await supabaseAdmin
             .from('payout_requests')
-            // @ts-expect-error — Object.fromEntries returns { [k: string]: ... } which is too wide for Supabase's strict update types
+            // @ts-expect-error, Object.fromEntries returns { [k: string]: ... } which is too wide for Supabase's strict update types
             .update(payload)
             .eq('id', id)
             .select('*')
@@ -288,7 +288,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     async updatePaymentReleaseOtp(id: string, input: Partial<PaymentReleaseOtp>): Promise<PaymentReleaseOtp> {
         const { data, error } = await supabaseAdmin
             .from('payment_release_otps')
-            // @ts-expect-error — mapToSnakeCase returns Partial<DatabasePayment> which mismatches the payment_release_otps table schema
+            // @ts-expect-error, mapToSnakeCase returns Partial<DatabasePayment> which mismatches the payment_release_otps table schema
             .update({
                 ...this.mapToSnakeCase(input),
                 updated_at: new Date().toISOString(),

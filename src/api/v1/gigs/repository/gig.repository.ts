@@ -236,7 +236,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
 
     async findGigsStartingWithin(fromDate: string, toDate: string): Promise<Gig[]> {
         // gig_date is a DATE (not timestamptz) so we compare on the date
-        // portion — the service layer narrows further using start_time /
+        // portion, the service layer narrows further using start_time /
         // end_time to decide whether we're actually inside the reminder
         // window.
         const { data = [], error } = await supabaseAdmin

@@ -26,7 +26,7 @@ export abstract class BaseRepository<TDBRow extends Record<string, unknown>, TRo
     };
 
     async findById(id: string, fields?: (keyof TDBRow)[]): Promise<TDBRow | null> {
-        // @ts-expect-error — Supabase collapses column types to `never` on a TableNames union
+        // @ts-expect-error, Supabase collapses column types to `never` on a TableNames union
         const { data, error } = await supabaseAdmin.from(this.table).select(this.buildSelect(fields)).eq('id', id).single();
 
         if (error) throw error;
@@ -74,7 +74,7 @@ export abstract class BaseRepository<TDBRow extends Record<string, unknown>, TRo
 
     async updateById(id: string, updates: Partial<TRow>): Promise<TDBRow> {
         const payload = this.mapToSnakeCase(updates);
-        // @ts-expect-error — Supabase collapses column types to `never` on a TableNames union
+        // @ts-expect-error, Supabase collapses column types to `never` on a TableNames union
         const { data, error } = await supabaseAdmin.from(this.table).update(payload).eq('id', id).select('*').single();
 
         if (error) throw error;

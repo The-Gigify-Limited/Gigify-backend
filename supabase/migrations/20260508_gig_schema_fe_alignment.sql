@@ -13,7 +13,7 @@
 
 begin;
 
--- 1. Renames — straightforward, no data transformation.
+-- 1. Renames, straightforward, no data transformation.
 alter table public.gigs rename column start_time to gig_start_time;
 alter table public.gigs rename column end_time to gig_end_time;
 alter table public.gigs rename column event_type to gig_type;

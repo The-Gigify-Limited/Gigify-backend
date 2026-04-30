@@ -1,6 +1,6 @@
 begin;
 
--- Talent availability calendar — rows represent busy windows (i.e. a talent
+-- Talent availability calendar, rows represent busy windows (i.e. a talent
 -- cannot be booked during [unavailable_from, unavailable_until)). The default
 -- state is "available" (no row), so the table stays sparse.
 --

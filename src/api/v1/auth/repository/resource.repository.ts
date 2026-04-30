@@ -14,7 +14,7 @@ export class ResourceRepository extends BaseRepository<Record<string, unknown>, 
     async isResourceOwner(userId: string, resourceType: Resources, resourceId: string): Promise<boolean> {
         const { table, ownerColumn } = this.getTableConfig(resourceType);
 
-        // @ts-expect-error — dynamic table name prevents Supabase from narrowing column types
+        // @ts-expect-error, dynamic table name prevents Supabase from narrowing column types
         const { data, error } = await supabaseAdmin.from(table).select(ownerColumn).eq('id', resourceId).single();
 
         if (error || !data) return false;
@@ -25,7 +25,7 @@ export class ResourceRepository extends BaseRepository<Record<string, unknown>, 
     async getResourceOwner(resourceType: Resources, resourceId: string): Promise<string | null> {
         const { table, ownerColumn } = this.getTableConfig(resourceType);
 
-        // @ts-expect-error — dynamic table name prevents Supabase from narrowing column types
+        // @ts-expect-error, dynamic table name prevents Supabase from narrowing column types
         const { data, error } = await supabaseAdmin.from(table).select(ownerColumn).eq('id', resourceId).single();
 
         if (error || !data) return null;

@@ -41,7 +41,7 @@ async function ensureUser(label: string, email: string, password: string, role: 
             console.error(`[${label}] createUser failed:`, createErr.message);
             process.exit(1);
         }
-        // Already exists — find the auth user via the listUsers API.
+        // Already exists, find the auth user via the listUsers API.
         const { data: list, error: listErr } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
         if (listErr) {
             console.error(`[${label}] listUsers failed:`, listErr.message);
@@ -109,7 +109,7 @@ async function ensureUser(label: string, email: string, password: string, role: 
 async function main() {
     const stamp = Date.now();
     const PASS = 'Password123!';
-    // gigify.com is the actual brand domain — Supabase tends to allow it.
+    // gigify.com is the actual brand domain, Supabase tends to allow it.
     const empEmail = `qa.emp.${stamp}@gigify.com`;
     const talEmail = `qa.tal.${stamp}@gigify.com`;
 

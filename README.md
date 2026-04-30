@@ -1,6 +1,6 @@
 # Gigify Backend
 
-REST API for the Gigify marketplace — Express.js + TypeScript + Supabase. This README is the architecture deep-dive. For getting set up, the contribution workflow, and contribution recipes, see [CONTRIBUTING.md](./CONTRIBUTING.md).
+REST API for the Gigify marketplace, built on Express.js + TypeScript + Supabase. This README is the architecture deep-dive. For getting set up, the contribution workflow, and contribution recipes, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Table of contents
 
@@ -29,7 +29,7 @@ Gigify is a marketplace for music talents (DJs, drummers, vocalists) and the emp
 | API docs    | Swagger at `/api/v1/api-docs`                                                   |
 | Tests       | Jest (runs on compiled JS in `build/`)                                          |
 | Tooling     | ESLint + Prettier + Husky pre-commit, pnpm v9 package manager                   |
-| CI/CD       | GitHub Actions → Supabase staging migrations + Fly.io app deploy on `develop`   |
+| CI/CD       | GitHub Actions (Supabase staging migrations + Fly.io app deploy on `develop`)   |
 
 The companion frontend lives in a separate Next.js repo. The FE's `server/apiTypes/*.type.ts` files are the authoritative wire-format contract.
 
@@ -39,7 +39,7 @@ The companion frontend lives in a separate Next.js repo. The FE's `server/apiTyp
 
 ```
 src/
-├── main.ts                  # Entry — boot DB, then start HTTP server
+├── main.ts                  # Entry. Boots the DB connection then starts the HTTP server.
 ├── app/                     # Express setup
 │   ├── app.module.ts        # Builds the Express app
 │   ├── app.router.ts        # Mounts every module's router + Swagger UI
@@ -53,9 +53,9 @@ src/
     ├── config/              # Env validation (Joi), Supabase + Redis clients
     ├── handlers/            # ControlBuilder + global error handler
     ├── repository/          # BaseRepository (auto snake_case ↔ camelCase)
-    ├── errors/              # Typed error classes (BadRequestError, …)
+    ├── errors/              # Typed error classes (BadRequestError, etc.)
     ├── services/            # Mail, SMS, audit, realtime broadcast
-    ├── types/common/        # Auto-generated Supabase types — DO NOT EDIT
+    ├── types/common/        # Auto-generated Supabase types. DO NOT EDIT.
     └── utils/               # Pagination, image upload, bcrypt, misc
 ```
 
@@ -67,7 +67,7 @@ Every folder under `src/api/v1/` follows this layout:
 {module}/
 ├── interfaces/
 │   ├── controller.payload.ts   # Request DTOs extending ControllerArgsTypes
-│   └── module.types.ts         # Domain types (Gig, User, …)
+│   └── module.types.ts         # Domain types (Gig, User, etc.)
 ├── repository/
 │   └── {name}.repository.ts    # Supabase queries, extends BaseRepository
 ├── router/
@@ -127,21 +127,21 @@ gigRouter.post(
 );
 ```
 
-| Method                                  | Effect                                                                |
-| --------------------------------------- | --------------------------------------------------------------------- |
-| `.setHandler(fn)`                       | The service function to execute                                       |
-| `.setValidator(schema)`                 | Joi schema applied to body / params / query                           |
-| `.isPrivate()`                          | Require a valid bearer token                                          |
-| `.only(...roles)`                       | Restrict to roles (`'talent'`, `'employer'`, `'admin'`)               |
-| `.requirePermissions(...permissions)`   | Granular permission check                                             |
-| `.checkResourceOwnership(resource, p)`  | Verify the authenticated user owns the resource named by URL param `p` |
-| `.handle()`                             | Build and return the Express middleware                               |
+| Method                                  | Effect                                                                   |
+| --------------------------------------- | ------------------------------------------------------------------------ |
+| `.setHandler(fn)`                       | The service function to execute                                          |
+| `.setValidator(schema)`                 | Joi schema applied to body / params / query                              |
+| `.isPrivate()`                          | Require a valid bearer token                                             |
+| `.only(...roles)`                       | Restrict to roles (`'talent'`, `'employer'`, `'admin'`)                  |
+| `.requirePermissions(...permissions)`   | Granular permission check                                                |
+| `.checkResourceOwnership(resource, p)`  | Verify the authenticated user owns the resource named by URL param `p`   |
+| `.handle()`                             | Build and return the Express middleware                                  |
 
 The handler receives a typed `ControllerArgs<TDto>` with `{ input, params, query, request, files, headers }`.
 
 ### Service pattern
 
-Services are classes with a single `handle` method, instantiated as singletons. Dependencies come in via constructor — easy to mock in tests.
+Services are classes with a single `handle` method, instantiated as singletons. Dependencies come in via constructor, which makes them easy to mock in tests.
 
 ```ts
 export class CreateGig {
@@ -185,7 +185,7 @@ const [user] = await dispatch('user:get-by-id', { id: userId });
 
 Listeners are registered in `src/app/app-events/events.register.ts`. Event types live in `event.types.ts`. Add new events there first.
 
-This keeps modules loosely coupled — `gigs/` doesn't import from `notifications/`; it just emits an event the notifications module subscribes to.
+This keeps modules loosely coupled. `gigs/` doesn't import from `notifications/`; it just emits an event the notifications module subscribes to.
 
 ### Realtime
 
@@ -249,9 +249,9 @@ A complete `POST /api/v1/auth/register` round-trip:
 3. ControlBuilder
        ├─ parseIncomingRequest      → { input, params, query, headers, files, request }
        ├─ validateIncomingRequest   → Joi runs the schema; throws UnProcessableError on miss
-       └─ (no auth — public route)
+       └─ (no auth, public route)
         ↓
-4. register.handle(args) — service layer
+4. register.handle(args) (service layer)
        ├─ Normalize email
        ├─ Call Supabase auth.admin.createUser
        ├─ Insert public.users row via UserRepository
@@ -269,16 +269,16 @@ If anything throws, the global error handler catches it, logs via Winston, and r
 
 ### Middleware order (`src/app/app.module.ts`)
 
-1. `express.json()` — parse JSON body
-2. `cookieParser()` — parse cookies
-3. `fileUpload()` — handle multipart uploads
-4. `cors()` — CORS policy from `core/config/cors.ts`
-5. `express.static()` — serve static files
-6. `urlencoded()` — form-encoded bodies
-7. `session()` — session middleware (used by OAuth flows)
-8. `appRouter` — your API
-9. `notFoundErrorHandler` — 404 catch-all
-10. `errorhandler` — final error formatter
+1. `express.json()`: parse JSON body
+2. `cookieParser()`: parse cookies
+3. `fileUpload()`: handle multipart uploads
+4. `cors()`: CORS policy from `core/config/cors.ts`
+5. `express.static()`: serve static files
+6. `urlencoded()`: form-encoded bodies
+7. `session()`: session middleware (used by OAuth flows)
+8. `appRouter`: your API
+9. `notFoundErrorHandler`: 404 catch-all
+10. `errorhandler`: final error formatter
 
 ### Authentication
 
@@ -298,7 +298,7 @@ If `.only(...)` is set, the user's `role` is checked against the allowed list. I
 
 ### TypeScript
 
-- `strict: true`, `noImplicitAny: true`. Don't reach for `any` — use `unknown` and narrow, or `as never` only for test mock injection.
+- `strict: true`, `noImplicitAny: true`. Don't reach for `any`. Use `unknown` and narrow, or `as never` only for test mock injection.
 - Service classes take dependencies via constructor; export singletons.
 - DTOs live in `interfaces/controller.payload.ts` and extend `ControllerArgsTypes`.
 
@@ -315,14 +315,14 @@ If `.only(...)` is set, the user's `role` is checked against the allowed list. I
 
 ### Comments
 
-Default to no comments. Only add one when **why** is non-obvious — a hidden constraint, a workaround, surprising behaviour, or a domain invariant.
+Default to no comments. Only add one when the **why** is non-obvious: a hidden constraint, a workaround, surprising behaviour, or a domain invariant.
 
 ```ts
 // ❌ Don't paraphrase the code
 const offset = (page - 1) * pageSize; // calculate offset
 
 // ✅ Only when the why isn't obvious
-// `equipment_provided` was the inverse of FE's `isEquipmentRequired` —
+// `equipment_provided` was the inverse of FE's `isEquipmentRequired`,
 // flipped during the column rename in 20260508. Keeping a comment so
 // the migration's intent isn't lost on the reader.
 ```
@@ -341,7 +341,7 @@ if (existing) throw new ConflictError('Email already registered');
 
 ### Comms failures must not block
 
-Email and SMS calls are wrapped in try/catch — a Resend or Twilio outage should never fail a primary operation:
+Email and SMS calls are wrapped in try/catch. A Resend or Twilio outage should never fail a primary operation:
 
 ```ts
 try {
@@ -367,7 +367,7 @@ Some fields look like columns but are derived:
 
 | Field                                | Source                                                                     |
 | ------------------------------------ | -------------------------------------------------------------------------- |
-| `users.onboarded`                    | Computed from `onboardingStep >= 3` — never written directly               |
+| `users.onboarded`                    | Computed from `onboardingStep >= 3`. Never written directly.               |
 | `talent.totalGigsCompleted`          | Aggregated query on `gig_applications` joined to `gigs.status='completed'` |
 | `employer.totalApplicationsReceived` | Aggregated query on `gig_applications` joined to `gigs.employer_id`        |
 
@@ -377,8 +377,8 @@ The frontend writes `onboardingStep`. The backend exposes `onboarded` for reads 
 
 ## Where to look next
 
-- **Contribution workflow + recipes** — [CONTRIBUTING.md](./CONTRIBUTING.md)
-- **A clean end-to-end module example** — `src/api/v1/employers/services/getEmployerGigs/`
-- **The auth flow in detail** — `src/api/v1/auth/services/{login,register,exchangeGoogleAuthCode}/`
-- **Config + env validation** — `src/core/config/config.ts`
-- **Live API surface** — boot the dev server and open `http://localhost:8000/api/v1/api-docs`
+- **Contribution workflow + recipes**: see [CONTRIBUTING.md](./CONTRIBUTING.md)
+- **A clean end-to-end module example**: `src/api/v1/employers/services/getEmployerGigs/`
+- **The auth flow in detail**: `src/api/v1/auth/services/{login,register,exchangeGoogleAuthCode}/`
+- **Config + env validation**: `src/core/config/config.ts`
+- **Live API surface**: boot the dev server and open `http://localhost:8000/api/v1/api-docs`

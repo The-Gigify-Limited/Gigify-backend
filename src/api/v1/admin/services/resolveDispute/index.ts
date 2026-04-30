@@ -67,7 +67,7 @@ export class ResolveDispute {
             resolvedBy: adminId,
         });
 
-        // Touch this to silence the unused reference warning — the earnings
+        // Touch this to silence the unused reference warning, the earnings
         // repo is wired so a follow-up PR can add Stripe refund / release-to-
         // talent inline here without another constructor change.
         void this.earningsRepository;

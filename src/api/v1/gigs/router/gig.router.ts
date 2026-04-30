@@ -765,7 +765,7 @@ gigRouter.patch(
  *       (`displayImage`, `gigType`, `gigStartTime`, `gigEndTime`,
  *       `gigLocation`, `gigAddress`, `gigPostCode`, `isEquipmentRequired`,
  *       `skillRequired`) and the raw DB `status` enum (`draft`, `open`,
- *       `in_progress`, `completed`, `cancelled`, `expired`, `disputed`) —
+ *       `in_progress`, `completed`, `cancelled`, `expired`, `disputed`) ,
  *       no longer remapped to `active` / `booked` / `unpublished`.
  *     responses:
  *       200:

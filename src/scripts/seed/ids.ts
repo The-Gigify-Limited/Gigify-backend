@@ -1,6 +1,6 @@
 // Stable UUIDs for every seeded persona/entity. Using fixed IDs lets the
 // script be idempotent (skip-if-exists keys off the PK) and makes FK wiring
-// between tables trivial — no email lookups, no caches.
+// between tables trivial, no email lookups, no caches.
 //
 // Prefix convention (first octet picks the domain):
 //   1000… employer, 2000… talent, 3000… admin,

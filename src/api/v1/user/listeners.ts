@@ -4,7 +4,7 @@ import { NotificationPreferenceRepository, UserRepository, ActivityRepository } 
 
 export async function getUserByIdEventListener(id: string, fields?: (keyof User)[]): Promise<Partial<User> | null> {
     const userRepository = new UserRepository();
-    // @ts-expect-error — User field keys don't match DB column keys due to camelCase mapping
+    // @ts-expect-error, User field keys don't match DB column keys due to camelCase mapping
     const existingUser = await userRepository.findById(id, fields);
     if (!existingUser) return null;
 
@@ -18,7 +18,7 @@ type NotificationPreferenceTopic = 'gigUpdates' | 'paymentUpdates' | 'messageUpd
 type NotificationChannel = 'email' | 'push' | 'sms' | 'in_app';
 
 // Per-topic-per-channel matrix. Missing entries (e.g. SMS for message_updates
-// or marketing) are intentional — product's opt-in policy does not want us
+// or marketing) are intentional, product's opt-in policy does not want us
 // texting those topics even if the user has SMS enabled globally.
 const SMS_COLUMN_BY_TOPIC: Partial<Record<NotificationPreferenceTopic, 'smsGigUpdates' | 'smsPaymentUpdates' | 'smsSecurityAlerts'>> = {
     gigUpdates: 'smsGigUpdates',
@@ -45,7 +45,7 @@ export async function checkNotificationPreferenceEventListener(input: {
         (await notificationPreferenceRepository.findByUserId(input.userId)) ??
         (await notificationPreferenceRepository.upsertByUserId(input.userId, {}));
 
-    // in_app / bell icon is the primary UI surface — never channel-gated.
+    // in_app / bell icon is the primary UI surface, never channel-gated.
     if (!input.channel || input.channel === 'in_app') {
         if (input.preferenceKey && preferences[input.preferenceKey] === false) return false;
         return true;

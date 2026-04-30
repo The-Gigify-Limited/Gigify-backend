@@ -19,10 +19,10 @@ FAIL_COUNT=0
 FAIL_LIST=()
 
 # Print a fenced block and bump counters. Args:
-#   $1 — ticket label
-#   $2 — assertion description
-#   $3 — actual response (or summary)
-#   $4 — pass | fail
+#   $1, ticket label
+#   $2, assertion description
+#   $3, actual response (or summary)
+#   $4, pass | fail
 record() {
     local ticket="$1"
     local desc="$2"
@@ -33,7 +33,7 @@ record() {
         echo "✅ [$ticket] $desc"
     else
         FAIL_COUNT=$((FAIL_COUNT + 1))
-        FAIL_LIST+=("$ticket — $desc")
+        FAIL_LIST+=("$ticket, $desc")
         echo "❌ [$ticket] $desc"
     fi
     echo "$body" | head -c 600
@@ -83,7 +83,7 @@ echo "=========================================="
 echo
 
 # Set roles via the auth set-role flow that backend has. /set-role is
-# protected — uses the access token of the user setting their own role.
+# protected. Uses the access token of the user setting their own role.
 echo "## bootstrap: set-role for employer + talent"
 ROLE_EMP_RAW=$(curl_json POST "$BASE/auth/set-role" "$EMP_TOKEN" "{\"userId\":\"$EMP_ID\",\"role\":\"employer\"}")
 echo "$(http_body "$ROLE_EMP_RAW")" | head -c 200; echo
@@ -92,10 +92,10 @@ echo "$(http_body "$ROLE_TAL_RAW")" | head -c 200; echo
 echo
 
 # ==========================================================
-# Ticket #4 — base profile fields can update
+# Ticket #4: base profile fields can update
 # Goal: PATCH /user/:id with bannerImageUrl + referral round-trips
 # ==========================================================
-echo "## Ticket #4 — base profile fields"
+echo "## Ticket #4: base profile fields"
 T4_PATCH_RAW=$(curl_json PATCH "$BASE/user/$EMP_ID" "$EMP_TOKEN" \
     '{"firstName":"QA","lastName":"Employer","bannerImageUrl":"https://cdn.example.com/banner.png","referral":"qa-script-2026"}')
 T4_PATCH_BODY=$(http_body "$T4_PATCH_RAW")
@@ -115,9 +115,9 @@ else
 fi
 
 # ==========================================================
-# Ticket #5 — talent banking fields can update
+# Ticket #5: talent banking fields can update
 # ==========================================================
-echo "## Ticket #5 — talent banking fields"
+echo "## Ticket #5: talent banking fields"
 # First make the talent profile exist by patching first/last name on the user,
 # then patch the talent profile with banking info.
 curl_json PATCH "$BASE/user/$TAL_ID" "$TAL_TOKEN" '{"firstName":"QA","lastName":"Talent"}' >/dev/null
@@ -133,9 +133,9 @@ else
 fi
 
 # ==========================================================
-# Ticket #6 — gig schema FE-aligned fields create + read round-trip
+# Ticket #6: gig schema FE-aligned fields create + read round-trip
 # ==========================================================
-echo "## Ticket #6 — gig schema FE-aligned fields"
+echo "## Ticket #6: gig schema FE-aligned fields"
 T6_BODY='{
     "title":"QA Schema Roundtrip",
     "description":"Smoke test gig",
@@ -187,9 +187,9 @@ if [ -n "$GIG_ID" ]; then
 fi
 
 # ==========================================================
-# Ticket #2 — GET /employer/:id/gigs
+# Ticket #2: GET /employer/:id/gigs
 # ==========================================================
-echo "## Ticket #2 — employer gigs endpoint"
+echo "## Ticket #2: employer gigs endpoint"
 T2_RAW=$(curl_json GET "$BASE/employer/$EMP_ID/gigs" "$EMP_TOKEN")
 T2_BODY=$(http_body "$T2_RAW")
 T2_STATUS=$(http_status "$T2_RAW")
@@ -200,7 +200,7 @@ else
     record "#2" "GET /employer/:id/gigs returns the employer's gigs" "STATUS=$T2_STATUS BODY=$T2_BODY" fail
 fi
 
-# Filter by status — should still return the gig we made
+# Filter by status, should still return the gig we made
 T2_FILTER_RAW=$(curl_json GET "$BASE/employer/$EMP_ID/gigs?status=open" "$EMP_TOKEN")
 T2_FILTER_BODY=$(http_body "$T2_FILTER_RAW")
 T2_FILTER_STATUS=$(http_status "$T2_FILTER_RAW")
@@ -211,11 +211,11 @@ else
 fi
 
 # ==========================================================
-# Ticket #3 — /gig/my-gigs/{status} buckets are exclusive
+# Ticket #3: /gig/my-gigs/{status} buckets are exclusive
 # Just verify each bucket returns 200 with no error; the overlap
 # behaviour is unit-tested.
 # ==========================================================
-echo "## Ticket #3 — my-gigs status buckets"
+echo "## Ticket #3: my-gigs status buckets"
 T3_OK=true
 for s in applied upcoming active completed; do
     R=$(curl_json GET "$BASE/gig/my-gigs/$s" "$TAL_TOKEN")
@@ -233,9 +233,9 @@ else
 fi
 
 # ==========================================================
-# Ticket #7 — profile stats surfacing
+# Ticket #7: profile stats surfacing
 # ==========================================================
-echo "## Ticket #7 — profile stats"
+echo "## Ticket #7: profile stats"
 T7_TAL_RAW=$(curl_json GET "$BASE/talent/$TAL_ID" "$TAL_TOKEN")
 T7_TAL_BODY=$(http_body "$T7_TAL_RAW")
 if grep -q "totalGigsCompleted" <<<"$T7_TAL_BODY"; then
@@ -261,9 +261,9 @@ else
 fi
 
 # ==========================================================
-# Ticket #8 — talent search by first/last name
+# Ticket #8: talent search by first/last name
 # ==========================================================
-echo "## Ticket #8 — talent search by name"
+echo "## Ticket #8: talent search by name"
 # Search using the first name we patched earlier
 T8_RAW=$(curl_json_anon GET "$BASE/talent?search=QA")
 T8_BODY=$(http_body "$T8_RAW")
@@ -276,9 +276,9 @@ else
 fi
 
 # ==========================================================
-# Ticket #10 — IDUpload bucket
+# Ticket #10: IDUpload bucket
 # ==========================================================
-echo "## Ticket #10 — IDUpload bucket"
+echo "## Ticket #10: IDUpload bucket"
 TMP_FILE=$(mktemp -t qa-id-upload).png
 # Smallest valid PNG (1x1 transparent)
 printf '\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR\x00\x00\x00\x01\x00\x00\x00\x01\x08\x06\x00\x00\x00\x1f\x15\xc4\x89\x00\x00\x00\rIDATx\x9cc\xf8\xff\xff?\x00\x05\xfe\x02\xfe\xa3\x35\x81\x84\x00\x00\x00\x00IEND\xaeB`\x82' > "$TMP_FILE"
@@ -296,10 +296,10 @@ fi
 rm -f "$TMP_FILE"
 
 # ==========================================================
-# Ticket #9 — email branding (no curl assertion possible)
+# Ticket #9: email branding (no curl assertion possible)
 # ==========================================================
-echo "## Ticket #9 — email branding"
-echo "  ⚠️  Visual change only — no programmatic assertion. Trigger /auth/forgot-password"
+echo "## Ticket #9: email branding"
+echo "  ⚠️  Visual change only, no programmatic assertion. Trigger /auth/forgot-password"
 echo "      and inspect the inbox to confirm the new branded layout."
 echo
 

@@ -1,9 +1,9 @@
 -- Adds two profile fields the frontend already declares in
 -- `server/apiTypes/profile.type.ts:APIBaseSchema`:
 --
---   banner_image_url — full-width banner shown above the avatar on the
+--   banner_image_url, full-width banner shown above the avatar on the
 --                      profile page (set via the edit-profile form)
---   referral         — referral code or attribution string carried on the
+--   referral        , referral code or attribution string carried on the
 --                      user record
 --
 -- Both are nullable text columns. profile_image_url already exists.

@@ -93,7 +93,7 @@ export const GIGS: SeedGig[] = [
         7,
         employerId(6),
         'Music Video Dancers',
-        'Afrobeats music video — 4 dancers.',
+        'Afrobeats music video, 4 dancers.',
         'in_progress',
         800_000,
         'NGN',
@@ -147,7 +147,7 @@ export const GIGS: SeedGig[] = [
         13,
         employerId(9),
         'Engagement Party Photographer',
-        'Surprise engagement — outdoor.',
+        'Surprise engagement, outdoor.',
         'open',
         300_000,
         'NGN',
@@ -227,18 +227,18 @@ interface SeedApplication {
 // escrow, disputed" / "in progress" flow.
 const APPLICATIONS: SeedApplication[] = [
     // gig 1 (open) has multiple applicants
-    a(1, gigId(1), talentId(1), 'shortlisted', 420_000, 'Happy to DJ this launch — I did V Towers last year.'),
+    a(1, gigId(1), talentId(1), 'shortlisted', 420_000, 'Happy to DJ this launch. I did V Towers last year.'),
     a(2, gigId(1), talentId(2), 'submitted', 450_000, 'Available and excited to pitch.'),
     a(3, gigId(1), talentId(15), 'rejected', 300_000, 'Rate may be below target.'),
-    // gig 3 (completed) — hired -> pivot for paid/payout flow
+    // gig 3 (completed): hired -> pivot for paid/payout flow
     a(4, gigId(3), talentId(3), 'hired', 600_000, 'Portfolio attached, full-day shoot experience.'),
     a(5, gigId(3), talentId(15), 'rejected', 550_000, 'Looking for a discount.'),
-    // gig 4 (disputed) — hired -> pivot for dispute
+    // gig 4 (disputed): hired -> pivot for dispute
     a(6, gigId(4), talentId(14), 'hired', 250_000, 'Videographer with event highlight-reel samples.'),
-    // gig 5 (open) — shortlist-heavy for reviewing flow
+    // gig 5 (open): shortlist-heavy for reviewing flow
     a(7, gigId(5), talentId(2), 'shortlisted', 1_100_000, 'Two-day anchoring with conference experience.'),
     a(8, gigId(5), talentId(4), 'reviewing', 1_150_000, 'Fresh pitch with sample clips.'),
-    // gig 7 (in_progress) — hired -> talent 4
+    // gig 7 (in_progress): hired -> talent 4
     a(9, gigId(7), talentId(4), 'hired', 800_000, 'Lead dancer, full crew behind me.'),
     // gig 8 (open)
     a(10, gigId(8), talentId(1), 'submitted', 180_000, 'Open to full-day store launch.'),
@@ -246,17 +246,17 @@ const APPLICATIONS: SeedApplication[] = [
     a(11, gigId(10), talentId(2), 'withdrawn', 90_000, 'Withdrawing, conflict on date.'),
     // gig 11 (expired)
     a(12, gigId(11), talentId(5), 'rejected', 900_000, 'Rate not matched.'),
-    // gig 12 (open) — mid-checkout
+    // gig 12 (open): mid-checkout
     a(13, gigId(12), talentId(6), 'hired', 200_000, 'Senior mixologist, I can bring my own bar kit.'),
-    // gig 13 (open) — countered-offer scenario feeds into offers
+    // gig 13 (open): countered-offer scenario feeds into offers
     a(14, gigId(13), talentId(3), 'submitted', 300_000, 'Love outdoor shoots.'),
-    // gig 14 (NYE) — joy has many rejected applicants
-    a(15, gigId(14), talentId(15), 'rejected', 400_000, 'Rejected — looking for local talent only.'),
+    // gig 14 (NYE): joy has many rejected applicants
+    a(15, gigId(14), talentId(15), 'rejected', 400_000, 'Rejected. Looking for local talent only.'),
     a(16, gigId(14), talentId(15), 'rejected', 420_000, 'Duplicate resubmission.'),
     a(17, gigId(14), talentId(15), 'rejected', 440_000, 'Third time rejected.'),
     a(18, gigId(14), talentId(15), 'rejected', 460_000, 'Fourth.'),
-    a(19, gigId(14), talentId(15), 'rejected', 480_000, 'Fifth — exhausted this gig.'),
-    // gig 16 (completed) — has a hired talent for review/history
+    a(19, gigId(14), talentId(15), 'rejected', 480_000, 'Fifth, exhausted this gig.'),
+    // gig 16 (completed): has a hired talent for review/history
     a(20, gigId(16), talentId(5), 'hired', 700_000, 'AV supervisor, I brought a crew of 3.'),
 ];
 
@@ -277,10 +277,10 @@ interface SeedOffer {
 }
 
 const OFFERS: SeedOffer[] = [
-    // pending, accepted, declined, withdrawn, expired, countered — every offer_status enum
+    // pending, accepted, declined, withdrawn, expired, countered: every offer_status enum
     o(1, gigId(1), employerId(1), talentId(1), 'pending', 420_000, null, null, 'Want you on this one.'),
     o(2, gigId(3), employerId(2), talentId(3), 'accepted', 600_000, null, null, 'Offer accepted, see you Saturday.'),
-    o(3, gigId(5), employerId(6), talentId(2), 'declined', 1_100_000, null, null, 'Declined — conflict in schedule.'),
+    o(3, gigId(5), employerId(6), talentId(2), 'declined', 1_100_000, null, null, 'Declined. Conflict in schedule.'),
     o(4, gigId(8), employerId(6), talentId(1), 'withdrawn', 180_000, null, null, 'Withdrew after a staffing change.'),
     o(5, gigId(11), employerId(7), talentId(5), 'expired', 900_000, null, null, 'Offer aged out.'),
     o(6, gigId(13), employerId(9), talentId(3), 'countered', 300_000, 320_000, 'Can we land at 320k?', 'Initial offer for the outdoor shoot.'),

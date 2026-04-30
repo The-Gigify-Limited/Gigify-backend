@@ -15,12 +15,12 @@ interface SeedReview {
 }
 
 const REVIEWS: SeedReview[] = [
-    r(1, talentId(1), employerId(1), gigId(1), 5, 'Phenomenal DJ — kept the floor packed all night.'),
+    r(1, talentId(1), employerId(1), gigId(1), 5, 'Phenomenal DJ, kept the floor packed all night.'),
     r(2, talentId(3), employerId(2), gigId(3), 5, 'Professional, fast turnaround on photos.'),
     r(3, talentId(5), employerId(2), gigId(16), 4, 'Great AV support, minor sync issue on day two.'),
     r(4, talentId(4), employerId(6), gigId(7), 5, 'Led the crew exceptionally.'),
     r(5, talentId(2), employerId(6), gigId(5), 4, 'Great conference host, could be more spontaneous.'),
-    r(6, talentId(1), employerId(6), gigId(8), 5, 'Booked again — easy to work with.'),
+    r(6, talentId(1), employerId(6), gigId(8), 5, 'Booked again, easy to work with.'),
 ];
 
 function r(n: number, talent: string, reviewer: string, gig: string, rating: number, comment: string): SeedReview {
@@ -83,7 +83,7 @@ const IDENTITIES: SeedIdentity[] = [
         mediaUrl: 'https://seed.example.com/kyc/vivian-license.png',
         selfieUrl: null,
         status: 'rejected',
-        notes: 'Image too blurry — resubmit.',
+        notes: 'Image too blurry, resubmit.',
         reviewedAt: new Date().toISOString(),
     },
     {

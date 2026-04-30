@@ -126,7 +126,7 @@ export async function autoBlockAvailabilityOnOfferAcceptedListener(input: { gigI
 }
 
 // When a dispute is resolved in the employer's favour the booking
-// effectively didn't happen — we free the talent's calendar so they're
+// effectively didn't happen, we free the talent's calendar so they're
 // bookable again on that date. For resolved_talent / withdrawn the busy
 // window stays, since the talent did fulfil (or begin to fulfil) the gig.
 export async function unblockAvailabilityOnDisputeResolvedListener(input: {

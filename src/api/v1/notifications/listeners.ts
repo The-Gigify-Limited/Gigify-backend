@@ -23,7 +23,7 @@ export async function dispatchNotificationEventListener(input: {
     const channel = input.channel ?? 'in_app';
 
     // Realtime broadcast and the in-app notification row are the frontend's
-    // primary UI surface — they must fire even when the user has opted out
+    // primary UI surface, they must fire even when the user has opted out
     // of a given topic, otherwise the bell icon goes stale and the UI never
     // learns about state changes. Only opt-in-style channels (email, sms,
     // push) are preference-gated below. Default allows the send when the
@@ -120,7 +120,7 @@ async function sendNotificationSms(userId: string, title: string, message: strin
             return;
         }
 
-        // Keep SMS short — Twilio will split long bodies into multiple
+        // Keep SMS short, Twilio will split long bodies into multiple
         // segments and bill per segment. Title gives the "what", message is
         // truncated context.
         const body = message ? `${title}: ${message}`.slice(0, 300) : title;

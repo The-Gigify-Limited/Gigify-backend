@@ -99,7 +99,7 @@ const defaultSupportEmail = 'support@gigify.com';
 // Brand assets are hosted alongside the marketing site at thegigify.com so
 // they're cached, CDN-served, and inboxes don't strip them as inline blobs.
 // Mirrors the assets used by the FE's react-email templates (frontend/app/
-// email/) — keeping both senders visually identical for users.
+// email/), keeping both senders visually identical for users.
 const BRAND = {
     siteUrl: 'https://www.thegigify.com',
     logoUrl: 'https://www.thegigify.com/email/LogoWhite.png',
@@ -149,7 +149,7 @@ const renderButton = (label: string, href: string) => `
     </table>
 `;
 
-// Logo mirrors the FE template — actual hosted PNG so the brand mark looks
+// Logo mirrors the FE template, actual hosted PNG so the brand mark looks
 // the same as the marketing site, instead of a CSS-rendered circle.
 const renderLogo = () => `
     <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: 0 auto;">
@@ -542,7 +542,7 @@ const signoff = `
 
 export const paymentReceivedMail = ({ firstName, gigTitle, amount, currency, supportEmail }: PaymentReceivedMailOptions) => {
     const contentHtml = `
-      ${paragraph(`Great news — the employer has funded escrow for <strong>${escapeHtml(gigTitle)}</strong>.`)}
+      ${paragraph(`Great news, the employer has funded escrow for <strong>${escapeHtml(gigTitle)}</strong>.`)}
       ${paragraph(`<strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> is now safely held on Gigify until the gig is complete.`)}
       ${paragraph(
           `We’ll release the funds to you as soon as the employer confirms the work is done, so you can request a payout from your earnings dashboard.`,
@@ -561,7 +561,7 @@ export const paymentReceivedMail = ({ firstName, gigTitle, amount, currency, sup
 export const paymentReleasedMail = ({ firstName, gigTitle, amount, currency, withdrawUrl, supportEmail }: PaymentReleasedMailOptions) => {
     const contentHtml = `
       ${paragraph(`The employer has released payment for <strong>${escapeHtml(gigTitle)}</strong>.`)}
-      ${paragraph(`<strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> is now available in your Gigify earnings — ready to withdraw.`)}
+      ${paragraph(`<strong>${escapeHtml(currency)} ${escapeHtml(amount)}</strong> is now available in your Gigify earnings, ready to withdraw.`)}
       ${withdrawUrl ? renderButton('Request a payout', withdrawUrl) : ''}
       ${paragraph(`Thanks for delivering great work on this booking.`)}
       ${signoff}
@@ -678,7 +678,7 @@ export const welcomeEmployerMail = ({ firstName, supportEmail }: WelcomeEmployer
     `;
 
     return renderLayout({
-        title: 'Welcome to Gigify — Start Posting Gigs',
+        title: 'Welcome to Gigify, Start Posting Gigs',
         greetingName: firstName,
         contentHtml,
         supportEmail,
