@@ -157,6 +157,11 @@ talentRouter.delete(
  *                 stageName: DJ Maxell
  *                 primaryRole: DJ
  *                 averageRating: 4.8
+ *                 totalGigsCompleted: 12
+ *                 bankName: GTBank
+ *                 accountNumber: "0123456789"
+ *                 portfolios: []
+ *                 reviews: []
  */
 talentRouter.get(
     '/:id',
@@ -185,6 +190,29 @@ talentRouter.get(
  *       required: true
  *       content:
  *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stageName: { type: string, minLength: 1, maxLength: 60 }
+ *               primaryRole: { type: string, maxLength: 80 }
+ *               biography: { type: string, maxLength: 1000 }
+ *               dateOfBirth: { type: string, format: date }
+ *               minRate: { type: number, minimum: 0 }
+ *               maxRate: { type: number, minimum: 0 }
+ *               rateCurrency: { type: string, maxLength: 8 }
+ *               skills:
+ *                 type: array
+ *                 items: { type: string, maxLength: 80 }
+ *               yearsExperience: { type: integer, minimum: 0 }
+ *               bannerUrl: { type: string, format: uri }
+ *               bankName:
+ *                 type: string
+ *                 maxLength: 120
+ *                 description: Direct-bank-transfer payout account holder bank name (NGN context, not Stripe Connect).
+ *               accountNumber:
+ *                 type: string
+ *                 maxLength: 40
+ *                 description: Direct-bank-transfer payout account number.
  *           example:
  *             stageName: DJ Maxell
  *             primaryRole: DJ
@@ -195,6 +223,8 @@ talentRouter.get(
  *             skills:
  *               - afrobeat
  *               - wedding
+ *             bankName: GTBank
+ *             accountNumber: "0123456789"
  *     responses:
  *       200:
  *         description: Updated talent profile
@@ -206,6 +236,8 @@ talentRouter.get(
  *                 id: 30000000-0000-0000-0000-000000000001
  *                 stageName: DJ Maxell
  *                 primaryRole: DJ
+ *                 bankName: GTBank
+ *                 accountNumber: "0123456789"
  */
 talentRouter.patch(
     '/:id',

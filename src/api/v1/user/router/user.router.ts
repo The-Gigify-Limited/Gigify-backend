@@ -226,6 +226,42 @@ userRouter
      *         application/json:
      *           schema:
      *             type: object
+     *             properties:
+     *               firstName: { type: string }
+     *               lastName: { type: string }
+     *               phoneNumber: { type: string }
+     *               locationCountry: { type: string }
+     *               locationCity: { type: string }
+     *               locationLatitude: { type: number }
+     *               locationLongitude: { type: number }
+     *               fullAddress: { type: string }
+     *               postCode: { type: integer }
+     *               profileImageUrl:
+     *                 type: string
+     *                 format: uri
+     *                 description: Avatar image URL (also accepts a multipart `profileImage` upload that overwrites this field).
+     *               bannerImageUrl:
+     *                 type: string
+     *                 format: uri
+     *                 description: Full-width banner image rendered above the avatar on the profile page.
+     *               referral:
+     *                 type: string
+     *                 maxLength: 120
+     *                 description: Referral code or attribution string carried on the user record.
+     *               gender:
+     *                 type: string
+     *                 enum: [male, female, non_binary, prefer_not_to_say]
+     *               username: { type: string }
+     *               onboardingStep:
+     *                 type: integer
+     *                 description: |
+     *                   Increment as the user progresses through onboarding. The
+     *                   read-side `onboarded` flag is computed as
+     *                   `onboardingStep >= 3` and is NOT writable directly.
+     *               dateOfBirth: { type: string, format: date }
+     *               streetAddress: { type: string }
+     *               acquisitionSource: { type: string }
+     *               bio: { type: string }
      *           example:
      *             firstName: Maxwell
      *             lastName: Adeyemi
@@ -236,10 +272,13 @@ userRouter
      *             locationLongitude: 3.3792
      *             fullAddress: 24 Allen Avenue, Ikeja
      *             postCode: 100282
+     *             profileImageUrl: https://cdn.thegigify.com/avatars/maxwell.jpg
+     *             bannerImageUrl: https://cdn.thegigify.com/banners/maxwell.jpg
+     *             referral: WELCOME-2026
      *             username: djmaxell
      *             dateOfBirth: "1995-06-15"
      *             streetAddress: 24 Allen Avenue
-     *             acquisitionSource: referral
+     *             acquisitionSource: instagram
      *             bio: DJ and event producer based in Lagos.
      *     responses:
      *       200:
@@ -252,6 +291,9 @@ userRouter
      *                 id: 20000000-0000-0000-0000-000000000001
      *                 username: djmaxell
      *                 locationCity: Lagos
+     *                 profileImageUrl: https://cdn.thegigify.com/avatars/maxwell.jpg
+     *                 bannerImageUrl: https://cdn.thegigify.com/banners/maxwell.jpg
+     *                 referral: WELCOME-2026
      *       401:
      *         description: Unauthorized
      */
