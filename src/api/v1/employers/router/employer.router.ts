@@ -47,6 +47,9 @@ export const employerRouter = Router();
  *                   organizationName: Pulse Live
  *                   companyWebsite: https://pulselive.example
  *                   industry: Entertainment
+ *                   totalGigsPosted: 5
+ *                   totalSpent: 940000
+ *                   totalApplicationsReceived: 42
  */
 employerRouter.get(
     '/:id',
@@ -86,6 +89,7 @@ employerRouter.get(
  *                 industry: Entertainment
  *                 totalGigsPosted: 5
  *                 totalSpent: 940000
+ *                 totalApplicationsReceived: 42
  */
 employerRouter.get(
     '/:id/profile',
@@ -132,6 +136,7 @@ employerRouter.get(
  *                 organizationName: Pulse Live
  *                 companyWebsite: https://pulselive.example
  *                 industry: Entertainment
+ *                 totalApplicationsReceived: 42
  */
 employerRouter.patch(
     '/:id/profile',

@@ -760,6 +760,13 @@ gigRouter.patch(
  *   get:
  *     tags: [Gigs]
  *     summary: Get gig details
+ *     description: |
+ *       Returns the full gig record, including the FE-aligned schema fields
+ *       (`displayImage`, `gigType`, `gigStartTime`, `gigEndTime`,
+ *       `gigLocation`, `gigAddress`, `gigPostCode`, `isEquipmentRequired`,
+ *       `skillRequired`) and the raw DB `status` enum (`draft`, `open`,
+ *       `in_progress`, `completed`, `cancelled`, `expired`, `disputed`) —
+ *       no longer remapped to `active` / `booked` / `unpublished`.
  *     responses:
  *       200:
  *         description: Gig details
@@ -769,12 +776,37 @@ gigRouter.patch(
  *               message: Gig Retrieved Successfully
  *               data:
  *                 id: 50000000-0000-0000-0000-000000000002
+ *                 employerId: 10000000-0000-0000-0000-000000000002
  *                 title: Lagos Beach Wedding Sax Set
+ *                 description: Wedding sunset sax set on Elegushi beach.
+ *                 budgetAmount: 250000
+ *                 currency: NGN
+ *                 gigDate: 2026-08-12T17:30:00.000Z
+ *                 status: open
+ *                 venueName: Elegushi Beach Resort
+ *                 displayImage: https://cdn.example.com/gigs/sax-night.jpg
+ *                 gigType: wedding
+ *                 gigStartTime: "17:30"
+ *                 gigEndTime: "20:00"
+ *                 gigLocation: Lekki, Lagos
+ *                 gigAddress: 12 Beach Road
+ *                 gigPostCode: "101231"
+ *                 isEquipmentRequired: true
+ *                 skillRequired: Saxophonist
+ *                 additionalNotes: Two 45-minute sets with a 15-minute break.
  *                 remainingTalentSlots: 0
  *                 isSaved: false
  *                 myApplication:
  *                   id: 60000000-0000-0000-0000-000000000002
  *                   status: hired
+ *                 employer:
+ *                   id: 10000000-0000-0000-0000-000000000002
+ *                   firstName: John
+ *                   lastName: Doe
+ *                 employerProfile:
+ *                   organizationName: Pulse Live
+ *                 gigHire: []
+ *                 gigApplicants: []
  */
 gigRouter.get(
     '/:id',
