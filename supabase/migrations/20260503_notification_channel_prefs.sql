@@ -2,7 +2,7 @@ begin;
 
 -- Per-topic × per-channel preference matrix. The existing global channel
 -- toggles (email_enabled / push_enabled / sms_enabled) stay as the outer
--- envelope — if a user turns "email" off globally, every email is suppressed
+-- envelope, if a user turns "email" off globally, every email is suppressed
 -- regardless of these per-topic flags. These columns only narrow further.
 --
 -- Defaults reflect product's opt-in policy: SMS is default-off except for

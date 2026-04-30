@@ -85,7 +85,7 @@ const PREFERENCES: SeedPreference[] = [
     pref(talentId(7), { emailEnabled: false }),
     // Payment updates topic off
     pref(talentId(9), { paymentUpdates: false }),
-    // Message updates off + SMS off — exercises dispatch+channel combo
+    // Message updates off + SMS off, exercises dispatch+channel combo
     pref(talentId(16), { messageUpdates: false, smsEnabled: false }),
     // Verbose: all on including marketing
     pref(talentId(15), { marketingEnabled: true }),
@@ -134,7 +134,7 @@ export async function seedNotifications(): Promise<void> {
         message_updates: p.messageUpdates,
         security_alerts: p.securityAlerts,
     }));
-    // Preferences use `upsert` on the user_id PK — if the row already exists
+    // Preferences use `upsert` on the user_id PK, if the row already exists
     // with different values we want the seed's opinionated state to win.
     // `ignoreDuplicates:true` skips; but for preferences we want the operator
     // to be able to re-run and get the seeded shape back, so we upsert-merge.

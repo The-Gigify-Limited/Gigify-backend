@@ -53,7 +53,7 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         const { offset, rangeEnd } = normalizePagination(filters);
 
         // Supabase's `.select` embed pulls the joined users row under the
-        // same query — avoids an N+1 on name / avatar / location. We embed
+        // same query, avoids an N+1 on name / avatar / location. We embed
         // talent_reviews with aggregate support via a SQL view-like trick:
         // select with inner join on users, then compute rating aggregates
         // after the fact because PostgREST doesn't surface AVG cleanly in
@@ -85,7 +85,7 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         }
         if (filters.genres && filters.genres.length > 0) {
             // `skills` is a text[]. The `cs` operator asks whether skills is a
-            // superset of the provided array — effectively "has all listed
+            // superset of the provided array, effectively "has all listed
             // genres". For partial match use `ov` (overlaps). Product prefers
             // "any match" for discovery so we use overlaps.
             request = request.overlaps('skills', filters.genres);
@@ -115,7 +115,7 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
             request = request.or(orParts.join(','));
         }
 
-        // Sort — default rating desc, applied after merging the ratings
+        // Sort, default rating desc, applied after merging the ratings
         // aggregate below. For price / recent we can push down into SQL.
         if (filters.sortBy === 'priceAsc') {
             request = request.order('min_rate', { ascending: true, nullsFirst: false });

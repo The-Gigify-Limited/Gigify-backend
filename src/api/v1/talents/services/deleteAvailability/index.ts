@@ -16,7 +16,7 @@ export class DeleteAvailability {
             throw new ForbiddenError('You do not own this availability entry');
         }
 
-        // Auto rows mirror the gig schedule — allowing a talent to delete
+        // Auto rows mirror the gig schedule, allowing a talent to delete
         // them out-of-band would let a booked talent fake being free for
         // another employer. Auto rows clear only when the underlying gig is
         // cancelled / dispute resolves for employer.

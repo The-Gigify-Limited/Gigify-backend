@@ -21,10 +21,10 @@ export const uploadRouter = Router();
  *           enum: [avatars, media, portfolios, IDUpload]
  *         description: |
  *           Storage bucket name. Known buckets:
- *             • `avatars` — profile images (5 MB, images only)
- *             • `media` — general uploads (100 MB, images/video/PDF)
- *             • `portfolios` — talent portfolio work (50 MB, images/video/PDF)
- *             • `IDUpload` — KYC / identity verification documents
+ *             • `avatars`, profile images (5 MB, images only)
+ *             • `media`, general uploads (100 MB, images/video/PDF)
+ *             • `portfolios`, talent portfolio work (50 MB, images/video/PDF)
+ *             • `IDUpload`, KYC / identity verification documents
  *               (20 MB, image/* + PDF, public-read)
  *       - in: query
  *         name: folder

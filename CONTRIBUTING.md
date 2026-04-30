@@ -1,6 +1,6 @@
 # Contributing to Gigify Backend
 
-This guide gets you from clone to merged PR. It assumes you've cloned the repo and are joining the team — read [README.md](./README.md) for the deeper architecture write-up; this file focuses on workflow.
+This guide gets you from clone to merged PR. It assumes you've cloned the repo and are joining the team. For the deeper architecture write-up, read [README.md](./README.md); this file focuses on workflow.
 
 ---
 
@@ -45,7 +45,7 @@ Gigify is a marketplace for music talents (DJs, drummers, vocalists, …) and th
 | Tests            | Jest (runs on compiled JS in `build/`)                                |
 | Lint / format    | ESLint + Prettier, enforced via Husky pre-commit                      |
 | CI/CD            | GitHub Actions → migrations to Supabase staging, app deploys to Fly.io |
-| Package manager  | **pnpm v9** (don't use npm/yarn — there's no `package-lock.json`)     |
+| Package manager  | **pnpm v9** (don't use npm/yarn; there's no `package-lock.json`)      |
 
 The frontend lives in a separate repo (Next.js 16). When in doubt about field names, the FE's `server/apiTypes/*.type.ts` is the authoritative shape contract.
 
@@ -55,7 +55,7 @@ The frontend lives in a separate repo (Next.js 16). When in doubt about field na
 
 ```
 src/
-├── main.ts                  # Entry point — boots DB connection then HTTP server
+├── main.ts                  # Entry point. Boots DB connection then HTTP server.
 ├── app/                     # Express setup, app router, event bus, cache
 │   ├── app.module.ts
 │   ├── app.router.ts        # Mounts every module router
@@ -79,7 +79,7 @@ src/
     ├── repository/          # BaseRepository (snake_case ↔ camelCase mapping)
     ├── errors/              # Typed error classes (BadRequestError, etc.)
     ├── services/            # Mail, SMS, audit, realtime broadcast
-    ├── types/common/        # Auto-generated Supabase types — do NOT edit by hand
+    ├── types/common/        # Auto-generated Supabase types. Do NOT edit by hand.
     ├── utils/               # Pagination, image upload, bcrypt, misc
     └── logging/             # Winston
 
@@ -100,7 +100,7 @@ src/scripts/test-bootstrap.ts # Provisions QA users for the smoke harness
 ```
 {module}/
 ├── index.ts                  # Re-exports the router
-├── interfaces/               # Domain types + DTOs (some older modules use `interface/` singular — fine, but new ones use plural)
+├── interfaces/               # Domain types + DTOs (some older modules use `interface/` singular, which is fine; new ones use plural)
 │   ├── controller.payload.ts # Request DTOs extending ControllerArgsTypes
 │   ├── module.types.ts       # Domain types (Gig, User, …)
 │   └── index.ts
@@ -173,7 +173,7 @@ REDIS_PORT=6379
 REDIS_PASSWORD=
 ```
 
-Other keys (Resend, Twilio, Stripe, Sumsub, etc.) are listed in `.env.example`. Most local dev paths don't need them — the corresponding services no-op or fail soft.
+Other keys (Resend, Twilio, Stripe, Sumsub, etc.) are listed in `.env.example`. Most local dev paths don't need them; the corresponding services no-op or fail soft.
 
 ### Database
 
@@ -190,7 +190,7 @@ After any schema change, regenerate the auto types:
 pnpm generate-types   # writes src/core/types/common/database.interface.ts
 ```
 
-Don't edit `database.interface.ts` by hand — it's overwritten on every regen.
+Don't edit `database.interface.ts` by hand; it's overwritten on every regen.
 
 ---
 
@@ -257,7 +257,7 @@ pnpm lint-prettier:fix  # both
 
 ### TypeScript
 
-- `strict: true`, `noImplicitAny: true`. Don't use `any` — use `unknown` and narrow, or `as never` only for test-mock injection.
+- `strict: true`, `noImplicitAny: true`. Don't use `any`. Use `unknown` and narrow, or `as never` only for test-mock injection.
 - Service classes accept dependencies via constructor injection. Singletons are exported as `default`.
 - Public APIs (router → service → repo) all use `camelCase`. The DB uses `snake_case`. Conversion is done by `BaseRepository.mapToCamelCase` / `mapToSnakeCase`. Override these on a per-repo basis only when a column name doesn't fit the auto-conversion (see `GigRepository` for an example).
 
@@ -271,14 +271,14 @@ pnpm lint-prettier:fix  # both
 
 ### Comments
 
-Default to no comments. Only add one when **why** is non-obvious — a hidden constraint, a workaround, surprising behaviour, or a domain invariant. Don't paraphrase the code.
+Default to no comments. Only add one when the **why** is non-obvious: a hidden constraint, a workaround, surprising behaviour, or a domain invariant. Don't paraphrase the code.
 
 ```ts
 // ❌ Don't
 const offset = (page - 1) * pageSize; // calculate offset
 
 // ✅ Only when the why isn't obvious
-// equipment_provided is the inverse of the FE's isEquipmentRequired —
+// equipment_provided is the inverse of the FE's isEquipmentRequired,
 // flipped when we renamed the column in 20260508.
 const isEquipmentRequired = !row.equipment_provided;
 ```
@@ -340,7 +340,7 @@ Add new event types to `src/app/app-events/event.types.ts` and register listener
    - `pnpm build`
    - `npx jest --no-coverage --runInBand --config ./jest.config.cjs`
 
-4. **Commit messages follow Conventional Commits.** Type prefixes: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`. Optional scope in parens. The body should explain *why* — what, the diff already shows.
+4. **Commit messages follow Conventional Commits.** Type prefixes: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`. Optional scope in parens. The body should explain *why*; the diff already shows what.
 
    ```
    feat(employers): add GET /employer/:id/gigs endpoint
@@ -371,8 +371,8 @@ Each recipe lists: **where**, **files**, **conventions**, **how to test**, **nam
 **Files you'll typically touch:**
 
 ```
-src/api/v1/{module}/services/{actionName}/index.ts        # new — service class
-src/api/v1/{module}/services/{actionName}/index.spec.ts   # new — Jest test
+src/api/v1/{module}/services/{actionName}/index.ts        # new service class
+src/api/v1/{module}/services/{actionName}/index.spec.ts   # new Jest test
 src/api/v1/{module}/services/index.ts                     # add export
 src/api/v1/{module}/router/schema/index.ts                # add Joi schema
 src/api/v1/{module}/router/{module}.router.ts             # mount route + Swagger
@@ -384,9 +384,9 @@ src/api/v1/{module}/interfaces/controller.payload.ts      # add DTO if the route
 - Wire the route through `ControlBuilder`. Use `.isPrivate()` + `.only(...)` / `.checkResourceOwnership(...)` instead of inline auth checks.
 - The service class has a single `handle = async (...)` arrow method. Inject deps via constructor. Export a singleton.
 - Validation goes in the Joi schema, not inside the service. The schema lives in `router/schema/index.ts`.
-- Add a Swagger JSDoc block immediately above the route — request body, params, response example. A frontend engineer reading `/api/v1/api-docs` is your audience.
+- Add a Swagger JSDoc block immediately above the route, covering request body, params, and a response example. A frontend engineer reading `/api/v1/api-docs` is your audience.
 
-**Skeleton — service:**
+**Skeleton (service):**
 
 ```ts
 // src/api/v1/gigs/services/getGigSummary/index.ts
@@ -413,7 +413,7 @@ const getGigSummary = new GetGigSummary(new GigRepository());
 export default getGigSummary;
 ```
 
-**Skeleton — Joi schema:**
+**Skeleton (Joi schema):**
 
 ```ts
 // src/api/v1/gigs/router/schema/index.ts (add to existing file)
@@ -424,7 +424,7 @@ export const getGigSummarySchema = {
 };
 ```
 
-**Skeleton — route + Swagger:**
+**Skeleton (route + Swagger):**
 
 ```ts
 // src/api/v1/gigs/router/gig.router.ts (add to existing file)
@@ -474,7 +474,7 @@ gigRouter.get(
   - The Swagger example in the router file
   - The corresponding type in `interfaces/module.types.ts` if it's a domain field
   - The Jest spec to assert the new field
-- If you change a field name, audit the FE — the canonical FE type is `frontend/server/apiTypes/{module}.type.ts`.
+- If you change a field name, audit the FE. The canonical FE type is `frontend/server/apiTypes/{module}.type.ts`.
 
 **How to test:**
 
@@ -506,7 +506,7 @@ pnpm build && npx jest --testPathPattern="{action}"
 
 **How to test:**
 
-Repository methods are usually tested via the service that calls them — mock the repository in the service spec rather than testing repository code directly. If you do need a repository-level test, hit a Supabase test project, not the live DB.
+Repository methods are usually tested via the service that calls them. Mock the repository in the service spec rather than testing repository code directly. If you do need a repository-level test, hit a Supabase test project, not the live DB.
 
 ### 7.4 Adding a new feature module
 
@@ -558,7 +558,7 @@ Repository methods are usually tested via the service that calls them — mock t
 
 Tests are **colocated** with the service they test: `src/api/v1/{module}/services/{action}/index.spec.ts`. They run on the compiled JS in `build/`, so always `pnpm build` before running.
 
-**Pattern — mock everything the service imports, then test the class directly:**
+**Pattern: mock everything the service imports, then test the class directly.**
 
 ```ts
 // src/api/v1/gigs/services/getGigSummary/index.spec.ts
@@ -597,7 +597,7 @@ describe('GetGigSummary', () => {
 
 **Conventions:**
 
-- Mock everything the service imports — `@/core`, `@/app`, other modules' repositories.
+- Mock everything the service imports: `@/core`, `@/app`, and other modules' repositories.
 - Use `as never` for mock injection to bypass strict types in test fixtures.
 - Test the happy path, error cases, and one or two edge cases. Don't aim for 100% line coverage; aim for behavioural coverage.
 - Don't import the real Supabase client. Tests must not hit the network.
@@ -606,7 +606,7 @@ describe('GetGigSummary', () => {
 
 - **Swagger** lives in JSDoc comments above each route in `router/{name}.router.ts`. Keep examples in sync with the actual response shape.
 - **README.md** is the deep architecture guide. Update it for big structural changes.
-- **CONTRIBUTING.md** (this file) is for workflow — update it when you change the contribution process, branch conventions, or test commands.
+- **CONTRIBUTING.md** (this file) is for workflow. Update it when you change the contribution process, branch conventions, or test commands.
 - **CLAUDE.md** in `.claude/` is for AI assistants. Don't put human-facing docs there.
 
 ---
@@ -641,7 +641,7 @@ pnpm seed                                                   # build + run src/sc
 node -r module-alias/register -r dotenv/config build/scripts/test-bootstrap.js
 bash scripts/smoke-tests.sh
 
-# Deploy (Fly.io — usually CI runs this on merge to develop)
+# Deploy (Fly.io; usually CI runs this on merge to develop)
 fly deploy
 fly secrets set KEY=VALUE
 fly logs
@@ -651,7 +651,7 @@ fly logs
 
 ## Need help?
 
-- **Architecture deep-dive** — read [README.md](./README.md) section 5 ("Internal Architecture")
-- **A working example of the patterns** — `src/api/v1/employers/services/getEmployerGigs/` is a small, recent end-to-end module touch (route + service + Joi schema + spec)
-- **Why does X behave the way it does?** — `git log` and the PR descriptions are the best context source. Most non-obvious decisions are explained in the commit body.
+- **Architecture deep-dive**: read [README.md](./README.md) section 5 ("Internal Architecture")
+- **A working example of the patterns**: `src/api/v1/employers/services/getEmployerGigs/` is a small, recent end-to-end module touch (route + service + Joi schema + spec)
+- **Why does X behave the way it does?** `git log` and the PR descriptions are the best context source. Most non-obvious decisions are explained in the commit body.
 - **Stuck?** Ask in the team channel. The codebase isn't perfect; questions improve it.

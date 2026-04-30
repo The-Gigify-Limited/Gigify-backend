@@ -1,6 +1,6 @@
 begin;
 
--- Employer bookmarks — mirrors the existing `saved_gigs` junction pattern.
+-- Employer bookmarks, mirrors the existing `saved_gigs` junction pattern.
 -- `user_id` is intentionally the generic name (rather than `employer_id`)
 -- because the FK targets the polymorphic users table; the domain meaning
 -- ("who saved it") is enforced at the service layer via role check.

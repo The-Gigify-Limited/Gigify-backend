@@ -19,7 +19,7 @@ const CONVERSATIONS: SeedConversation[] = [
     { id: conversationId(8), gigId: gigId(13), employerId: employerId(9), talentId: talentId(3) },
 ];
 
-// Archives are per-user — one side can archive without hiding the thread from
+// Archives are per-user, one side can archive without hiding the thread from
 // the other. Conversation 6 is archived for talent 16 to exercise the
 // `tab=archived` filter.
 const ARCHIVES: Array<{ conversationId: string; userId: string }> = [{ conversationId: conversationId(6), userId: talentId(16) }];
@@ -42,17 +42,17 @@ interface SeedMessage {
 // unread to keep `getUnreadConversationCount` non-trivial. A message on
 // conversation 8 feeds the message_reports table below.
 const MESSAGES: SeedMessage[] = [
-    m(1, conversationId(1), employerId(1), 'Hi Kola — can you confirm availability for the launch?', -60),
+    m(1, conversationId(1), employerId(1), 'Hi Kola, can you confirm availability for the launch?', -60),
     m(2, conversationId(1), talentId(1), 'Yes, 100% available. I can send a short mix as reference.', -55),
     m(3, conversationId(2), talentId(3), 'Shots are uploaded. Let me know once you review.', -1440),
     m(4, conversationId(2), employerId(2), 'Perfect, reviewing now.', -1430),
-    m(5, conversationId(3), talentId(14), 'Escrow has not released — any update?', -720),
+    m(5, conversationId(3), talentId(14), 'Escrow has not released, any update?', -720),
     m(6, conversationId(3), employerId(3), 'Still reviewing the deliverables.', -710),
-    m(7, conversationId(4), employerId(6), 'Welcome Lara — can you send a sample reel?', -30),
+    m(7, conversationId(4), employerId(6), 'Welcome Lara, can you send a sample reel?', -30),
     m(8, conversationId(4), talentId(2), 'Sharing the conference highlight reel shortly.', null),
     m(9, conversationId(5), employerId(6), 'Crew call time is 7am, please confirm.', null),
-    m(10, conversationId(5), talentId(4), 'Confirmed — crew will be on site at 6:30.', null),
-    m(11, conversationId(6), employerId(1), 'Archived thread — no action needed.', -5000),
+    m(10, conversationId(5), talentId(4), 'Confirmed, crew will be on site at 6:30.', null),
+    m(11, conversationId(6), employerId(1), 'Archived thread, no action needed.', -5000),
     m(12, conversationId(7), employerId(9), 'Hello! Interested in chatting about a future gig?', null),
     m(13, conversationId(8), employerId(9), 'Would you accept 320k?', -120),
     m(14, conversationId(8), talentId(3), 'That works, booking it in.', -115),

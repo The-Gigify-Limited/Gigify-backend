@@ -52,13 +52,13 @@ export const TALENTS: SeedPersona[] = [
     mk('talent', 9, 'Sade', 'Olowo', 'sade', 'Payout request was rejected by an admin.', 'Ibadan', 'active'),
     mk('talent', 10, 'Tomi', 'Ajayi', 'tomi', 'KYC session pending review.', 'Lagos', 'active', { isVerified: false }),
     mk('talent', 11, 'Uche', 'Nnamdi', 'uche', 'KYC approved, fully verified.', 'Abuja', 'active'),
-    mk('talent', 12, 'Vivian', 'Bello', 'vivian', 'KYC rejected — needs resubmission.', 'Lagos', 'active', { isVerified: false }),
-    mk('talent', 13, 'Wale', 'Oduya', 'wale', 'No KYC at all — cannot yet be hired.', 'Port Harcourt', 'active', {
+    mk('talent', 12, 'Vivian', 'Bello', 'vivian', 'KYC rejected, needs resubmission.', 'Lagos', 'active', { isVerified: false }),
+    mk('talent', 13, 'Wale', 'Oduya', 'wale', 'No KYC at all, cannot yet be hired.', 'Port Harcourt', 'active', {
         onboardingStep: 1,
         isVerified: false,
     }),
     mk('talent', 14, 'Xena', 'Okoye', 'xena', 'Has an open dispute on a paid gig.', 'Lagos', 'active'),
-    mk('talent', 15, 'Yara', 'Ibrahim', 'yara', 'Has 5+ applications all rejected — cold-streak scenario.', 'Lagos', 'active'),
+    mk('talent', 15, 'Yara', 'Ibrahim', 'yara', 'Has 5+ applications all rejected, cold-streak scenario.', 'Lagos', 'active'),
     mk('talent', 16, 'Zain', 'Musa', 'zain', 'Has archived threads and sent a typing indicator recently.', 'Abuja', 'active'),
     mk('talent', 17, 'Ada', 'Nwankwo', 'ada', 'Blocked another talent.', 'Lagos', 'active'),
     mk('talent', 18, 'Bode', 'Adigun', 'bode', 'Blocked BY another user.', 'Lagos', 'active'),

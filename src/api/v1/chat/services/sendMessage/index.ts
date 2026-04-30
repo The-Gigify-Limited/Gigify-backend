@@ -39,7 +39,7 @@ export class SendMessage {
         });
 
         // If the recipient archived this thread, a reply should pop it back to
-        // their main inbox — matches standard email/messaging UX and prevents
+        // their main inbox, matches standard email/messaging UX and prevents
         // archived threads from going permanently dark.
         await this.chatRepository.unarchiveConversationForUser(conversation.id, recipientId);
 

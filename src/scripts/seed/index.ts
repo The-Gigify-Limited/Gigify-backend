@@ -17,7 +17,7 @@ async function main(): Promise<void> {
     log('main', `shared test password: ${SEED_PASSWORD}`);
     log('main', `all seeded emails follow pattern seed.<role><n>@gigify.test`);
 
-    // Order matters — children depend on parents. Within each seed file, the
+    // Order matters, children depend on parents. Within each seed file, the
     // upserts are idempotent so re-running is safe.
     await seedUsers();
     await seedGigs();
