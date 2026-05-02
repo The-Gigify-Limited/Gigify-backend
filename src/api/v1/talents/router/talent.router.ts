@@ -46,19 +46,52 @@ export const talentRouter = Router();
  *         schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
  *       - in: query
  *         name: search
- *         schema: { type: string }
+ *         description: Substring (ilike) match on `stage_name`, `primary_role`, OR the talent's `users.first_name` / `users.last_name`.
+ *         schema: { type: string, maxLength: 100 }
  *       - in: query
  *         name: primaryRole
- *         schema: { type: string }
+ *         description: Substring (ilike) match on `primary_role` OR exact membership in `skills[]`. Either column matches because many talents store the role as a skill rather than on the dedicated column.
+ *         schema: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: genres
+ *         description: Array of skill labels matched against `skills[]` with overlap (any-match) semantics.
+ *         schema:
+ *           type: array
+ *           items: { type: string, maxLength: 80 }
  *       - in: query
  *         name: minRate
- *         schema: { type: number }
+ *         schema: { type: number, minimum: 0 }
  *       - in: query
  *         name: maxRate
- *         schema: { type: number }
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: rateCurrency
+ *         schema: { type: string, maxLength: 8 }
  *       - in: query
  *         name: minRating
  *         schema: { type: number, minimum: 0, maximum: 5 }
+ *       - in: query
+ *         name: location
+ *         description: General location filter. Substring (ilike) match against `users.location_city` OR `users.location_country`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: locationCity
+ *         description: Exact match on `users.location_city`. For fuzzy matching across both city and country, use `location` instead.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: locationCountry
+ *         description: Exact match on `users.location_country`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: lat
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: lng
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         description: Geo radius (km) around `lat`/`lng`. Requires all three.
+ *         schema: { type: number, minimum: 1, maximum: 500 }
  *       - in: query
  *         name: availableOn
  *         schema: { type: string, format: date }

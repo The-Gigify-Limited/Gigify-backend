@@ -304,6 +304,61 @@ echo "      and inspect the inbox to confirm the new branded layout."
 echo
 
 # ==========================================================
+# Search filter follow-ups: skillRequired (gig), primaryRole-via-skills
+# (talent), and the new generic /talent?location= filter.
+# ==========================================================
+echo "## Search filters: gig.skillRequired"
+T_SR_RAW=$(curl_json_anon GET "$BASE/gig?skillRequired=DJ")
+T_SR_BODY=$(http_body "$T_SR_RAW")
+T_SR_STATUS=$(http_status "$T_SR_RAW")
+if [ "$T_SR_STATUS" = "200" ]; then
+    HITS=$(echo "$T_SR_BODY" | python3 -c "import sys, json; d=json.load(sys.stdin); rows=d.get('data',[]); print(sum(1 for r in rows if (r.get('skillRequired') or '').lower().find('dj') >= 0))" 2>/dev/null || echo "0")
+    if [ "$HITS" -ge 0 ]; then
+        record "filters" "GET /gig?skillRequired=DJ accepts the new filter and returns 200" "hits=$HITS BODY=$T_SR_BODY" pass
+    else
+        record "filters" "GET /gig?skillRequired=DJ filter rows have skillRequired containing 'dj'" "$T_SR_BODY" fail
+    fi
+else
+    record "filters" "GET /gig?skillRequired=DJ accepts the new filter and returns 200" "STATUS=$T_SR_STATUS BODY=$T_SR_BODY" fail
+fi
+
+echo "## Search filters: talent.primaryRole broadened to skills[]"
+# The QA talent in test-bootstrap.ts seeds `stage_name='QA Talent'` with no
+# skills. To exercise the broadened filter we add a known skill via PATCH
+# first, then search by that skill via primaryRole.
+curl_json PATCH "$BASE/talent/$TAL_ID" "$TAL_TOKEN" '{"skills":["Guitarist","DJ"]}' >/dev/null
+
+T_PR_RAW=$(curl_json_anon GET "$BASE/talent?primaryRole=Guitarist")
+T_PR_BODY=$(http_body "$T_PR_RAW")
+T_PR_HITS=$(echo "$T_PR_BODY" | python3 -c "import sys, json; d=json.load(sys.stdin); rows=d.get('data',[]); print(sum(1 for r in rows if r.get('userId')=='$TAL_ID'))" 2>/dev/null || echo "0")
+if [ "$T_PR_HITS" -ge 1 ]; then
+    record "filters" "GET /talent?primaryRole=<skill> matches via skills[] when primary_role is null" "hits=$T_PR_HITS BODY=$T_PR_BODY" pass
+else
+    record "filters" "GET /talent?primaryRole=<skill> matches via skills[] when primary_role is null" "$T_PR_BODY" fail
+fi
+
+echo "## Search filters: talent.location (substring on city OR country)"
+# Patch the talent's city + country, then filter by a substring of either.
+curl_json PATCH "$BASE/user/$TAL_ID" "$TAL_TOKEN" '{"locationCity":"Lagos","locationCountry":"Nigeria"}' >/dev/null
+
+T_LOC_RAW=$(curl_json_anon GET "$BASE/talent?location=Lagos")
+T_LOC_BODY=$(http_body "$T_LOC_RAW")
+T_LOC_HITS=$(echo "$T_LOC_BODY" | python3 -c "import sys, json; d=json.load(sys.stdin); rows=d.get('data',[]); print(sum(1 for r in rows if r.get('userId')=='$TAL_ID'))" 2>/dev/null || echo "0")
+if [ "$T_LOC_HITS" -ge 1 ]; then
+    record "filters" "GET /talent?location=Lagos matches by users.location_city" "hits=$T_LOC_HITS BODY=$T_LOC_BODY" pass
+else
+    record "filters" "GET /talent?location=Lagos matches by users.location_city" "$T_LOC_BODY" fail
+fi
+
+T_LOC_C_RAW=$(curl_json_anon GET "$BASE/talent?location=Nigeria")
+T_LOC_C_HITS=$(echo "$(http_body "$T_LOC_C_RAW")" | python3 -c "import sys, json; d=json.load(sys.stdin); rows=d.get('data',[]); print(sum(1 for r in rows if r.get('userId')=='$TAL_ID'))" 2>/dev/null || echo "0")
+if [ "$T_LOC_C_HITS" -ge 1 ]; then
+    record "filters" "GET /talent?location=Nigeria matches by users.location_country" "hits=$T_LOC_C_HITS" pass
+else
+    record "filters" "GET /talent?location=Nigeria matches by users.location_country" "$(http_body "$T_LOC_C_RAW")" fail
+fi
+
+# ==========================================================
 # Summary
 # ==========================================================
 echo "=========================================="

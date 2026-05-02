@@ -80,6 +80,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         longitude?: number | string;
         radiusKm?: number | string;
         gigType?: string;
+        skillRequired?: string;
         genres?: string[];
     }): Promise<Gig[]> {
         const { offset, rangeEnd } = normalizePagination({
@@ -94,6 +95,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
         if (query.gigType) request = request.eq('gig_type', query.gigType);
+        if (query.skillRequired) request = request.ilike('skill_required', `%${query.skillRequired}%`);
         if (query.search) {
             const escaped = `%${query.search}%`;
             request = request.or(`title.ilike.${escaped},description.ilike.${escaped}`);

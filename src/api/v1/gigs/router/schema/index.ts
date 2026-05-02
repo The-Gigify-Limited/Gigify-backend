@@ -26,6 +26,7 @@ export const gigFiltersSchema = {
         isRemote: Joi.boolean().optional(),
         employerId: uuid.optional(),
         gigType: Joi.string().max(80).optional(),
+        skillRequired: Joi.string().max(160).optional(),
         genres: Joi.array().items(Joi.string().max(80)).single().optional(),
     }),
 };
