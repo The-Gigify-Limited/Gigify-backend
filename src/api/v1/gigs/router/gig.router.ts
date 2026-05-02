@@ -131,7 +131,7 @@ gigRouter.get(
  *         schema: { type: string, format: uuid }
  *       - in: query
  *         name: gigType
- *         description: Exact match on the gig's `gigType` (formerly `eventType` before PR #36; the field was renamed to align with the FE's `GigBaseSchema`).
+ *         description: Exact match on the gig's `gigType`.
  *         schema: { type: string, maxLength: 80 }
  *       - in: query
  *         name: skillRequired
@@ -187,7 +187,7 @@ gigRouter.get(
  *           enum: [draft, open, in_progress, completed, cancelled, expired]
  *       - in: query
  *         name: gigType
- *         description: Exact match on the gig's `gigType` (renamed from `eventType` in PR #36).
+ *         description: Exact match on the gig's `gigType`.
  *         schema: { type: string, maxLength: 80 }
  *       - in: query
  *         name: skillRequired
@@ -246,7 +246,7 @@ gigRouter.get(
  *                   budgetAmount: 2200
  *                   currency: GBP
  *                   gigType: wedding
- *                   skillRequired: DJ
+ *                   skillRequired: ["DJ"]
  */
 gigRouter.get(
     '/search',
@@ -486,7 +486,7 @@ gigRouter.delete(
  *             gigLocation: Lekki, Lagos
  *             gigAddress: 12 Admiralty Way
  *             gigPostCode: "101231"
- *             skillRequired: Drummer
+ *             skillRequired: ["Drummer"]
  *     responses:
  *       201:
  *         description: Gig created
@@ -523,7 +523,7 @@ gigRouter.post(
  *           enum: [draft, open, in_progress, completed, cancelled, expired]
  *       - in: query
  *         name: gigType
- *         description: Exact match on the gig's `gigType` (renamed from `eventType` in PR #36).
+ *         description: Exact match on the gig's `gigType`.
  *         schema: { type: string, maxLength: 80 }
  *       - in: query
  *         name: skillRequired
@@ -982,7 +982,7 @@ gigRouter.patch(
  *                 gigAddress: 12 Beach Road
  *                 gigPostCode: "101231"
  *                 isEquipmentRequired: true
- *                 skillRequired: Saxophonist
+ *                 skillRequired: ["Saxophonist", "Live Band"]
  *                 additionalNotes: Two 45-minute sets with a 15-minute break.
  *                 remainingTalentSlots: 0
  *                 isSaved: false
@@ -1033,7 +1033,7 @@ gigRouter.get(
  *             gigLocation: Lekki, Lagos
  *             gigAddress: 12 Admiralty Way
  *             gigPostCode: "101231"
- *             skillRequired: Drummer
+ *             skillRequired: ["Drummer"]
  *     responses:
  *       200:
  *         description: Gig updated

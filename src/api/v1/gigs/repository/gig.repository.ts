@@ -95,7 +95,21 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
         if (query.gigType) request = request.eq('gig_type', query.gigType);
-        if (query.skillRequired) request = request.ilike('skill_required', `%${query.skillRequired}%`);
+        if (query.skillRequired) {
+            // skill_required is text[]; PostgREST has no ilike-on-array-element
+            // operator. Resolve matching gig ids via the gigs_matching_skill
+            // function (added in 20260511_skill_required_array.sql).
+            const { data: skillHits, error: skillErr } = await supabaseAdmin.rpc(
+                'gigs_matching_skill' as never,
+                {
+                    pattern: `%${query.skillRequired}%`,
+                } as never,
+            );
+            if (skillErr) throw skillErr;
+            const ids = ((skillHits as Array<{ id: string }> | null) ?? []).map((row) => row.id);
+            if (ids.length === 0) return [];
+            request = request.in('id', ids);
+        }
         if (query.search) {
             const escaped = `%${query.search}%`;
             request = request.or(`title.ilike.${escaped},description.ilike.${escaped}`);
@@ -197,7 +211,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 gig_address: input.gigAddress ?? null,
                 gig_location: input.gigLocation ?? null,
                 gig_post_code: input.gigPostCode ?? null,
-                skill_required: input.skillRequired ?? null,
+                skill_required: input.skillRequired ?? null, // text[]
             })
             .select('*')
             .single();

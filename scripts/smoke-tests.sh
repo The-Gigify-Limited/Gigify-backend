@@ -151,7 +151,7 @@ T6_BODY='{
     "gigAddress":"5 QA Way",
     "gigPostCode":"101001",
     "isEquipmentRequired":true,
-    "skillRequired":"DJ",
+    "skillRequired":["DJ"],
     "additionalNotes":"qa run"
 }'
 T6_CREATE_RAW=$(curl_json POST "$BASE/gig" "$EMP_TOKEN" "$T6_BODY")

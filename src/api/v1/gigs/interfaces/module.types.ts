@@ -41,7 +41,7 @@ export type Gig = {
     gigAddress: string | null;
     gigPostCode: string | null;
     isEquipmentRequired: boolean | null;
-    skillRequired: string | null;
+    skillRequired: string[] | null;
     displayImage: string | null;
     durationMinutes: number | null;
     dressCode: string | null;
