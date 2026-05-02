@@ -1,9 +1,11 @@
 jest.mock('@/core', () => {
+    class UnAuthorizedError extends Error {}
     class BadRequestError extends Error {}
 
     return {
         BadRequestError,
         HttpStatus: { OK: 200 },
+        UnAuthorizedError,
     };
 });
 
@@ -11,7 +13,6 @@ jest.mock('~/employers/repository', () => ({
     EmployerRepository: class EmployerRepository {},
 }));
 
-import { BadRequestError } from '@/core';
 import { UpsertEmployerProfile } from './index';
 
 describe('UpsertEmployerProfile service', () => {
@@ -37,14 +38,15 @@ describe('UpsertEmployerProfile service', () => {
             input: {
                 organizationName: 'Acme Corp',
                 companyWebsite: 'https://acme.com',
-                industry: 'Tech',
+            },
+            request: {
+                user: { id: 'user-1' },
             },
         } as never);
 
         expect(employerRepository.upsertEmployerProfile).toHaveBeenCalledWith('user-1', {
             organizationName: 'Acme Corp',
             companyWebsite: 'https://acme.com',
-            industry: 'Tech',
         });
         expect(employerRepository.countTotalApplicationsReceived).toHaveBeenCalledWith('user-1');
         expect(response.message).toBe('Employer Profile Updated Successfully');
@@ -53,7 +55,7 @@ describe('UpsertEmployerProfile service', () => {
         expect(response.data.totalApplicationsReceived).toBe(12);
     });
 
-    it('passes an empty payload through to the repository when input is missing', async () => {
+    it('handles empty input', async () => {
         const employerRepository = {
             upsertEmployerProfile: jest.fn().mockResolvedValue({
                 id: 'employer-1',
@@ -67,12 +69,15 @@ describe('UpsertEmployerProfile service', () => {
         await service.handle({
             params: { id: 'user-1' },
             input: undefined,
+            request: {
+                user: { id: 'user-1' },
+            },
         } as never);
 
         expect(employerRepository.upsertEmployerProfile).toHaveBeenCalledWith('user-1', {});
     });
 
-    it('throws BadRequestError when the user id is missing from params', async () => {
+    it('throws when user is not authenticated', async () => {
         const employerRepository = {
             upsertEmployerProfile: jest.fn(),
         };
@@ -81,10 +86,10 @@ describe('UpsertEmployerProfile service', () => {
 
         await expect(
             service.handle({
-                params: {},
-                input: { organizationName: 'Acme Corp' },
+                input: {},
+                request: { user: undefined },
             } as never),
-        ).rejects.toBeInstanceOf(BadRequestError);
+        ).rejects.toThrow('User not authenticated');
 
         expect(employerRepository.upsertEmployerProfile).not.toHaveBeenCalled();
     });

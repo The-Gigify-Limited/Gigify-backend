@@ -1,12 +1,12 @@
-import { BadRequestError, ControllerArgs, HttpStatus } from '@/core';
+import { BadRequestError, ControllerArgs, HttpStatus, UnAuthorizedError } from '@/core';
 import { UpsertEmployerProfileDto } from '~/employers/interfaces';
 import { EmployerRepository } from '~/employers/repository';
 
 export class UpsertEmployerProfile {
     constructor(private readonly employerRepository: EmployerRepository) {}
 
-    handle = async ({ input, params }: ControllerArgs<UpsertEmployerProfileDto>) => {
-        if (!params?.id) throw new BadRequestError('No User ID Found!');
+    handle = async ({ input, params, request }: ControllerArgs<UpsertEmployerProfileDto>) => {
+        const authUserId = request.user?.id;
 
         const profile = await this.employerRepository.upsertEmployerProfile(params.id, input ?? {});
         const totalApplicationsReceived = await this.employerRepository.countTotalApplicationsReceived(params.id);

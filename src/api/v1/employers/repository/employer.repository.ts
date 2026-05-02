@@ -56,45 +56,27 @@ export class EmployerRepository extends BaseRepository<DatabaseEmployerProfile, 
         return this.mapToCamelCase(data);
     }
 
-    async countTotalApplicationsReceived(userId: string): Promise<number> {
-        const { count, error } = await supabaseAdmin
-            .from('gig_applications')
-            .select('id, gigs!inner(employer_id)', { count: 'exact', head: true })
-            .eq('gigs.employer_id', userId);
-
-        if (error) throw error;
-
-        return count ?? 0;
-    }
-
     async getEmployerDashboard(userId: string): Promise<EmployerDashboard | null> {
         const profile = await this.findByUserId(userId);
 
         if (!profile) return null;
 
-        const [
-            { count: openGigs },
-            { count: inProgressGigs },
-            { count: completedGigs },
-            { count: pendingApplications },
-            { count: pendingPayments },
-            totalApplicationsReceived,
-        ] = await Promise.all([
-            supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'open'),
-            supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'in_progress'),
-            supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'completed'),
-            supabaseAdmin
-                .from('gig_applications')
-                .select('id, gigs!inner(employer_id)', { count: 'exact', head: true })
-                .eq('gigs.employer_id', userId)
-                .in('status', ['submitted', 'reviewing', 'shortlisted']),
-            supabaseAdmin
-                .from('payments')
-                .select('*', { count: 'exact', head: true })
-                .eq('employer_id', userId)
-                .in('status', ['pending', 'processing']),
-            this.countTotalApplicationsReceived(userId),
-        ]);
+        const [{ count: openGigs }, { count: inProgressGigs }, { count: completedGigs }, { count: pendingApplications }, { count: pendingPayments }] =
+            await Promise.all([
+                supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'open'),
+                supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'in_progress'),
+                supabaseAdmin.from('gigs').select('*', { count: 'exact', head: true }).eq('employer_id', userId).eq('status', 'completed'),
+                supabaseAdmin
+                    .from('gig_applications')
+                    .select('id, gigs!inner(employer_id)', { count: 'exact', head: true })
+                    .eq('gigs.employer_id', userId)
+                    .in('status', ['submitted', 'reviewing', 'shortlisted']),
+                supabaseAdmin
+                    .from('payments')
+                    .select('*', { count: 'exact', head: true })
+                    .eq('employer_id', userId)
+                    .in('status', ['pending', 'processing']),
+            ]);
 
         return {
             profile,
@@ -103,7 +85,6 @@ export class EmployerRepository extends BaseRepository<DatabaseEmployerProfile, 
             completedGigs: completedGigs ?? 0,
             pendingApplications: pendingApplications ?? 0,
             pendingPayments: pendingPayments ?? 0,
-            totalApplicationsReceived,
         };
     }
 
