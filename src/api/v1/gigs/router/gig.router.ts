@@ -76,6 +76,73 @@ gigRouter.get(
  *   get:
  *     tags: [Gigs]
  *     summary: Explore open gigs with filters
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: search
+ *         description: Substring match on `title` OR `description`
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: location
+ *         description: Substring match on `venueName` (alias for `location_name`)
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         description: Geo radius (km). Requires latitude + longitude.
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         description: ISO date (inclusive lower bound on `gigDate`)
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         description: ISO date (inclusive upper bound on `gigDate`)
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: gigType
+ *         description: Exact match on the gig's `gigType` (formerly `eventType` before PR #36; the field was renamed to align with the FE's `GigBaseSchema`).
+ *         schema: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: genres
+ *         description: Resolved against `services_catalog.name`. Multiple values allowed (`?genres=DJ&genres=Drummer`).
+ *         schema:
+ *           type: array
+ *           items: { type: string, maxLength: 80 }
  *     responses:
  *       200:
  *         description: Gig explore feed
@@ -104,6 +171,68 @@ gigRouter.get(
  *   get:
  *     tags: [Gigs]
  *     summary: Search gigs with keyword and filter support
+ *     description: |
+ *       Same query parameter set as `/gig/explore` and `GET /gig`. The `search`
+ *       param matches against `title` and `description`; combine it with the
+ *       structured filters (`status`, `gigType`, `skillRequired`, `location`,
+ *       `minBudget`/`maxBudget`, `dateFrom`/`dateTo`, geo, etc.) to narrow.
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: gigType
+ *         description: Exact match on the gig's `gigType` (renamed from `eventType` in PR #36).
+ *         schema: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: location
+ *         description: Substring (ilike) match on `venueName`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
  *     responses:
  *       200:
  *         description: Search results
@@ -116,6 +245,8 @@ gigRouter.get(
  *                   title: Luxury Wedding Afterparty DJ
  *                   budgetAmount: 2200
  *                   currency: GBP
+ *                   gigType: wedding
+ *                   skillRequired: DJ
  */
 gigRouter.get(
     '/search',
@@ -383,6 +514,65 @@ gigRouter.post(
  *   get:
  *     tags: [Gigs]
  *     summary: List gigs with optional filters
+ *     description: Accepts the same filter params as `/gig/explore` and `/gig/search`.
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: gigType
+ *         description: Exact match on the gig's `gigType` (renamed from `eventType` in PR #36).
+ *         schema: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: search
+ *         description: Substring match on `title` OR `description`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: location
+ *         description: Substring (ilike) match on `venueName`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
  *     responses:
  *       200:
  *         description: Gig list

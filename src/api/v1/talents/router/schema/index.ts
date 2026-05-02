@@ -75,6 +75,7 @@ const browseTalentsQuerySchema = {
         maxRate: Joi.number().min(0).optional(),
         rateCurrency: Joi.string().max(8).optional(),
         minRating: Joi.number().min(0).max(5).optional(),
+        location: Joi.string().max(120).optional(),
         locationCity: Joi.string().max(120).optional(),
         locationCountry: Joi.string().max(120).optional(),
         radiusKm: Joi.number().min(1).max(500).optional(),

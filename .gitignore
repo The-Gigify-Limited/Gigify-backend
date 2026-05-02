@@ -140,3 +140,4 @@ dist
 
 # Claude Code local working dir (plans, session scratch, worktrees)
 .claude/
+tmp/

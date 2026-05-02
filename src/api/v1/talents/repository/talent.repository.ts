@@ -25,6 +25,7 @@ export interface BrowseFilters {
     maxRate?: number;
     rateCurrency?: string;
     minRating?: number;
+    location?: string;
     locationCity?: string;
     locationCountry?: string;
     radiusKm?: number;
@@ -32,6 +33,16 @@ export interface BrowseFilters {
     lng?: number;
     availableOn?: string;
     sortBy?: BrowseSortBy;
+}
+
+// `talent_profiles.skills` is a `jsonb[]` (Postgres array of jsonb values),
+// so PostgREST containment / overlap filters need the value formatted as a
+// Postgres array literal of JSON-encoded elements: {"\"DJ\"","\"Drummer\""}.
+// `.contains([value])` and `.overlaps([value])` from supabase-js emit the
+// wrong literal for this column type, so we build it ourselves.
+function jsonbArrayLiteral(values: string[]): string {
+    const elements = values.map((v) => '"' + JSON.stringify(v).replace(/"/g, '\\"') + '"');
+    return '{' + elements.join(',') + '}';
 }
 
 export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
@@ -66,7 +77,26 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         request = request.eq('user.role', 'talent').eq('user.status', 'active');
 
         if (filters.primaryRole) {
-            request = request.ilike('primary_role', `%${filters.primaryRole}%`);
+            // Many talents store their role in `skills[]` rather than the
+            // dedicated `primary_role` column, so a `?primaryRole=DJ` query
+            // looks broken if we only check the column. Resolve both halves
+            // separately and union the matching talent_profiles ids — putting
+            // the JSONB containment inside a PostgREST `.or()` clause is
+            // brittle (the `{value}` syntax gets parsed as JSON and fails).
+            const escaped = `%${filters.primaryRole}%`;
+            const [{ data: roleHits = [], error: roleErr }, { data: skillHits = [], error: skillErr }] = await Promise.all([
+                supabaseAdmin.from(this.table).select('id').ilike('primary_role', escaped),
+                supabaseAdmin
+                    .from(this.table)
+                    .select('id')
+                    .filter('skills', 'cs', jsonbArrayLiteral([filters.primaryRole])),
+            ]);
+            if (roleErr) throw roleErr;
+            if (skillErr) throw skillErr;
+
+            const ids = Array.from(new Set([...(roleHits ?? []).map((r) => r.id), ...(skillHits ?? []).map((r) => r.id)]));
+            if (ids.length === 0) return [];
+            request = request.in('id', ids);
         }
         if (filters.minRate !== undefined) {
             request = request.gte('min_rate', filters.minRate);
@@ -83,12 +113,32 @@ export class TalentRepository extends BaseRepository<DatabaseTalent, Talent> {
         if (filters.locationCountry) {
             request = request.eq('user.location_country', filters.locationCountry);
         }
+        if (filters.location) {
+            // Generic location filter: substring match against the talent's
+            // user.location_city OR user.location_country. PostgREST `.or()`
+            // can't span the embedded `users` table inside the same OR group,
+            // so we resolve matching user_ids via a secondary lookup and
+            // filter talent_profiles by `user_id IN (...)`.
+            const pattern = `%${filters.location}%`;
+            const { data: locationMatches = [], error: locationErr } = await supabaseAdmin
+                .from('users')
+                .select('id')
+                .eq('role', 'talent')
+                .or(`location_city.ilike.${pattern},location_country.ilike.${pattern}`);
+
+            if (locationErr) throw locationErr;
+
+            const matchedIds = (locationMatches ?? []).map((row) => row.id);
+            if (matchedIds.length === 0) return [];
+            request = request.in('user_id', matchedIds);
+        }
         if (filters.genres && filters.genres.length > 0) {
-            // `skills` is a text[]. The `cs` operator asks whether skills is a
-            // superset of the provided array, effectively "has all listed
-            // genres". For partial match use `ov` (overlaps). Product prefers
-            // "any match" for discovery so we use overlaps.
-            request = request.overlaps('skills', filters.genres);
+            // `skills` is `jsonb[]`. Use the `ov` (overlaps) operator with a
+            // properly-formatted jsonb-array literal. supabase-js's
+            // `.overlaps([value])` emits an unquoted array literal that
+            // Postgres rejects with "invalid input syntax for type json", so
+            // we hand-build the literal here.
+            request = request.filter('skills', 'ov', jsonbArrayLiteral(filters.genres));
         }
         if (filters.search) {
             const pattern = `%${filters.search}%`;
