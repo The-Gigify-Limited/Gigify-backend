@@ -10,6 +10,7 @@ import {
     getGigApplications,
     getGigById,
     getGigCatalog,
+    getGigTypes,
     getGigDiscoveryFeed,
     getGigOffersForGig,
     getMyGigs,
@@ -72,6 +73,36 @@ gigRouter.get(
 
 /**
  * @swagger
+ * /gig/types:
+ *   get:
+ *     tags: [Gigs]
+ *     summary: List the canonical gig types
+ *     description: |
+ *       Returns the active rows from `gig_types`. The frontend renders this
+ *       list as the "Event Type" dropdown on the create-gig form and sends
+ *       the chosen `id` back as `gigTypeId` on `POST /gig`.
+ *     responses:
+ *       200:
+ *         description: Active gig types
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Gig Types Retrieved Successfully
+ *               data:
+ *                 - id: 11111111-1111-1111-1111-111111111111
+ *                   name: Wedding
+ *                   isActive: true
+ *                 - id: 22222222-2222-2222-2222-222222222222
+ *                   name: Party
+ *                   isActive: true
+ */
+gigRouter.get(
+    '/types',
+    ControlBuilder.builder().setHandler(getGigTypes.handle).handle(),
+);
+
+/**
+ * @swagger
  * /gig/explore:
  *   get:
  *     tags: [Gigs]
@@ -130,12 +161,12 @@ gigRouter.get(
  *         name: employerId
  *         schema: { type: string, format: uuid }
  *       - in: query
- *         name: gigType
- *         description: Exact match on the gig's `gigType`.
- *         schema: { type: string, maxLength: 80 }
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
  *       - in: query
  *         name: skillRequired
- *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
  *         schema: { type: string, maxLength: 160 }
  *       - in: query
  *         name: genres
@@ -174,7 +205,7 @@ gigRouter.get(
  *     description: |
  *       Same query parameter set as `/gig/explore` and `GET /gig`. The `search`
  *       param matches against `title` and `description`; combine it with the
- *       structured filters (`status`, `gigType`, `skillRequired`, `location`,
+ *       structured filters (`status`, `gigTypeId`, `skillRequired`, `location`,
  *       `minBudget`/`maxBudget`, `dateFrom`/`dateTo`, geo, etc.) to narrow.
  *     parameters:
  *       - in: query
@@ -186,12 +217,12 @@ gigRouter.get(
  *           type: string
  *           enum: [draft, open, in_progress, completed, cancelled, expired]
  *       - in: query
- *         name: gigType
- *         description: Exact match on the gig's `gigType`.
- *         schema: { type: string, maxLength: 80 }
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
  *       - in: query
  *         name: skillRequired
- *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
  *         schema: { type: string, maxLength: 160 }
  *       - in: query
  *         name: location
@@ -245,7 +276,8 @@ gigRouter.get(
  *                   title: Luxury Wedding Afterparty DJ
  *                   budgetAmount: 2200
  *                   currency: GBP
- *                   gigType: wedding
+ *                   gigTypeId: 11111111-1111-1111-1111-111111111111
+ *                   gigType: Wedding
  *                   skillRequired: ["DJ"]
  */
 gigRouter.get(
@@ -475,7 +507,7 @@ gigRouter.delete(
  *             locationLongitude: 3.472
  *             isRemote: false
  *             requiredTalentCount: 1
- *             gigType: club_night
+ *             gigTypeId: 11111111-1111-1111-1111-111111111111
  *             gigStartTime: "21:00"
  *             gigEndTime: "02:00"
  *             durationMinutes: 300
@@ -522,12 +554,12 @@ gigRouter.post(
  *           type: string
  *           enum: [draft, open, in_progress, completed, cancelled, expired]
  *       - in: query
- *         name: gigType
- *         description: Exact match on the gig's `gigType`.
- *         schema: { type: string, maxLength: 80 }
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
  *       - in: query
  *         name: skillRequired
- *         description: Substring (ilike) match on the gig's `skillRequired` field.
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
  *         schema: { type: string, maxLength: 160 }
  *       - in: query
  *         name: search
@@ -952,7 +984,7 @@ gigRouter.patch(
  *     summary: Get gig details
  *     description: |
  *       Returns the full gig record, including the FE-aligned schema fields
- *       (`displayImage`, `gigType`, `gigStartTime`, `gigEndTime`,
+ *       (`displayImage`, `gigTypeId`, `gigType`, `gigStartTime`, `gigEndTime`,
  *       `gigLocation`, `gigAddress`, `gigPostCode`, `isEquipmentRequired`,
  *       `skillRequired`) and the raw DB `status` enum (`draft`, `open`,
  *       `in_progress`, `completed`, `cancelled`, `expired`, `disputed`) ,
@@ -975,7 +1007,8 @@ gigRouter.patch(
  *                 status: open
  *                 venueName: Elegushi Beach Resort
  *                 displayImage: https://cdn.example.com/gigs/sax-night.jpg
- *                 gigType: wedding
+ *                 gigTypeId: 11111111-1111-1111-1111-111111111111
+ *                 gigType: Wedding
  *                 gigStartTime: "17:30"
  *                 gigEndTime: "20:00"
  *                 gigLocation: Lekki, Lagos
@@ -1022,7 +1055,7 @@ gigRouter.get(
  *             title: Afrobeat Night Drummer
  *             budgetAmount: 200000
  *             requiredTalentCount: 2
- *             gigType: club_night
+ *             gigTypeId: 11111111-1111-1111-1111-111111111111
  *             gigStartTime: "21:00"
  *             gigEndTime: "02:00"
  *             durationMinutes: 300

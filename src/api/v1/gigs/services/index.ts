@@ -8,6 +8,7 @@ export { default as getAllGigs } from './getAllGigs';
 export { default as getGigApplications } from './getGigApplications';
 export { default as getGigById } from './getGigById';
 export { default as getGigCatalog } from './getGigCatalog';
+export { default as getGigTypes } from './getGigTypes';
 export { default as getGigDiscoveryFeed } from './getGigDiscoveryFeed';
 export { default as getGigOffersForGig } from './getGigOffersForGig';
 export { default as getMyGigs } from './getMyGigs';

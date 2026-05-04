@@ -45,7 +45,7 @@ describe('UpdateGig service', () => {
         const gigRepository = {
             updateGigById: jest.fn().mockResolvedValue({
                 id: 'gig-1',
-                gigType: 'corporate_event',
+                gigTypeId: '22222222-2222-2222-2222-222222222222',
                 gigStartTime: '17:30',
                 gigEndTime: '20:30',
                 durationMinutes: 180,
@@ -64,7 +64,7 @@ describe('UpdateGig service', () => {
         await service.handle({
             params: { id: 'gig-1' },
             input: {
-                gigType: 'corporate_event',
+                gigTypeId: '22222222-2222-2222-2222-222222222222',
                 gigStartTime: '17:30',
                 gigEndTime: '20:30',
                 durationMinutes: 180,
@@ -79,7 +79,7 @@ describe('UpdateGig service', () => {
         } as never);
 
         expect(gigRepository.updateGigById).toHaveBeenCalledWith('gig-1', {
-            gigType: 'corporate_event',
+            gigTypeId: '22222222-2222-2222-2222-222222222222',
             gigStartTime: '17:30',
             gigEndTime: '20:30',
             durationMinutes: 180,

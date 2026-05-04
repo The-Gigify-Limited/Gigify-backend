@@ -40,7 +40,8 @@ const baseGig = {
     locationLongitude: null,
     venueName: 'Sky Lounge',
     displayImage: 'https://cdn.example.com/g.jpg',
-    gigType: 'private_party',
+    gigTypeId: '11111111-1111-1111-1111-111111111111',
+    gigType: 'Party',
     gigStartTime: '18:00',
     gigEndTime: '22:00',
     gigLocation: 'Lagos',
@@ -112,6 +113,7 @@ describe('GetGigById service', () => {
 
         for (const field of [
             'displayImage',
+            'gigTypeId',
             'gigType',
             'gigStartTime',
             'gigEndTime',
