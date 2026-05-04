@@ -34,6 +34,7 @@ export type Gig = {
     // (server/apiTypes/gig.type.ts). The DB columns are gig_start_time,
     // gig_end_time, gig_type, is_equipment_required, display_image,
     // gig_address, gig_location, gig_post_code, skill_required.
+    gigTypeId: string | null;
     gigType: string | null;
     gigStartTime: string | null;
     gigEndTime: string | null;
@@ -79,6 +80,14 @@ export type GigOffer = {
     counterMessage: string | null;
     createdAt: string;
     updatedAt: string;
+};
+
+export type GigType = {
+    id: string;
+    name: string;
+    isActive: boolean;
+    createdAt: string | null;
+    updatedAt: string | null;
 };
 
 export type ServiceCatalog = {

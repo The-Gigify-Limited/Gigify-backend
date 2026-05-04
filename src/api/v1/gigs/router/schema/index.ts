@@ -25,7 +25,7 @@ export const gigFiltersSchema = {
         dateTo: Joi.string().isoDate().optional(),
         isRemote: Joi.boolean().optional(),
         employerId: uuid.optional(),
-        gigType: Joi.string().max(80).optional(),
+        gigTypeId: uuid.optional(),
         skillRequired: Joi.string().max(160).optional(),
         genres: Joi.array().items(Joi.string().max(80)).single().optional(),
     }),
@@ -65,7 +65,9 @@ export const createGigSchema = {
         }),
         // Fields aligned with the FE's CreateGigPayload (server/apiTypes/gig.type.ts).
         displayImage: Joi.string().uri().allow(null, '').optional(),
-        gigType: Joi.string().max(80).allow(null, '').optional(),
+        // Required: the canonical gig type, identified by its uuid from
+        // GET /gig/types. The FE renders the dropdown from that list.
+        gigTypeId: uuid.required(),
         gigStartTime: timeOfDay.allow(null, '').optional(),
         gigEndTime: timeOfDay.allow(null, '').optional(),
         gigLocation: Joi.string().max(160).allow(null, '').optional(),
@@ -99,7 +101,7 @@ export const updateGigSchema = {
             .valid(...statusEnum)
             .optional(),
         displayImage: Joi.string().uri().allow(null, '').optional(),
-        gigType: Joi.string().max(80).allow(null, '').optional(),
+        gigTypeId: uuid.optional(),
         gigStartTime: timeOfDay.allow(null, '').optional(),
         gigEndTime: timeOfDay.allow(null, '').optional(),
         gigLocation: Joi.string().max(160).allow(null, '').optional(),

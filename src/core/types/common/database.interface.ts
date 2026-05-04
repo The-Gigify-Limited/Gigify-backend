@@ -188,6 +188,7 @@ export type Database = {
                     gig_post_code: string | null;
                     gig_start_time: string | null;
                     gig_type: string | null;
+                    gig_type_id: string | null;
                     id: string;
                     is_equipment_required: boolean | null;
                     is_remote: boolean | null;
@@ -218,6 +219,7 @@ export type Database = {
                     gig_post_code?: string | null;
                     gig_start_time?: string | null;
                     gig_type?: string | null;
+                    gig_type_id?: string | null;
                     id?: string;
                     is_equipment_required?: boolean | null;
                     is_remote?: boolean | null;
@@ -248,6 +250,7 @@ export type Database = {
                     gig_post_code?: string | null;
                     gig_start_time?: string | null;
                     gig_type?: string | null;
+                    gig_type_id?: string | null;
                     id?: string;
                     is_equipment_required?: boolean | null;
                     is_remote?: boolean | null;
@@ -276,7 +279,38 @@ export type Database = {
                         referencedRelation: 'services_catalog';
                         referencedColumns: ['id'];
                     },
+                    {
+                        foreignKeyName: 'gigs_gig_type_id_fkey';
+                        columns: ['gig_type_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gig_types';
+                        referencedColumns: ['id'];
+                    },
                 ];
+            };
+            gig_types: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    is_active: boolean;
+                    name: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    name: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    name?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
             };
             gig_applications: {
                 Row: {

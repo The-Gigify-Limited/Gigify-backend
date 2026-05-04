@@ -7,6 +7,7 @@ import {
     DatabaseServiceCatalog,
     Gig,
     GigApplication,
+    GigType,
     ServiceCatalog,
     TalentGigItem,
 } from '../interfaces';
@@ -79,7 +80,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         latitude?: number | string;
         longitude?: number | string;
         radiusKm?: number | string;
-        gigType?: string;
+        gigTypeId?: string;
         skillRequired?: string;
         genres?: string[];
     }): Promise<Gig[]> {
@@ -94,7 +95,7 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.serviceId) request = request.eq('service_id', query.serviceId);
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
-        if (query.gigType) request = request.eq('gig_type', query.gigType);
+        if (query.gigTypeId) request = request.eq('gig_type_id', query.gigTypeId);
         if (query.skillRequired) {
             // skill_required is text[]; PostgREST has no ilike-on-array-element
             // operator. Resolve matching gig ids via the gigs_matching_skill
@@ -183,7 +184,29 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
+    async getGigTypes(): Promise<GigType[]> {
+        const { data = [], error } = await supabaseAdmin.from('gig_types').select('*').eq('is_active', true).order('name', { ascending: true });
+        if (error) throw error;
+        return (data ?? []).map((row) => this.mapRow<GigType>(row as never));
+    }
+
+    async getGigTypeById(id: string): Promise<GigType | null> {
+        const { data, error } = await supabaseAdmin.from('gig_types').select('*').eq('id', id).maybeSingle();
+        if (error) throw error;
+        return data ? this.mapRow<GigType>(data as never) : null;
+    }
+
     async createGig(employerId: string, input: Partial<Gig>): Promise<Gig> {
+        // Joi requires gigTypeId on create, but we re-validate here and mirror
+        // the canonical name onto the denormalized `gig_type` column so reads
+        // can render the label without a join.
+        let gigTypeName: string | null = null;
+        if (input.gigTypeId) {
+            const type = await this.getGigTypeById(input.gigTypeId);
+            if (!type) throw new BadRequestError('Invalid gigTypeId, must reference an existing gig_types row');
+            gigTypeName = type.name;
+        }
+
         const { data, error } = await supabaseAdmin
             .from(this.table)
             .insert({
@@ -200,7 +223,8 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 is_remote: input.isRemote ?? false,
                 required_talent_count: input.requiredTalentCount ?? 1,
                 status: input.status ?? 'open',
-                gig_type: input.gigType ?? null,
+                gig_type_id: input.gigTypeId ?? null,
+                gig_type: gigTypeName,
                 gig_start_time: input.gigStartTime ?? null,
                 gig_end_time: input.gigEndTime ?? null,
                 duration_minutes: input.durationMinutes ?? null,
@@ -226,15 +250,20 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
     }
 
     async updateGigById(id: string, input: Partial<Gig>): Promise<Gig> {
-        const { data, error } = await supabaseAdmin
-            .from(this.table)
-            .update({
-                ...this.mapToSnakeCase(input),
-                updated_at: new Date().toISOString(),
-            })
-            .eq('id', id)
-            .select('*')
-            .single();
+        const updates = {
+            ...this.mapToSnakeCase(input),
+            updated_at: new Date().toISOString(),
+        } as Partial<DatabaseGig>;
+
+        // Re-mirror the denormalized name when the type changes so reads
+        // stay consistent without an explicit join.
+        if (input.gigTypeId) {
+            const type = await this.getGigTypeById(input.gigTypeId);
+            if (!type) throw new BadRequestError('Invalid gigTypeId, must reference an existing gig_types row');
+            (updates as { gig_type?: string | null }).gig_type = type.name;
+        }
+
+        const { data, error } = await supabaseAdmin.from(this.table).update(updates).eq('id', id).select('*').single();
 
         if (error) throw error;
 

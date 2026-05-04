@@ -67,7 +67,7 @@ describe('ExploreGigs service', () => {
             query: {
                 minBudget: 100000,
                 maxBudget: 500000,
-                gigType: 'wedding',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
                 genres: ['DJ', 'Drummer'],
                 dateFrom: '2026-05-01',
                 dateTo: '2026-06-01',
@@ -81,7 +81,7 @@ describe('ExploreGigs service', () => {
             expect.objectContaining({
                 minBudget: 100000,
                 maxBudget: 500000,
-                gigType: 'wedding',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
                 genres: ['DJ', 'Drummer'],
                 dateFrom: '2026-05-01',
                 dateTo: '2026-06-01',

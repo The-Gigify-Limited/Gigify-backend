@@ -136,7 +136,20 @@ fi
 # Ticket #6: gig schema FE-aligned fields create + read round-trip
 # ==========================================================
 echo "## Ticket #6: gig schema FE-aligned fields"
-T6_BODY='{
+
+# Resolve a gigTypeId from the canonical /gig/types catalogue so the create
+# request mirrors what the FE will be doing.
+GIG_TYPES_RAW=$(curl_json GET "$BASE/gig/types" "$EMP_TOKEN")
+GIG_TYPE_ID=$(http_body "$GIG_TYPES_RAW" | python3 -c "import sys, json; d=json.load(sys.stdin); rows=d.get('data',[]) or []; print(rows[0].get('id','') if rows else '')" 2>/dev/null || echo "")
+
+if [ -z "$GIG_TYPE_ID" ]; then
+    record "#6" "GET /gig/types returns at least one seed row" "$(http_body "$GIG_TYPES_RAW")" fail
+else
+    record "#6" "GET /gig/types returns at least one seed row" "GIG_TYPE_ID=$GIG_TYPE_ID" pass
+fi
+
+T6_BODY=$(cat <<EOF
+{
     "title":"QA Schema Roundtrip",
     "description":"Smoke test gig",
     "budgetAmount":100000,
@@ -144,7 +157,7 @@ T6_BODY='{
     "gigDate":"2027-12-01",
     "venueName":"QA Hall",
     "displayImage":"https://cdn.example.com/qa.jpg",
-    "gigType":"corporate",
+    "gigTypeId":"$GIG_TYPE_ID",
     "gigStartTime":"18:00",
     "gigEndTime":"22:00",
     "gigLocation":"Lagos",
@@ -153,7 +166,9 @@ T6_BODY='{
     "isEquipmentRequired":true,
     "skillRequired":["DJ"],
     "additionalNotes":"qa run"
-}'
+}
+EOF
+)
 T6_CREATE_RAW=$(curl_json POST "$BASE/gig" "$EMP_TOKEN" "$T6_BODY")
 T6_CREATE_BODY=$(http_body "$T6_CREATE_RAW")
 T6_CREATE_STATUS=$(http_status "$T6_CREATE_RAW")
@@ -169,7 +184,7 @@ if [ -n "$GIG_ID" ]; then
     T6_GET_RAW=$(curl_json GET "$BASE/gig/$GIG_ID" "$EMP_TOKEN")
     T6_GET_BODY=$(http_body "$T6_GET_RAW")
     PASS=true
-    for f in "displayImage" "gigType" "gigStartTime" "gigEndTime" "gigLocation" "gigAddress" "gigPostCode" "isEquipmentRequired" "skillRequired"; do
+    for f in "displayImage" "gigTypeId" "gigType" "gigStartTime" "gigEndTime" "gigLocation" "gigAddress" "gigPostCode" "isEquipmentRequired" "skillRequired"; do
         grep -q "\"$f\"" <<<"$T6_GET_BODY" || PASS=false
     done
     if [ "$PASS" = "true" ]; then

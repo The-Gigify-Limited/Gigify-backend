@@ -76,7 +76,8 @@ describe('CreateGig service', () => {
                 id: 'gig-1',
                 employerId: 'employer-1',
                 title: 'Lagos rooftop set',
-                gigType: 'private_party',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                gigType: 'Party',
                 gigStartTime: '18:00',
                 gigEndTime: '22:00',
                 durationMinutes: 240,
@@ -101,7 +102,7 @@ describe('CreateGig service', () => {
                 budgetAmount: 200000,
                 gigDate: '2026-05-20',
                 venueName: 'Sky Lounge',
-                gigType: 'private_party',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
                 gigStartTime: '18:00',
                 gigEndTime: '22:00',
                 durationMinutes: 240,
@@ -120,7 +121,7 @@ describe('CreateGig service', () => {
         expect(gigRepository.createGig).toHaveBeenCalledWith(
             'employer-1',
             expect.objectContaining({
-                gigType: 'private_party',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
                 gigStartTime: '18:00',
                 gigEndTime: '22:00',
                 durationMinutes: 240,
