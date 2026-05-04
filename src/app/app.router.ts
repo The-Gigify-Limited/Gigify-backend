@@ -3,13 +3,15 @@ import { authRouter } from '@/api/v1/auth';
 import { chatRouter } from '@/api/v1/chat';
 import { earningsRouter } from '@/api/v1/earnings';
 import { employerRouter } from '@/api/v1/employers';
+import { expireStaleGigs, sendGigReminders } from '@/api/v1/gigs/services';
 import { gigRouter } from '@/api/v1/gigs';
 import { notificationRouter } from '@/api/v1/notifications';
 import { realtimeRouter } from '@/api/v1/realtime';
 import { talentRouter } from '@/api/v1/talents';
 import { uploadRouter } from '@/api/v1/upload';
 import { userRouter } from '@/api/v1/user';
-import { config, HttpStatus } from '@/core';
+import { config, HttpStatus, logger, UnAuthorizedError } from '@/core';
+import type { NextFunction, Request, Response } from 'express';
 import { Router } from 'express';
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
@@ -27,6 +29,58 @@ appRouter.use('/notifications', notificationRouter);
 appRouter.use('/realtime', realtimeRouter);
 appRouter.use('/admin', adminRouter);
 appRouter.use('/upload', uploadRouter);
+
+function requireInternalJobSecret(
+    req: Request,
+    _res: Response,
+    next: NextFunction,
+) {
+    const expected = config.internalJobs.secret;
+    if (!expected)
+        throw new UnAuthorizedError(
+            'Internal job endpoint is not configured on this environment',
+        );
+
+    const provided = req.header('x-internal-job-secret');
+    if (!provided || provided !== expected)
+        throw new UnAuthorizedError('Invalid internal job secret');
+
+    next();
+}
+
+appRouter.post(
+    '/internal/jobs/expire-gigs',
+    requireInternalJobSecret,
+    async (_req, res, next) => {
+        try {
+            const result = await expireStaleGigs.handle();
+            res.status(result.code ?? HttpStatus.OK).send({
+                message: result.message,
+                data: result.data,
+            });
+        } catch (error) {
+            logger.error(`Internal expire-gigs job failed: ${error}`);
+            next(error);
+        }
+    },
+);
+
+appRouter.post(
+    '/internal/jobs/gig-reminders',
+    requireInternalJobSecret,
+    async (_req, res, next) => {
+        try {
+            const result = await sendGigReminders.handle();
+            res.status(result.code ?? HttpStatus.OK).send({
+                message: result.message,
+                data: result.data,
+            });
+        } catch (error) {
+            logger.error(`Internal gig-reminders job failed: ${error}`);
+            next(error);
+        }
+    },
+);
 
 const swaggerOptions = {
     definition: {

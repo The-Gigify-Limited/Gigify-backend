@@ -29,6 +29,14 @@ export class HireTalent {
             throw new ConflictError('This talent has already been hired for the gig');
         }
 
+        // If an offer was sent for this gig + talent, require it to have been
+        // accepted before direct hire proceeds. Talent who were never offered
+        // (direct application -> hire path) can still be hired directly.
+        const latestOffer = await this.gigOfferRepository.findLatestOfferForGigAndTalent(params.id, params.talentId);
+        if (latestOffer && latestOffer.status !== 'accepted') {
+            throw new ConflictError(`Cannot hire talent while their offer is ${latestOffer.status}; the offer must be accepted first.`);
+        }
+
         const alreadyHired = await this.gigRepository.getApplicationsForGig(params.id, {
             page: 1,
             pageSize: Math.max(gig.requiredTalentCount ?? 1, 25),

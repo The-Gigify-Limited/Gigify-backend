@@ -3,7 +3,7 @@
 #
 # Generates a pull request description automatically when a PR is opened.
 #
-# FEATURE FLAG — controlled by a GitHub repo variable:
+# FEATURE FLAG: controlled by a GitHub repo variable:
 #   PR_DESC_MODE = "commits"   →  free, formats commit log + file changes
 #   PR_DESC_MODE = "ai"        →  sends diff to OpenAI or Anthropic for summary
 #   PR_DESC_MODE = "off"       →  disables this workflow entirely
@@ -14,12 +14,12 @@
 #   Value: commits  (or "ai" or "off")
 #
 # For AI mode, also add a secret:
-#   OPENAI_API_KEY      — if you want to use OpenAI
-#   ANTHROPIC_API_KEY   — if you want to use Anthropic (checked first)
+#   OPENAI_API_KEY     : if you want to use OpenAI
+#   ANTHROPIC_API_KEY  : if you want to use Anthropic (checked first)
 #
 # Optional variables:
-#   AI_MODEL               — override the default model
-#   PR_DESC_MAX_DIFF_CHARS — max diff chars sent to AI (default 12000)
+#   AI_MODEL              : override the default model
+#   PR_DESC_MAX_DIFF_CHARS, max diff chars sent to AI (default 12000)
 ###############################################################################
 
 name: Auto PR Description

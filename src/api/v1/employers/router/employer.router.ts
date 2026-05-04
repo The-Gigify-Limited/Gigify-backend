@@ -3,10 +3,15 @@ import { Router } from 'express';
 import {
     getEmployerById,
     getEmployerDashboard,
+    getEmployerGigs,
     getEmployerProfile,
     upsertEmployerProfile,
 } from '../services';
-import { getEmployerParamsSchema, upsertEmployerProfileSchema } from './schema';
+import {
+    getEmployerGigsSchema,
+    getEmployerParamsSchema,
+    upsertEmployerProfileSchema,
+} from './schema';
 
 export const employerRouter = Router();
 
@@ -42,6 +47,9 @@ export const employerRouter = Router();
  *                   organizationName: Pulse Live
  *                   companyWebsite: https://pulselive.example
  *                   industry: Entertainment
+ *                   totalGigsPosted: 5
+ *                   totalSpent: 940000
+ *                   totalApplicationsReceived: 42
  */
 employerRouter.get(
     '/:id',
@@ -81,6 +89,7 @@ employerRouter.get(
  *                 industry: Entertainment
  *                 totalGigsPosted: 5
  *                 totalSpent: 940000
+ *                 totalApplicationsReceived: 42
  */
 employerRouter.get(
     '/:id/profile',
@@ -127,6 +136,7 @@ employerRouter.get(
  *                 organizationName: Pulse Live
  *                 companyWebsite: https://pulselive.example
  *                 industry: Entertainment
+ *                 totalApplicationsReceived: 42
  */
 employerRouter.patch(
     '/:id/profile',
@@ -178,5 +188,66 @@ employerRouter.get(
         .only('employer')
         .setValidator(getEmployerParamsSchema)
         .setHandler(getEmployerDashboard.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /employer/{id}/gigs:
+ *   get:
+ *     tags: [Employer]
+ *     summary: Get all gigs posted by a specific employer
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: serviceId
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Gigs posted by the employer
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Employer Gigs Retrieved Successfully
+ *               data:
+ *                 - id: 20000000-0000-0000-0000-000000000001
+ *                   title: DJ Set for Launch Party
+ *                   status: open
+ *                   employerId: 10000000-0000-0000-0000-000000000002
+ *                   gigDate: 2026-05-12
+ *                   budgetAmount: 250000
+ */
+employerRouter.get(
+    '/:id/gigs',
+    ControlBuilder.builder()
+        .setValidator(getEmployerGigsSchema)
+        .setHandler(getEmployerGigs.handle)
         .handle(),
 );

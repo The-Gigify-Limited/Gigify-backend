@@ -5,7 +5,7 @@ import { NotificationPreferenceTopic } from '~/notifications/listeners';
 import winston from 'winston';
 import { Talent, TalentProfile, TalentReview, TalentReviewSummary } from '~/talents/interfaces';
 import { Json } from '@/core/types';
-import { Activity, User } from '~/user/interfaces';
+import { Activity, User, UserRoleEnum } from '~/user/interfaces';
 import { Payment } from '~/earnings/interfaces';
 import { AppEventManager } from './app.events';
 
@@ -28,6 +28,7 @@ export interface AppEventsInterface {
         {
             userId: string;
             preferenceKey: NotificationPreferenceTopic;
+            channel?: 'email' | 'push' | 'sms' | 'in_app';
         },
         boolean
     >;
@@ -69,6 +70,69 @@ export interface AppEventsInterface {
         },
         GigApplication | null
     >;
+    'gig:application-shortlisted': EventDefinition<
+        {
+            gigId: string;
+            applicationId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:application-rejected': EventDefinition<
+        {
+            gigId: string;
+            applicationId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:expired': EventDefinition<
+        {
+            gigId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-sent': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-accepted': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-declined': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+        },
+        void
+    >;
+    'gig:offer-countered': EventDefinition<
+        {
+            gigId: string;
+            offerId: string;
+            talentId: string;
+            employerId: string;
+            counterAmount: number;
+            counterMessage: string | null;
+        },
+        void
+    >;
     'user:create-activity': EventDefinition<
         {
             userId: string;
@@ -79,6 +143,14 @@ export interface AppEventsInterface {
         },
         Activity
     >;
+    'user:onboarding-step-completed': EventDefinition<
+        {
+            userId: string;
+            step: 1 | 2 | 3;
+            role: UserRoleEnum | null;
+        },
+        void
+    >;
     'earnings:create-record': EventDefinition<
         {
             employerId: string;
@@ -87,6 +159,67 @@ export interface AppEventsInterface {
             amount: number;
         },
         Payment
+    >;
+    'earnings:payment-held': EventDefinition<
+        {
+            paymentId: string;
+            employerId: string;
+            talentId: string;
+            gigId: string | null;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payment-released': EventDefinition<
+        {
+            paymentId: string;
+            employerId: string;
+            talentId: string;
+            gigId: string | null;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payout-requested': EventDefinition<
+        {
+            payoutRequestId: string;
+            talentId: string;
+            amount: number;
+            currency: string;
+        },
+        void
+    >;
+    'earnings:payout-paid': EventDefinition<
+        {
+            payoutRequestId: string;
+            talentId: string;
+            amount: number;
+            currency: string;
+            externalTransferId: string | null;
+            externalProvider: string | null;
+        },
+        void
+    >;
+    'earnings:dispute-opened': EventDefinition<
+        {
+            disputeId: string;
+            paymentId: string | null;
+            gigId: string | null;
+            raisedBy: string | null;
+        },
+        void
+    >;
+    'earnings:dispute-resolved': EventDefinition<
+        {
+            disputeId: string;
+            paymentId: string | null;
+            gigId: string | null;
+            resolution: 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+            resolvedBy: string | null;
+        },
+        void
     >;
     'notification:dispatch': EventDefinition<
         {

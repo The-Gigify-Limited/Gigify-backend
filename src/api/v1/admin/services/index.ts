@@ -1,5 +1,7 @@
 export { default as broadcastNotification } from './broadcastNotification';
 export { default as getAdminAuditLogs } from './getAdminAuditLogs';
+export { default as listAdminDisputes } from './listAdminDisputes';
+export { default as resolveDispute } from './resolveDispute';
 export { default as getAdminDashboard } from './getAdminDashboard';
 export { default as getAdminGigs } from './getAdminGigs';
 export { default as getAdminIdentityVerifications } from './getAdminIdentityVerifications';

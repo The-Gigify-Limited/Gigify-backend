@@ -32,9 +32,16 @@ const updateUserSchema = {
         locationLongitude: Joi.number().min(-180).max(180).allow(null),
         fullAddress: Joi.string().max(255).allow(null),
         postCode: Joi.number().integer().min(0).allow(null),
-        profileImageUrl: Joi.string().uri().allow(null),
+        profileImageUrl: Joi.string().uri().allow(null, ''),
+        bannerImageUrl: Joi.string().uri().allow(null, ''),
+        referral: Joi.string().max(120).allow(null, ''),
         gender: Joi.string().valid('male', 'female', 'non_binary', 'prefer_not_to_say').allow(null),
         username: Joi.string().alphanum().min(3).max(32).allow(null),
+        onboardingStep: Joi.number().integer().min(0).allow(null),
+        dateOfBirth: Joi.date().iso().less('now').allow(null),
+        streetAddress: Joi.string().max(255).allow(null, ''),
+        acquisitionSource: Joi.string().max(120).allow(null, ''),
+        bio: Joi.string().max(2000).allow(null, ''),
     }),
 };
 
@@ -78,6 +85,13 @@ const kycSessionSchema = {
     }),
 };
 
+const advanceOnboardingSchema = {
+    inputSchema: Joi.object({
+        step: Joi.number().integer().valid(1, 2, 3).required(),
+        payload: Joi.object().required(),
+    }),
+};
+
 const notificationPreferencesSchema = {
     inputSchema: Joi.object({
         emailEnabled: Joi.boolean().optional(),
@@ -88,10 +102,18 @@ const notificationPreferencesSchema = {
         paymentUpdates: Joi.boolean().optional(),
         messageUpdates: Joi.boolean().optional(),
         securityAlerts: Joi.boolean().optional(),
+        smsGigUpdates: Joi.boolean().optional(),
+        smsPaymentUpdates: Joi.boolean().optional(),
+        smsSecurityAlerts: Joi.boolean().optional(),
+        pushGigUpdates: Joi.boolean().optional(),
+        pushMessageUpdates: Joi.boolean().optional(),
+        pushPaymentUpdates: Joi.boolean().optional(),
+        pushSecurityAlerts: Joi.boolean().optional(),
     }),
 };
 
 export {
+    advanceOnboardingSchema,
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,

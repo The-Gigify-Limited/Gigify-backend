@@ -98,6 +98,33 @@ describe('Login service', () => {
         );
         expect(response.message).toBe('Login successful');
         expect(response.data.accessToken).toBe('access-token');
+        // remember flag was not supplied → sessionHint.persistent is false
+        expect(response.data.sessionHint).toEqual({ persistent: false });
+    });
+
+    it('echoes sessionHint.persistent=true when the user checks "remember me"', async () => {
+        const userRepository = {
+            findByEmail: jest.fn().mockResolvedValue({ id: 'user-1', email: 'ada@example.com', firstName: 'Ada' }),
+        };
+        const emailSender = jest.fn().mockResolvedValue(undefined);
+        const recoveryLinkGenerator = jest.fn().mockResolvedValue({ actionLink: 'https://example.com/reset' });
+
+        const service = new Login(userRepository as never, emailSender, recoveryLinkGenerator);
+        (service as any).supabase = {
+            auth: {
+                signInWithPassword: jest.fn().mockResolvedValue({
+                    data: { user: { id: 'u-1' }, session: { access_token: 'a', refresh_token: 'r' } },
+                    error: null,
+                }),
+            },
+        };
+
+        const response = await service.handle({
+            input: { email: 'ada@example.com', password: 'Password123!', remember: true },
+            request: { headers: {}, ip: '203.0.113.20' },
+        } as never);
+
+        expect(response.data.sessionHint).toEqual({ persistent: true });
     });
 
     it('keeps login successful even if the security email cannot be sent', async () => {

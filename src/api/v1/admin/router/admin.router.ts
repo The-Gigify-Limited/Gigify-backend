@@ -9,6 +9,8 @@ import {
     getAdminPayoutRequests,
     getAdminReports,
     getAdminUsers,
+    listAdminDisputes,
+    resolveDispute,
     updateAdminGigStatus,
     updateAdminIdentityVerification,
     updateAdminPayoutRequest,
@@ -18,6 +20,7 @@ import {
 import {
     adminAuditLogsQuerySchema,
     adminBroadcastNotificationSchema,
+    adminDisputesQuerySchema,
     adminGigStatusSchema,
     adminGigsQuerySchema,
     adminIdentityVerificationQuerySchema,
@@ -26,6 +29,7 @@ import {
     adminPayoutRequestStatusSchema,
     adminReportsQuerySchema,
     adminReportStatusSchema,
+    adminResolveDisputeSchema,
     adminUsersQuerySchema,
     adminUserStatusSchema,
 } from './schema';
@@ -452,5 +456,48 @@ adminRouter.post(
         .only('admin')
         .setValidator(adminBroadcastNotificationSchema)
         .setHandler(broadcastNotification.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /admin/disputes:
+ *   get:
+ *     tags: [Admin]
+ *     summary: List disputes across the platform, filterable by status
+ *     security:
+ *       - bearerAuth: []
+ */
+adminRouter.get(
+    '/disputes',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminDisputesQuerySchema)
+        .setHandler(listAdminDisputes.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /admin/disputes/{id}:
+ *   patch:
+ *     tags: [Admin]
+ *     summary: Resolve (or withdraw) a dispute
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           example:
+ *             resolution: resolved_talent
+ *             adminNotes: Evidence supports the talent; releasing funds.
+ */
+adminRouter.patch(
+    '/disputes/:id',
+    ControlBuilder.builder()
+        .only('admin')
+        .setValidator(adminResolveDisputeSchema)
+        .setHandler(resolveDispute.handle)
         .handle(),
 );

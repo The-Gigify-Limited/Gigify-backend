@@ -15,8 +15,8 @@ export const realtimeRouter = Router();
  *       connections on the frontend via Supabase Realtime.
  *
  *       **Channels the frontend should subscribe to:**
- *       - `user:{userId}` — personal notifications (new_notification, notification_read)
- *       - `conversation:{conversationId}` — chat messages (new_message, message_read)
+ *       - `user:{userId}`, personal notifications (new_notification, notification_read)
+ *       - `conversation:{conversationId}`, chat messages (new_message, message_read)
  *
  *       Use `supabase.channel(channelName).on('broadcast', { event }, callback).subscribe()`
  *     security:

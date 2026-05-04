@@ -7,6 +7,7 @@ import {
     DatabaseServiceCatalog,
     Gig,
     GigApplication,
+    GigType,
     ServiceCatalog,
     TalentGigItem,
 } from '../interfaces';
@@ -76,6 +77,12 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         dateTo?: string;
         isRemote?: boolean;
         employerId?: string;
+        latitude?: number | string;
+        longitude?: number | string;
+        radiusKm?: number | string;
+        gigTypeId?: string;
+        skillRequired?: string;
+        genres?: string[];
     }): Promise<Gig[]> {
         const { offset, rangeEnd } = normalizePagination({
             page: query.page,
@@ -88,6 +95,22 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.serviceId) request = request.eq('service_id', query.serviceId);
         if (query.employerId) request = request.eq('employer_id', query.employerId);
         if (typeof query.isRemote === 'boolean') request = request.eq('is_remote', query.isRemote);
+        if (query.gigTypeId) request = request.eq('gig_type_id', query.gigTypeId);
+        if (query.skillRequired) {
+            // skill_required is text[]; PostgREST has no ilike-on-array-element
+            // operator. Resolve matching gig ids via the gigs_matching_skill
+            // function (added in 20260511_skill_required_array.sql).
+            const { data: skillHits, error: skillErr } = await supabaseAdmin.rpc(
+                'gigs_matching_skill' as never,
+                {
+                    pattern: `%${query.skillRequired}%`,
+                } as never,
+            );
+            if (skillErr) throw skillErr;
+            const ids = ((skillHits as Array<{ id: string }> | null) ?? []).map((row) => row.id);
+            if (ids.length === 0) return [];
+            request = request.in('id', ids);
+        }
         if (query.search) {
             const escaped = `%${query.search}%`;
             request = request.or(`title.ilike.${escaped},description.ilike.${escaped}`);
@@ -97,6 +120,44 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (query.maxBudget !== undefined) request = request.lte('budget_amount', Number(query.maxBudget));
         if (query.dateFrom) request = request.gte('gig_date', query.dateFrom);
         if (query.dateTo) request = request.lte('gig_date', query.dateTo);
+
+        // Genre filter: resolve genre strings to service IDs via services_catalog
+        // name matching, then restrict gigs to those services. This matches what
+        // the Figma filter sheet surfaces (talent-type labels like "DJ", "Drummer");
+        // a future product decision may add a dedicated gigs.genres column.
+        if (query.genres?.length) {
+            const { data: services, error: servicesError } = await supabaseAdmin.from('services_catalog').select('id').in('name', query.genres);
+
+            if (servicesError) throw servicesError;
+
+            const serviceIds = (services ?? []).map((s) => s.id);
+            if (serviceIds.length === 0) {
+                return [];
+            }
+
+            request = request.in('service_id', serviceIds);
+        }
+
+        // Radius filter: bounding-box approximation in degrees. PostGIS's
+        // ST_DWithin would be more accurate, but is not confirmed enabled on
+        // staging/prod, so we do a simple lat/lng box. 1° lat ≈ 111 km; 1° lng
+        // ≈ 111 km × cos(latitude). Requires all three: latitude, longitude,
+        // radiusKm. Silently no-op if only some are provided.
+        const lat = query.latitude !== undefined ? Number(query.latitude) : undefined;
+        const lng = query.longitude !== undefined ? Number(query.longitude) : undefined;
+        const radiusKm = query.radiusKm !== undefined ? Number(query.radiusKm) : undefined;
+
+        if (lat !== undefined && lng !== undefined && radiusKm !== undefined && radiusKm > 0) {
+            const latDelta = radiusKm / 111;
+            const cosLat = Math.cos((lat * Math.PI) / 180);
+            const lngDelta = cosLat !== 0 ? radiusKm / (111 * cosLat) : 180;
+
+            request = request
+                .gte('location_latitude', lat - latDelta)
+                .lte('location_latitude', lat + latDelta)
+                .gte('location_longitude', lng - lngDelta)
+                .lte('location_longitude', lng + lngDelta);
+        }
 
         const { data = [], error } = await request.order('created_at', { ascending: false }).range(offset, rangeEnd);
 
@@ -123,7 +184,29 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
+    async getGigTypes(): Promise<GigType[]> {
+        const { data = [], error } = await supabaseAdmin.from('gig_types').select('*').eq('is_active', true).order('name', { ascending: true });
+        if (error) throw error;
+        return (data ?? []).map((row) => this.mapRow<GigType>(row as never));
+    }
+
+    async getGigTypeById(id: string): Promise<GigType | null> {
+        const { data, error } = await supabaseAdmin.from('gig_types').select('*').eq('id', id).maybeSingle();
+        if (error) throw error;
+        return data ? this.mapRow<GigType>(data as never) : null;
+    }
+
     async createGig(employerId: string, input: Partial<Gig>): Promise<Gig> {
+        // Joi requires gigTypeId on create, but we re-validate here and mirror
+        // the canonical name onto the denormalized `gig_type` column so reads
+        // can render the label without a join.
+        let gigTypeName: string | null = null;
+        if (input.gigTypeId) {
+            const type = await this.getGigTypeById(input.gigTypeId);
+            if (!type) throw new BadRequestError('Invalid gigTypeId, must reference an existing gig_types row');
+            gigTypeName = type.name;
+        }
+
         const { data, error } = await supabaseAdmin
             .from(this.table)
             .insert({
@@ -140,6 +223,19 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
                 is_remote: input.isRemote ?? false,
                 required_talent_count: input.requiredTalentCount ?? 1,
                 status: input.status ?? 'open',
+                gig_type_id: input.gigTypeId ?? null,
+                gig_type: gigTypeName,
+                gig_start_time: input.gigStartTime ?? null,
+                gig_end_time: input.gigEndTime ?? null,
+                duration_minutes: input.durationMinutes ?? null,
+                is_equipment_required: input.isEquipmentRequired ?? null,
+                dress_code: input.dressCode ?? null,
+                additional_notes: input.additionalNotes ?? null,
+                display_image: input.displayImage ?? null,
+                gig_address: input.gigAddress ?? null,
+                gig_location: input.gigLocation ?? null,
+                gig_post_code: input.gigPostCode ?? null,
+                skill_required: input.skillRequired ?? null, // text[]
             })
             .select('*')
             .single();
@@ -154,19 +250,69 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
     }
 
     async updateGigById(id: string, input: Partial<Gig>): Promise<Gig> {
-        const { data, error } = await supabaseAdmin
-            .from(this.table)
-            .update({
-                ...this.mapToSnakeCase(input),
-                updated_at: new Date().toISOString(),
-            })
-            .eq('id', id)
-            .select('*')
-            .single();
+        const updates = {
+            ...this.mapToSnakeCase(input),
+            updated_at: new Date().toISOString(),
+        } as Partial<DatabaseGig>;
+
+        // Re-mirror the denormalized name when the type changes so reads
+        // stay consistent without an explicit join.
+        if (input.gigTypeId) {
+            const type = await this.getGigTypeById(input.gigTypeId);
+            if (!type) throw new BadRequestError('Invalid gigTypeId, must reference an existing gig_types row');
+            (updates as { gig_type?: string | null }).gig_type = type.name;
+        }
+
+        const { data, error } = await supabaseAdmin.from(this.table).update(updates).eq('id', id).select('*').single();
 
         if (error) throw error;
 
         return this.mapToCamelCase(data);
+    }
+
+    async findStaleOpenGigs(now: Date = new Date()): Promise<Gig[]> {
+        const nowIso = now.toISOString();
+        const { data = [], error } = await supabaseAdmin.from(this.table).select('*').eq('status', 'open').lt('gig_date', nowIso);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
+    }
+
+    async findGigsStartingWithin(fromDate: string, toDate: string): Promise<Gig[]> {
+        // gig_date is a DATE (not timestamptz) so we compare on the date
+        // portion, the service layer narrows further using start_time /
+        // end_time to decide whether we're actually inside the reminder
+        // window.
+        const { data = [], error } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .in('status', ['open', 'in_progress'])
+            .gte('gig_date', fromDate)
+            .lte('gig_date', toDate);
+
+        if (error) throw error;
+
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
+    }
+
+    async findHiredTalentIdsForGig(gigId: string): Promise<string[]> {
+        const { data = [], error } = await supabaseAdmin.from('gig_applications').select('talent_id').eq('gig_id', gigId).eq('status', 'hired');
+
+        if (error) throw error;
+        return (data ?? []).map((row) => row.talent_id);
+    }
+
+    async markGigsExpired(gigIds: string[]): Promise<void> {
+        if (!gigIds.length) return;
+
+        const { error } = await supabaseAdmin
+            .from(this.table)
+            .update({ status: 'expired' as any, updated_at: new Date().toISOString() })
+            .in('id', gigIds)
+            .eq('status', 'open');
+
+        if (error) throw error;
     }
 
     async deleteGig(gigId: string): Promise<null> {
@@ -179,6 +325,14 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         if (error) throw error;
 
         return null;
+    }
+
+    async getApplicationById(applicationId: string): Promise<GigApplication | null> {
+        const { data, error } = await supabaseAdmin.from('gig_applications').select('*').eq('id', applicationId).maybeSingle();
+
+        if (error) throw error;
+
+        return data ? this.mapRow<GigApplication>(data as unknown as DatabaseGigApplication) : null;
     }
 
     async findApplicationByGigAndTalent(gigId: string, talentId: string): Promise<GigApplication | null> {
@@ -206,14 +360,19 @@ export class GigRepository extends BaseRepository<DatabaseGig, Gig> {
         return (data ?? []).map((row) => this.mapRow<GigApplication>(row as unknown as DatabaseGigApplication));
     }
 
-    async createApplication(gigId: string, talentId: string, input: Pick<GigApplication, 'coverMessage' | 'proposedRate'>): Promise<GigApplication> {
+    async createApplication(
+        gigId: string,
+        talentId: string,
+        input: Pick<GigApplication, 'proposalMessage' | 'proposedRate' | 'proposedCurrency'>,
+    ): Promise<GigApplication> {
         const { data, error } = await supabaseAdmin
             .from('gig_applications')
             .insert({
                 gig_id: gigId,
                 talent_id: talentId,
-                cover_message: input.coverMessage ?? null,
+                proposal_message: input.proposalMessage ?? null,
                 proposed_rate: input.proposedRate ?? null,
+                proposed_currency: input.proposedCurrency ?? null,
             })
             .select('*')
             .single();

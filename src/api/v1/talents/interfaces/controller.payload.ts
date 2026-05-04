@@ -57,3 +57,63 @@ export interface GetTalentsReviewsQueryDto extends ControllerArgsTypes {
         sort_by?: string;
     };
 }
+
+export type BrowseSortBy = 'rating' | 'priceAsc' | 'priceDesc' | 'recent';
+
+export interface BrowseTalentsQueryDto extends ControllerArgsTypes {
+    query: {
+        page?: number;
+        pageSize?: number;
+        search?: string;
+        primaryRole?: string;
+        genres?: string[];
+        minRate?: number;
+        maxRate?: number;
+        rateCurrency?: string;
+        minRating?: number;
+        locationCity?: string;
+        locationCountry?: string;
+        radiusKm?: number;
+        lat?: number;
+        lng?: number;
+        availableOn?: string;
+        sortBy?: BrowseSortBy;
+    };
+}
+
+export interface SavedTalentParamsDto extends ControllerArgsTypes {
+    params: {
+        id: string;
+    };
+}
+
+export interface SavedTalentsQueryDto extends ControllerArgsTypes {
+    query: {
+        page?: number;
+        pageSize?: number;
+    };
+}
+
+export interface ListAvailabilityDto extends ControllerArgsTypes {
+    params: {
+        id: string;
+    };
+    query: {
+        from?: string;
+        to?: string;
+    };
+}
+
+export interface AddAvailabilityDto extends ControllerArgsTypes {
+    input: {
+        unavailableFrom: string;
+        unavailableUntil: string;
+        reason?: string | null;
+    };
+}
+
+export interface DeleteAvailabilityDto extends ControllerArgsTypes {
+    params: {
+        id: string;
+    };
+}

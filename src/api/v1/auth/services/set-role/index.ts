@@ -21,8 +21,13 @@ export class SetUserRole extends BaseService {
             throw new ConflictError('User not found.');
         }
 
-        if (user.role == role) {
-            throw new ConflictError('User role already set.');
+        // Role is immutable once set. Role-switch flows (e.g. the Figma settings
+        // page's "switch account type" button) are intentionally unsupported at
+        // the backend level, see FIGMA_GAP_PLAN.md PR 1.6. A dedicated switch-role
+        // service with profile cleanup and onboarding reset would need to be built
+        // before any UI exposes this capability.
+        if (user.role) {
+            throw new ConflictError(user.role === role ? 'User role already set.' : 'Role switching is not supported.');
         }
 
         const updatedUserRow = await this.userRepository.updateById(userId, {

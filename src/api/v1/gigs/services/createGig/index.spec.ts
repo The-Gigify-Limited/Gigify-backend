@@ -70,6 +70,73 @@ describe('CreateGig service', () => {
         expect(response.data.id).toBe('gig-1');
     });
 
+    it('forwards the FE-aligned event fields to the repository on create', async () => {
+        const gigRepository = {
+            createGig: jest.fn().mockResolvedValue({
+                id: 'gig-1',
+                employerId: 'employer-1',
+                title: 'Lagos rooftop set',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                gigType: 'Party',
+                gigStartTime: '18:00',
+                gigEndTime: '22:00',
+                durationMinutes: 240,
+                isEquipmentRequired: false,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+                displayImage: 'https://cdn.example.com/gig-1.jpg',
+                gigAddress: '12 Sky Lane',
+                gigLocation: 'Lagos',
+                gigPostCode: '101231',
+                skillRequired: 'DJ',
+            }),
+        };
+
+        (dispatch as jest.Mock).mockResolvedValueOnce([undefined]).mockResolvedValueOnce([undefined]);
+
+        const service = new CreateGig(gigRepository as never);
+
+        await service.handle({
+            input: {
+                title: 'Lagos rooftop set',
+                budgetAmount: 200000,
+                gigDate: '2026-05-20',
+                venueName: 'Sky Lounge',
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                gigStartTime: '18:00',
+                gigEndTime: '22:00',
+                durationMinutes: 240,
+                isEquipmentRequired: false,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+                displayImage: 'https://cdn.example.com/gig-1.jpg',
+                gigAddress: '12 Sky Lane',
+                gigLocation: 'Lagos',
+                gigPostCode: '101231',
+                skillRequired: 'DJ',
+            },
+            request: { user: { id: 'employer-1' } },
+        } as never);
+
+        expect(gigRepository.createGig).toHaveBeenCalledWith(
+            'employer-1',
+            expect.objectContaining({
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                gigStartTime: '18:00',
+                gigEndTime: '22:00',
+                durationMinutes: 240,
+                isEquipmentRequired: false,
+                dressCode: 'smart_casual',
+                additionalNotes: 'No smoke machines please.',
+                displayImage: 'https://cdn.example.com/gig-1.jpg',
+                gigAddress: '12 Sky Lane',
+                gigLocation: 'Lagos',
+                gigPostCode: '101231',
+                skillRequired: 'DJ',
+            }),
+        );
+    });
+
     it('throws when user is not authenticated', async () => {
         const gigRepository = {
             createGig: jest.fn(),

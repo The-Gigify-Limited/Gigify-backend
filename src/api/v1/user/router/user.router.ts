@@ -1,6 +1,7 @@
 import { ControlBuilder } from '@/core';
 import { Router } from 'express';
 import {
+    advanceOnboardingStep,
     createKycSession,
     createUserReview,
     deleteUserById,
@@ -16,6 +17,7 @@ import {
     updateUserById,
 } from '../services';
 import {
+    advanceOnboardingSchema,
     createUserReviewSchema,
     getUserParamsSchema,
     getUsersQuerySchema,
@@ -30,6 +32,88 @@ import {
 export const userRouter = Router();
 
 userRouter
+    /**
+     * @swagger
+     * /user/onboarding/step:
+     *   patch:
+     *     tags: [User Profile]
+     *     summary: Advance the authenticated user's onboarding to the next step
+     *     description: |
+     *       Accepts the step being completed (1, 2, or 3) and the payload for that
+     *       step. The user must currently be at `step - 1` (or 0 if advancing to
+     *       step 1). Required fields are validated server-side per step and role;
+     *       missing fields return 422. Advancing out of order returns 409. After
+     *       a successful step-3 submission, the computed `onboarded` flag on
+     *       `/user/:id` becomes `true`.
+     *     security:
+     *       - bearerAuth: []
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             required:
+     *               - step
+     *               - payload
+     *             properties:
+     *               step:
+     *                 type: integer
+     *                 enum: [1, 2, 3]
+     *               payload:
+     *                 type: object
+     *           examples:
+     *             step1:
+     *               summary: Basic info
+     *               value:
+     *                 step: 1
+     *                 payload:
+     *                   firstName: Maxwell
+     *                   lastName: Adeyemi
+     *                   dateOfBirth: "1995-06-15"
+     *             step2:
+     *               summary: Location + contact
+     *               value:
+     *                 step: 2
+     *                 payload:
+     *                   locationCountry: Nigeria
+     *                   locationCity: Lagos
+     *                   streetAddress: 24 Allen Avenue
+     *                   phoneNumber: "+234810000001"
+     *             step3Talent:
+     *               summary: Role-specific (talent)
+     *               value:
+     *                 step: 3
+     *                 payload:
+     *                   stageName: DJ Maxell
+     *                   primaryRole: DJ
+     *                   skills: [afrobeat, wedding]
+     *                   minRate: 120000
+     *             step3Employer:
+     *               summary: Role-specific (employer)
+     *               value:
+     *                 step: 3
+     *                 payload:
+     *                   organizationName: Pulse Live
+     *                   industry: Entertainment
+     *     responses:
+     *       200:
+     *         description: Step completed
+     *       401:
+     *         description: Unauthenticated
+     *       409:
+     *         description: Current step does not match expected precondition
+     *       422:
+     *         description: Missing required fields for this step
+     */
+    .patch(
+        '/onboarding/step',
+        ControlBuilder.builder()
+            .isPrivate()
+            .setValidator(advanceOnboardingSchema)
+            .setHandler(advanceOnboardingStep.handle)
+            .handle(),
+    )
     /**
      * @swagger
      * /user/{id}:
@@ -142,6 +226,42 @@ userRouter
      *         application/json:
      *           schema:
      *             type: object
+     *             properties:
+     *               firstName: { type: string }
+     *               lastName: { type: string }
+     *               phoneNumber: { type: string }
+     *               locationCountry: { type: string }
+     *               locationCity: { type: string }
+     *               locationLatitude: { type: number }
+     *               locationLongitude: { type: number }
+     *               fullAddress: { type: string }
+     *               postCode: { type: integer }
+     *               profileImageUrl:
+     *                 type: string
+     *                 format: uri
+     *                 description: Avatar image URL (also accepts a multipart `profileImage` upload that overwrites this field).
+     *               bannerImageUrl:
+     *                 type: string
+     *                 format: uri
+     *                 description: Full-width banner image rendered above the avatar on the profile page.
+     *               referral:
+     *                 type: string
+     *                 maxLength: 120
+     *                 description: Referral code or attribution string carried on the user record.
+     *               gender:
+     *                 type: string
+     *                 enum: [male, female, non_binary, prefer_not_to_say]
+     *               username: { type: string }
+     *               onboardingStep:
+     *                 type: integer
+     *                 description: |
+     *                   Increment as the user progresses through onboarding. The
+     *                   read-side `onboarded` flag is computed as
+     *                   `onboardingStep >= 3` and is NOT writable directly.
+     *               dateOfBirth: { type: string, format: date }
+     *               streetAddress: { type: string }
+     *               acquisitionSource: { type: string }
+     *               bio: { type: string }
      *           example:
      *             firstName: Maxwell
      *             lastName: Adeyemi
@@ -152,7 +272,14 @@ userRouter
      *             locationLongitude: 3.3792
      *             fullAddress: 24 Allen Avenue, Ikeja
      *             postCode: 100282
+     *             profileImageUrl: https://cdn.thegigify.com/avatars/maxwell.jpg
+     *             bannerImageUrl: https://cdn.thegigify.com/banners/maxwell.jpg
+     *             referral: WELCOME-2026
      *             username: djmaxell
+     *             dateOfBirth: "1995-06-15"
+     *             streetAddress: 24 Allen Avenue
+     *             acquisitionSource: instagram
+     *             bio: DJ and event producer based in Lagos.
      *     responses:
      *       200:
      *         description: Updated profile
@@ -164,6 +291,9 @@ userRouter
      *                 id: 20000000-0000-0000-0000-000000000001
      *                 username: djmaxell
      *                 locationCity: Lagos
+     *                 profileImageUrl: https://cdn.thegigify.com/avatars/maxwell.jpg
+     *                 bannerImageUrl: https://cdn.thegigify.com/banners/maxwell.jpg
+     *                 referral: WELCOME-2026
      *       401:
      *         description: Unauthorized
      */

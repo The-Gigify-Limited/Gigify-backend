@@ -1,3 +1,4 @@
+import { logger } from '@/core';
 import { Gig, GigApplication, GigReport } from './interfaces';
 import { GigRepository, ReportRepository } from './repository';
 
@@ -26,4 +27,36 @@ export async function findApplicationByGigAndTalentEventListener(input: { gigId:
     const gigRepository = new GigRepository();
     const application = await gigRepository.findApplicationByGigAndTalent(input.gigId, input.talentId);
     return application;
+}
+
+export function applicationShortlistedEventListener(input: { gigId: string; applicationId: string; talentId: string; employerId: string }): void {
+    logger.info('Gig application shortlisted', input);
+}
+
+export function applicationRejectedEventListener(input: { gigId: string; applicationId: string; talentId: string; employerId: string }): void {
+    logger.info('Gig application rejected', input);
+}
+export function gigExpiredEventListener(input: { gigId: string; employerId: string }): void {
+    logger.info('Gig expired', {
+        gigId: input.gigId,
+        employerId: input.employerId,
+    });
+}
+
+type OfferEventInput = { gigId: string; offerId: string; talentId: string; employerId: string };
+
+export function offerSentEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer sent', input);
+}
+
+export function offerAcceptedEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer accepted', input);
+}
+
+export function offerDeclinedEventListener(input: OfferEventInput): void {
+    logger.info('Gig offer declined', input);
+}
+
+export function offerCounteredEventListener(input: OfferEventInput & { counterAmount: number; counterMessage: string | null }): void {
+    logger.info('Gig offer countered', input);
 }

@@ -111,23 +111,24 @@ describe('GetMyGigs service', () => {
         expect(['completed', 'cancelled']).toContain(response.data[0].gig!.status);
     });
 
-    it('filters upcoming gigs correctly', async () => {
-        const futureDate = new Date(Date.now() + 86400000).toISOString();
-        const pastDate = new Date(Date.now() - 86400000).toISOString();
-
+    it('returns only hired gigs in the open status as upcoming', async () => {
         const gigRepository = {
             getTalentGigItems: jest.fn().mockResolvedValue([
                 {
-                    gig: { id: 'gig-1', status: 'open', gigDate: futureDate },
+                    gig: { id: 'gig-1', status: 'open' },
                     application: { id: 'app-1', status: 'hired' },
                 },
                 {
-                    gig: { id: 'gig-2', status: 'open', gigDate: pastDate },
+                    gig: { id: 'gig-2', status: 'in_progress' },
                     application: { id: 'app-2', status: 'hired' },
                 },
                 {
-                    gig: { id: 'gig-3', status: 'completed', gigDate: futureDate },
+                    gig: { id: 'gig-3', status: 'completed' },
                     application: { id: 'app-3', status: 'hired' },
+                },
+                {
+                    gig: { id: 'gig-4', status: 'open' },
+                    application: { id: 'app-4', status: 'submitted' },
                 },
             ]),
         };
@@ -144,6 +145,35 @@ describe('GetMyGigs service', () => {
 
         expect(response.data).toHaveLength(1);
         expect(response.data[0].gig!.id).toBe('gig-1');
+    });
+
+    it('does not include hired+in_progress gigs in the upcoming bucket', async () => {
+        const gigRepository = {
+            getTalentGigItems: jest.fn().mockResolvedValue([
+                {
+                    gig: { id: 'gig-1', status: 'in_progress' },
+                    application: { id: 'app-1', status: 'hired' },
+                },
+            ]),
+        };
+
+        const service = new GetMyGigs(gigRepository as never);
+
+        const upcoming = await service.handle({
+            params: { status: 'upcoming' },
+            query: {},
+            request: { user: { id: 'talent-1' } },
+        } as never);
+
+        const active = await service.handle({
+            params: { status: 'active' },
+            query: {},
+            request: { user: { id: 'talent-1' } },
+        } as never);
+
+        expect(upcoming.data).toEqual([]);
+        expect(active.data).toHaveLength(1);
+        expect(active.data[0].gig!.id).toBe('gig-1');
     });
 
     it('returns empty list for unknown status', async () => {

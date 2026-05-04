@@ -1,20 +1,43 @@
 import { config, logger } from '@/core';
 import { createEmployerProfileListener, getEmployerProfileByUserIdEventListener } from '~/employers/listeners';
 import {
+    applicationRejectedEventListener,
+    applicationShortlistedEventListener,
+    findApplicationByGigAndTalentEventListener,
     getAllGigsEventListener,
     getGigByIdEventListener,
+    gigExpiredEventListener,
+    offerAcceptedEventListener,
+    offerCounteredEventListener,
+    offerDeclinedEventListener,
+    offerSentEventListener,
     updateGigReportStatusEventListener,
-    findApplicationByGigAndTalentEventListener,
 } from '~/gigs/listeners';
 import { dispatchNotificationEventListener } from '~/notifications/listeners';
 import {
+    autoBlockAvailabilityOnOfferAcceptedListener,
     createTalentEventListener,
     getTalentProfileByUserId,
     getTalentReviewsEventListener,
     createTalentReviewEventListener,
+    unblockAvailabilityOnDisputeResolvedListener,
 } from '~/talents/listeners';
-import { checkNotificationPreferenceEventListener, getUserByIdEventListener, createActivityEventListener } from '~/user/listeners';
-import { updatePayoutRequestStatusEventListener, createEarningsRecordEventListener } from '~/earnings/listeners';
+import {
+    checkNotificationPreferenceEventListener,
+    createActivityEventListener,
+    getUserByIdEventListener,
+    onboardingStepCompletedEventListener,
+} from '~/user/listeners';
+import {
+    createEarningsRecordEventListener,
+    disputeOpenedEventListener,
+    disputeResolvedEventListener,
+    paymentHeldEventListener,
+    paymentReleasedEventListener,
+    payoutPaidEventListener,
+    payoutRequestedEventListener,
+    updatePayoutRequestStatusEventListener,
+} from '~/earnings/listeners';
 import { AppEventManager } from './app.events';
 
 export function registerEvents(bus: AppEventManager) {
@@ -40,7 +63,23 @@ export function registerEvents(bus: AppEventManager) {
     bus.onEvent('gig:get-all', ({ query }) => getAllGigsEventListener(query));
     bus.onEvent('gig:update-report-status', (input) => updateGigReportStatusEventListener(input));
     bus.onEvent('gig:find-application', (input) => findApplicationByGigAndTalentEventListener(input));
+    bus.onEvent('gig:application-shortlisted', (input) => applicationShortlistedEventListener(input));
+    bus.onEvent('gig:application-rejected', (input) => applicationRejectedEventListener(input));
+    bus.onEvent('gig:expired', (input) => gigExpiredEventListener(input));
+    bus.onEvent('gig:offer-sent', (input) => offerSentEventListener(input));
+    bus.onEvent('gig:offer-accepted', (input) => offerAcceptedEventListener(input));
+    bus.onEvent('gig:offer-accepted', (input) => autoBlockAvailabilityOnOfferAcceptedListener(input));
+    bus.onEvent('gig:offer-declined', (input) => offerDeclinedEventListener(input));
+    bus.onEvent('gig:offer-countered', (input) => offerCounteredEventListener(input));
     bus.onEvent('user:create-activity', (input) => createActivityEventListener(input));
+    bus.onEvent('user:onboarding-step-completed', (input) => onboardingStepCompletedEventListener(input));
     bus.onEvent('earnings:create-record', (input) => createEarningsRecordEventListener(input));
+    bus.onEvent('earnings:payment-held', (input) => paymentHeldEventListener(input));
+    bus.onEvent('earnings:payment-released', (input) => paymentReleasedEventListener(input));
+    bus.onEvent('earnings:payout-requested', (input) => payoutRequestedEventListener(input));
+    bus.onEvent('earnings:payout-paid', (input) => payoutPaidEventListener(input));
+    bus.onEvent('earnings:dispute-opened', (input) => disputeOpenedEventListener(input));
+    bus.onEvent('earnings:dispute-resolved', (input) => disputeResolvedEventListener(input));
+    bus.onEvent('earnings:dispute-resolved', (input) => unblockAvailabilityOnDisputeResolvedListener(input));
     bus.onEvent('notification:dispatch', (input) => dispatchNotificationEventListener(input));
 }

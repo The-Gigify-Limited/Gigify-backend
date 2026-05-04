@@ -1,35 +1,21 @@
 import { BadRequestError, ControllerArgs, HttpStatus, imageUploadService, UnAuthorizedError } from '@/core';
 
 export class UploadFile {
-    handle = async (payload: ControllerArgs) => {
-        const { files, request, query } = payload;
-
+    handle = async ({ files, request, query }: ControllerArgs) => {
         const user = request.user;
-
-        if (!user || !user.id) throw new UnAuthorizedError('No User Found!');
-
-        const bucket = (query?.bucket as string) || 'avatars';
-        const folder = query?.folder as string;
-
-        const uploadedUrls: string[] = [];
+        if (!user?.id) throw new UnAuthorizedError('User not authenticated');
 
         if (!files || Object.keys(files).length === 0) {
             throw new BadRequestError('No files provided');
         }
 
-        const allFiles = [];
-        for (const key in files) {
-            const fileValue = files[key];
-            if (Array.isArray(fileValue)) {
-                allFiles.push(...fileValue);
-            } else {
-                allFiles.push(fileValue);
-            }
-        }
+        // express-fileupload puts files under their form-field names; each
+        // value can be a single UploadedFile or an array. Flatten to one list.
+        const allFiles = Object.values(files).flatMap((f) => (Array.isArray(f) ? f : [f]));
+        if (allFiles.length === 0) throw new BadRequestError('No valid files found');
 
-        if (allFiles.length === 0) {
-            throw new BadRequestError('No valid files found');
-        }
+        const bucket = (query?.bucket as string) || 'avatars';
+        const folder = query?.folder as string;
 
         const results = await Promise.all(
             allFiles.map((file) =>
@@ -43,15 +29,12 @@ export class UploadFile {
             ),
         );
 
-        uploadedUrls.push(...results.map((r) => r.publicUrl).filter((url): url is string => Boolean(url)));
+        const urls = results.map((r) => r.publicUrl).filter((url): url is string => Boolean(url));
 
         return {
             code: HttpStatus.CREATED,
             message: 'Files Uploaded Successfully',
-            data: {
-                urls: uploadedUrls,
-                count: uploadedUrls.length,
-            },
+            data: { urls, count: urls.length },
         };
     };
 }

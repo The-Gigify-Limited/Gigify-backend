@@ -134,57 +134,132 @@ export type Database = {
                     },
                 ];
             };
+            gig_reminders_sent: {
+                Row: {
+                    gig_id: string;
+                    sent_at: string;
+                    user_id: string;
+                    window_hours: number;
+                };
+                Insert: {
+                    gig_id: string;
+                    sent_at?: string;
+                    user_id: string;
+                    window_hours: number;
+                };
+                Update: {
+                    gig_id?: string;
+                    sent_at?: string;
+                    user_id?: string;
+                    window_hours?: number;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'gig_reminders_sent_gig_id_fkey';
+                        columns: ['gig_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gigs';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'gig_reminders_sent_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             gigs: {
                 Row: {
+                    additional_notes: string | null;
                     budget_amount: number;
                     created_at: string | null;
                     currency: string | null;
                     description: string | null;
+                    display_image: string | null;
+                    dress_code: string | null;
+                    duration_minutes: number | null;
                     employer_id: string;
+                    gig_address: string | null;
                     gig_date: string;
+                    gig_end_time: string | null;
+                    gig_location: string | null;
+                    gig_post_code: string | null;
+                    gig_start_time: string | null;
+                    gig_type: string | null;
+                    gig_type_id: string | null;
                     id: string;
+                    is_equipment_required: boolean | null;
                     is_remote: boolean | null;
                     location_latitude: number | null;
                     location_longitude: number | null;
                     location_name: string | null;
                     required_talent_count: number;
                     service_id: string | null;
+                    skill_required: string[] | null;
                     status: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at: string | null;
                 };
                 Insert: {
+                    additional_notes?: string | null;
                     budget_amount: number;
                     created_at?: string | null;
                     currency?: string | null;
                     description?: string | null;
+                    display_image?: string | null;
+                    dress_code?: string | null;
+                    duration_minutes?: number | null;
                     employer_id: string;
+                    gig_address?: string | null;
                     gig_date: string;
+                    gig_end_time?: string | null;
+                    gig_location?: string | null;
+                    gig_post_code?: string | null;
+                    gig_start_time?: string | null;
+                    gig_type?: string | null;
+                    gig_type_id?: string | null;
                     id?: string;
+                    is_equipment_required?: boolean | null;
                     is_remote?: boolean | null;
                     location_latitude?: number | null;
                     location_longitude?: number | null;
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
+                    skill_required?: string[] | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at?: string | null;
                 };
                 Update: {
+                    additional_notes?: string | null;
                     budget_amount?: number;
                     created_at?: string | null;
                     currency?: string | null;
                     description?: string | null;
+                    display_image?: string | null;
+                    dress_code?: string | null;
+                    duration_minutes?: number | null;
                     employer_id?: string;
+                    gig_address?: string | null;
                     gig_date?: string;
+                    gig_end_time?: string | null;
+                    gig_location?: string | null;
+                    gig_post_code?: string | null;
+                    gig_start_time?: string | null;
+                    gig_type?: string | null;
+                    gig_type_id?: string | null;
                     id?: string;
+                    is_equipment_required?: boolean | null;
                     is_remote?: boolean | null;
                     location_latitude?: number | null;
                     location_longitude?: number | null;
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
+                    skill_required?: string[] | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title?: string;
                     updated_at?: string | null;
@@ -204,16 +279,48 @@ export type Database = {
                         referencedRelation: 'services_catalog';
                         referencedColumns: ['id'];
                     },
+                    {
+                        foreignKeyName: 'gigs_gig_type_id_fkey';
+                        columns: ['gig_type_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gig_types';
+                        referencedColumns: ['id'];
+                    },
                 ];
+            };
+            gig_types: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    is_active: boolean;
+                    name: string;
+                    updated_at: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    name: string;
+                    updated_at?: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    is_active?: boolean;
+                    name?: string;
+                    updated_at?: string;
+                };
+                Relationships: [];
             };
             gig_applications: {
                 Row: {
                     applied_at: string;
-                    cover_message: string | null;
                     employer_notes: string | null;
                     gig_id: string;
                     hired_at: string | null;
                     id: string;
+                    proposal_message: string | null;
+                    proposed_currency: string | null;
                     proposed_rate: number | null;
                     status: Database['public']['Enums']['application_status'];
                     talent_id: string;
@@ -221,11 +328,12 @@ export type Database = {
                 };
                 Insert: {
                     applied_at?: string;
-                    cover_message?: string | null;
                     employer_notes?: string | null;
                     gig_id: string;
                     hired_at?: string | null;
                     id?: string;
+                    proposal_message?: string | null;
+                    proposed_currency?: string | null;
                     proposed_rate?: number | null;
                     status?: Database['public']['Enums']['application_status'];
                     talent_id: string;
@@ -233,11 +341,12 @@ export type Database = {
                 };
                 Update: {
                     applied_at?: string;
-                    cover_message?: string | null;
                     employer_notes?: string | null;
                     gig_id?: string;
                     hired_at?: string | null;
                     id?: string;
+                    proposal_message?: string | null;
+                    proposed_currency?: string | null;
                     proposed_rate?: number | null;
                     status?: Database['public']['Enums']['application_status'];
                     talent_id?: string;
@@ -254,6 +363,114 @@ export type Database = {
                     {
                         foreignKeyName: 'gig_applications_talent_id_fkey';
                         columns: ['talent_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
+            disputes: {
+                Row: {
+                    admin_notes: string | null;
+                    created_at: string | null;
+                    description: string | null;
+                    gig_id: string | null;
+                    id: string;
+                    payment_id: string | null;
+                    raised_by: string | null;
+                    reason: string;
+                    resolved_at: string | null;
+                    resolved_by: string | null;
+                    status: string;
+                    updated_at: string | null;
+                };
+                Insert: {
+                    admin_notes?: string | null;
+                    created_at?: string | null;
+                    description?: string | null;
+                    gig_id?: string | null;
+                    id?: string;
+                    payment_id?: string | null;
+                    raised_by?: string | null;
+                    reason: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: string;
+                    updated_at?: string | null;
+                };
+                Update: {
+                    admin_notes?: string | null;
+                    created_at?: string | null;
+                    description?: string | null;
+                    gig_id?: string | null;
+                    id?: string;
+                    payment_id?: string | null;
+                    raised_by?: string | null;
+                    reason?: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: string;
+                    updated_at?: string | null;
+                };
+                Relationships: [];
+            };
+            dispute_evidence: {
+                Row: {
+                    created_at: string | null;
+                    dispute_id: string | null;
+                    evidence_type: string | null;
+                    file_url: string | null;
+                    id: string;
+                    notes: string | null;
+                    uploaded_by: string | null;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    dispute_id?: string | null;
+                    evidence_type?: string | null;
+                    file_url?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    uploaded_by?: string | null;
+                };
+                Update: {
+                    created_at?: string | null;
+                    dispute_id?: string | null;
+                    evidence_type?: string | null;
+                    file_url?: string | null;
+                    id?: string;
+                    notes?: string | null;
+                    uploaded_by?: string | null;
+                };
+                Relationships: [];
+            };
+            conversation_archives: {
+                Row: {
+                    archived_at: string;
+                    conversation_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    archived_at?: string;
+                    conversation_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    archived_at?: string;
+                    conversation_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'conversation_archives_conversation_id_fkey';
+                        columns: ['conversation_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'conversations';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'conversation_archives_user_id_fkey';
+                        columns: ['user_id'];
                         isOneToOne: false;
                         referencedRelation: 'users';
                         referencedColumns: ['id'];
@@ -314,8 +531,12 @@ export type Database = {
             };
             gig_offers: {
                 Row: {
+                    accepted_at: string | null;
+                    counter_amount: number | null;
+                    counter_message: string | null;
                     created_at: string;
                     currency: string;
+                    declined_at: string | null;
                     employer_id: string;
                     expires_at: string | null;
                     gig_id: string;
@@ -328,8 +549,12 @@ export type Database = {
                     updated_at: string;
                 };
                 Insert: {
+                    accepted_at?: string | null;
+                    counter_amount?: number | null;
+                    counter_message?: string | null;
                     created_at?: string;
                     currency?: string;
+                    declined_at?: string | null;
                     employer_id: string;
                     expires_at?: string | null;
                     gig_id: string;
@@ -342,8 +567,12 @@ export type Database = {
                     updated_at?: string;
                 };
                 Update: {
+                    accepted_at?: string | null;
+                    counter_amount?: number | null;
+                    counter_message?: string | null;
                     created_at?: string;
                     currency?: string;
+                    declined_at?: string | null;
                     employer_id?: string;
                     expires_at?: string | null;
                     gig_id?: string;
@@ -489,6 +718,84 @@ export type Database = {
                     },
                 ];
             };
+            message_reports: {
+                Row: {
+                    conversation_id: string;
+                    created_at: string;
+                    description: string | null;
+                    id: string;
+                    message_id: string;
+                    reason: string;
+                    reported_user_id: string;
+                    reporter_id: string;
+                    resolved_at: string | null;
+                    resolved_by: string | null;
+                    status: Database['public']['Enums']['message_report_status'];
+                };
+                Insert: {
+                    conversation_id: string;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    message_id: string;
+                    reason: string;
+                    reported_user_id: string;
+                    reporter_id: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: Database['public']['Enums']['message_report_status'];
+                };
+                Update: {
+                    conversation_id?: string;
+                    created_at?: string;
+                    description?: string | null;
+                    id?: string;
+                    message_id?: string;
+                    reason?: string;
+                    reported_user_id?: string;
+                    reporter_id?: string;
+                    resolved_at?: string | null;
+                    resolved_by?: string | null;
+                    status?: Database['public']['Enums']['message_report_status'];
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'message_reports_conversation_id_fkey';
+                        columns: ['conversation_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'conversations';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_message_id_fkey';
+                        columns: ['message_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'messages';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_reported_user_id_fkey';
+                        columns: ['reported_user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_reporter_id_fkey';
+                        columns: ['reporter_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'message_reports_resolved_by_fkey';
+                        columns: ['resolved_by'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             notification_preferences: {
                 Row: {
                     created_at: string;
@@ -498,8 +805,15 @@ export type Database = {
                     message_updates: boolean;
                     payment_updates: boolean;
                     push_enabled: boolean;
+                    push_gig_updates: boolean;
+                    push_message_updates: boolean;
+                    push_payment_updates: boolean;
+                    push_security_alerts: boolean;
                     security_alerts: boolean;
                     sms_enabled: boolean;
+                    sms_gig_updates: boolean;
+                    sms_payment_updates: boolean;
+                    sms_security_alerts: boolean;
                     updated_at: string;
                     user_id: string;
                 };
@@ -511,8 +825,15 @@ export type Database = {
                     message_updates?: boolean;
                     payment_updates?: boolean;
                     push_enabled?: boolean;
+                    push_gig_updates?: boolean;
+                    push_message_updates?: boolean;
+                    push_payment_updates?: boolean;
+                    push_security_alerts?: boolean;
                     security_alerts?: boolean;
                     sms_enabled?: boolean;
+                    sms_gig_updates?: boolean;
+                    sms_payment_updates?: boolean;
+                    sms_security_alerts?: boolean;
                     updated_at?: string;
                     user_id: string;
                 };
@@ -524,8 +845,15 @@ export type Database = {
                     message_updates?: boolean;
                     payment_updates?: boolean;
                     push_enabled?: boolean;
+                    push_gig_updates?: boolean;
+                    push_message_updates?: boolean;
+                    push_payment_updates?: boolean;
+                    push_security_alerts?: boolean;
                     security_alerts?: boolean;
                     sms_enabled?: boolean;
+                    sms_gig_updates?: boolean;
+                    sms_payment_updates?: boolean;
+                    sms_security_alerts?: boolean;
                     updated_at?: string;
                     user_id?: string;
                 };
@@ -588,6 +916,42 @@ export type Database = {
                         referencedColumns: ['id'];
                     },
                 ];
+            };
+            payout_methods: {
+                Row: {
+                    created_at: string | null;
+                    display_label: string | null;
+                    external_account_id: string | null;
+                    id: string;
+                    is_default: boolean | null;
+                    is_verified: boolean | null;
+                    metadata: Json | null;
+                    provider: string;
+                    user_id: string | null;
+                };
+                Insert: {
+                    created_at?: string | null;
+                    display_label?: string | null;
+                    external_account_id?: string | null;
+                    id?: string;
+                    is_default?: boolean | null;
+                    is_verified?: boolean | null;
+                    metadata?: Json | null;
+                    provider: string;
+                    user_id?: string | null;
+                };
+                Update: {
+                    created_at?: string | null;
+                    display_label?: string | null;
+                    external_account_id?: string | null;
+                    id?: string;
+                    is_default?: boolean | null;
+                    is_verified?: boolean | null;
+                    metadata?: Json | null;
+                    provider?: string;
+                    user_id?: string | null;
+                };
+                Relationships: [];
             };
             payments: {
                 Row: {
@@ -677,8 +1041,12 @@ export type Database = {
                     amount: number;
                     created_at: string;
                     currency: string;
+                    external_provider: string | null;
+                    external_transfer_id: string | null;
                     id: string;
                     note: string | null;
+                    paid_at: string | null;
+                    paid_by: string | null;
                     processed_at: string | null;
                     status: Database['public']['Enums']['payout_status'];
                     talent_id: string;
@@ -688,8 +1056,12 @@ export type Database = {
                     amount: number;
                     created_at?: string;
                     currency?: string;
+                    external_provider?: string | null;
+                    external_transfer_id?: string | null;
                     id?: string;
                     note?: string | null;
+                    paid_at?: string | null;
+                    paid_by?: string | null;
                     processed_at?: string | null;
                     status?: Database['public']['Enums']['payout_status'];
                     talent_id: string;
@@ -699,8 +1071,12 @@ export type Database = {
                     amount?: number;
                     created_at?: string;
                     currency?: string;
+                    external_provider?: string | null;
+                    external_transfer_id?: string | null;
                     id?: string;
                     note?: string | null;
+                    paid_at?: string | null;
+                    paid_by?: string | null;
                     processed_at?: string | null;
                     status?: Database['public']['Enums']['payout_status'];
                     talent_id?: string;
@@ -880,6 +1256,42 @@ export type Database = {
                     },
                 ];
             };
+            saved_talents: {
+                Row: {
+                    created_at: string;
+                    id: string;
+                    talent_id: string;
+                    user_id: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    id?: string;
+                    talent_id: string;
+                    user_id: string;
+                };
+                Update: {
+                    created_at?: string;
+                    id?: string;
+                    talent_id?: string;
+                    user_id?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'saved_talents_talent_id_fkey';
+                        columns: ['talent_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'saved_talents_user_id_fkey';
+                        columns: ['user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             role_permissions: {
                 Row: {
                     created_at: string;
@@ -931,6 +1343,54 @@ export type Database = {
                 };
                 Relationships: [];
             };
+            talent_availability: {
+                Row: {
+                    created_at: string;
+                    gig_id: string | null;
+                    id: string;
+                    reason: string | null;
+                    source: string;
+                    talent_user_id: string;
+                    unavailable_from: string;
+                    unavailable_until: string;
+                };
+                Insert: {
+                    created_at?: string;
+                    gig_id?: string | null;
+                    id?: string;
+                    reason?: string | null;
+                    source?: string;
+                    talent_user_id: string;
+                    unavailable_from: string;
+                    unavailable_until: string;
+                };
+                Update: {
+                    created_at?: string;
+                    gig_id?: string | null;
+                    id?: string;
+                    reason?: string | null;
+                    source?: string;
+                    talent_user_id?: string;
+                    unavailable_from?: string;
+                    unavailable_until?: string;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'talent_availability_gig_id_fkey';
+                        columns: ['gig_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'gigs';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'talent_availability_talent_user_id_fkey';
+                        columns: ['talent_user_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             talent_portfolios: {
                 Row: {
                     created_at: string;
@@ -968,6 +1428,8 @@ export type Database = {
             };
             talent_profiles: {
                 Row: {
+                    account_number: string | null;
+                    bank_name: string | null;
                     banner_url: string | null;
                     biography: string | null;
                     date_of_birth: string | null;
@@ -983,6 +1445,8 @@ export type Database = {
                     years_experience: number | null;
                 };
                 Insert: {
+                    account_number?: string | null;
+                    bank_name?: string | null;
                     banner_url?: string | null;
                     biography?: string | null;
                     date_of_birth?: string | null;
@@ -998,6 +1462,8 @@ export type Database = {
                     years_experience?: number | null;
                 };
                 Update: {
+                    account_number?: string | null;
+                    bank_name?: string | null;
                     banner_url?: string | null;
                     biography?: string | null;
                     date_of_birth?: string | null;
@@ -1110,9 +1576,49 @@ export type Database = {
                     },
                 ];
             };
+            user_blocks: {
+                Row: {
+                    blocked_id: string;
+                    blocker_id: string;
+                    created_at: string;
+                    reason: string | null;
+                };
+                Insert: {
+                    blocked_id: string;
+                    blocker_id: string;
+                    created_at?: string;
+                    reason?: string | null;
+                };
+                Update: {
+                    blocked_id?: string;
+                    blocker_id?: string;
+                    created_at?: string;
+                    reason?: string | null;
+                };
+                Relationships: [
+                    {
+                        foreignKeyName: 'user_blocks_blocked_id_fkey';
+                        columns: ['blocked_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                    {
+                        foreignKeyName: 'user_blocks_blocker_id_fkey';
+                        columns: ['blocker_id'];
+                        isOneToOne: false;
+                        referencedRelation: 'users';
+                        referencedColumns: ['id'];
+                    },
+                ];
+            };
             users: {
                 Row: {
+                    acquisition_source: string | null;
+                    bio: string | null;
                     created_at: string | null;
+                    banner_image_url: string | null;
+                    date_of_birth: string | null;
                     email: string | null;
                     first_name: string | null;
                     full_address: string | null;
@@ -1128,13 +1634,19 @@ export type Database = {
                     phone_number: string | null;
                     post_code: number | null;
                     profile_image_url: string | null;
+                    referral: string | null;
                     role: Database['public']['Enums']['user_role'] | null;
                     status: Database['public']['Enums']['user_status'];
+                    street_address: string | null;
                     updated_at: string | null;
                     username: string | null;
                 };
                 Insert: {
+                    acquisition_source?: string | null;
+                    banner_image_url?: string | null;
+                    bio?: string | null;
                     created_at?: string | null;
+                    date_of_birth?: string | null;
                     email?: string | null;
                     first_name?: string | null;
                     full_address?: string | null;
@@ -1150,13 +1662,19 @@ export type Database = {
                     phone_number?: string | null;
                     post_code?: number | null;
                     profile_image_url?: string | null;
+                    referral?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
+                    street_address?: string | null;
                     updated_at?: string | null;
                     username?: string | null;
                 };
                 Update: {
+                    acquisition_source?: string | null;
+                    banner_image_url?: string | null;
+                    bio?: string | null;
                     created_at?: string | null;
+                    date_of_birth?: string | null;
                     email?: string | null;
                     first_name?: string | null;
                     full_address?: string | null;
@@ -1172,8 +1690,10 @@ export type Database = {
                     phone_number?: string | null;
                     post_code?: number | null;
                     profile_image_url?: string | null;
+                    referral?: string | null;
                     role?: Database['public']['Enums']['user_role'] | null;
                     status?: Database['public']['Enums']['user_status'];
+                    street_address?: string | null;
                     updated_at?: string | null;
                     username?: string | null;
                 };
@@ -1232,11 +1752,12 @@ export type Database = {
                 | 'payout_requested'
                 | 'review_posted';
             audit_result: 'success' | 'failure';
-            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled';
+            gig_status: 'draft' | 'open' | 'in_progress' | 'completed' | 'cancelled' | 'expired' | 'disputed';
             identity_document_type: 'passport' | 'drivers_license' | 'national_id' | 'selfie_video';
+            message_report_status: 'pending' | 'reviewing' | 'actioned' | 'dismissed';
             notification_channel: 'in_app' | 'email' | 'push' | 'sms';
             notification_type: 'gig_update' | 'application_update' | 'payment_update' | 'message_received' | 'security_alert' | 'marketing';
-            offer_status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired';
+            offer_status: 'pending' | 'accepted' | 'declined' | 'withdrawn' | 'expired' | 'countered';
             payment_provider: 'manual' | 'paystack' | 'flutterwave' | 'stripe';
             payment_status: 'pending' | 'processing' | 'paid' | 'failed' | 'refunded' | 'cancelled';
             payout_status: 'requested' | 'approved' | 'paid' | 'rejected';
@@ -1371,11 +1892,12 @@ export const Constants = {
                 'review_posted',
             ],
             audit_result: ['success', 'failure'],
-            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled'],
+            gig_status: ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired', 'disputed'],
             identity_document_type: ['passport', 'drivers_license', 'national_id', 'selfie_video'],
+            message_report_status: ['pending', 'reviewing', 'actioned', 'dismissed'],
             notification_channel: ['in_app', 'email', 'push', 'sms'],
             notification_type: ['gig_update', 'application_update', 'payment_update', 'message_received', 'security_alert', 'marketing'],
-            offer_status: ['pending', 'accepted', 'declined', 'withdrawn', 'expired'],
+            offer_status: ['pending', 'accepted', 'declined', 'withdrawn', 'expired', 'countered'],
             payment_provider: ['manual', 'paystack', 'flutterwave', 'stripe'],
             payment_status: ['pending', 'processing', 'paid', 'failed', 'refunded', 'cancelled'],
             payout_status: ['requested', 'approved', 'paid', 'rejected'],

@@ -53,6 +53,16 @@ export const adminPayoutRequestStatusSchema = {
     }),
     inputSchema: Joi.object({
         status: Joi.string().valid('requested', 'approved', 'paid', 'rejected').required(),
+        externalTransferId: Joi.when('status', {
+            is: 'paid',
+            then: Joi.string().trim().min(1).max(200).required(),
+            otherwise: Joi.string().max(200).allow(null, '').optional(),
+        }),
+        externalProvider: Joi.when('status', {
+            is: 'paid',
+            then: Joi.string().valid('stripe', 'bank_wire', 'paypal', 'manual').required(),
+            otherwise: Joi.string().valid('stripe', 'bank_wire', 'paypal', 'manual').optional(),
+        }),
     }),
 };
 
@@ -100,7 +110,7 @@ export const adminGigsQuerySchema = {
     querySchema: Joi.object({
         page: Joi.number().integer().min(1).optional(),
         pageSize: Joi.number().integer().min(1).max(100).optional(),
-        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled').optional(),
+        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired').optional(),
         employerId: uuid.optional(),
         search: Joi.string().max(120).optional(),
     }),
@@ -111,6 +121,28 @@ export const adminGigStatusSchema = {
         id: uuid.required(),
     }),
     inputSchema: Joi.object({
-        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled').required(),
+        status: Joi.string().valid('draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired').required(),
+    }),
+};
+
+const adminDisputeStatusEnum = ['open', 'in_review', 'resolved_talent', 'resolved_employer', 'withdrawn'] as const;
+
+export const adminDisputesQuerySchema = {
+    querySchema: Joi.object({
+        page: Joi.number().integer().min(1).optional(),
+        pageSize: Joi.number().integer().min(1).max(100).optional(),
+        status: Joi.string()
+            .valid(...adminDisputeStatusEnum)
+            .optional(),
+    }),
+};
+
+export const adminResolveDisputeSchema = {
+    paramsSchema: Joi.object({
+        id: uuid.required(),
+    }),
+    inputSchema: Joi.object({
+        resolution: Joi.string().valid('resolved_talent', 'resolved_employer', 'withdrawn').required(),
+        adminNotes: Joi.string().max(5000).allow(null, '').optional(),
     }),
 };

@@ -1,8 +1,10 @@
 import Joi from 'joi';
 
 const uuid = Joi.string().uuid();
-const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled'] as const;
+const statusEnum = ['draft', 'open', 'in_progress', 'completed', 'cancelled', 'expired'] as const;
 const applicationStatusEnum = ['submitted', 'reviewing', 'shortlisted', 'hired', 'rejected', 'withdrawn'] as const;
+const timeOfDayPattern = /^([01]\d|2[0-3]):([0-5]\d)(:([0-5]\d))?$/;
+const timeOfDay = Joi.string().pattern(timeOfDayPattern, 'HH:MM or HH:MM:SS');
 
 export const gigFiltersSchema = {
     querySchema: Joi.object({
@@ -23,8 +25,16 @@ export const gigFiltersSchema = {
         dateTo: Joi.string().isoDate().optional(),
         isRemote: Joi.boolean().optional(),
         employerId: uuid.optional(),
+        gigTypeId: uuid.optional(),
+        skillRequired: Joi.string().max(160).optional(),
+        genres: Joi.array().items(Joi.string().max(80)).single().optional(),
     }),
 };
+// Reusable array of free-form skill labels, accepts a single string and
+// coerces it to a one-element array so existing FE call sites that send
+// `skillRequired: "DJ"` keep working alongside the new `["DJ", "Drummer"]`
+// shape.
+const skillsArray = Joi.array().items(Joi.string().min(1).max(160)).max(20).single();
 
 export const discoveryFeedSchema = {
     querySchema: Joi.object({
@@ -53,6 +63,21 @@ export const createGigSchema = {
             then: Joi.string().max(160).allow(null, ''),
             otherwise: Joi.string().max(160).required(),
         }),
+        // Fields aligned with the FE's CreateGigPayload (server/apiTypes/gig.type.ts).
+        displayImage: Joi.string().uri().allow(null, '').optional(),
+        // Required: the canonical gig type, identified by its uuid from
+        // GET /gig/types. The FE renders the dropdown from that list.
+        gigTypeId: uuid.required(),
+        gigStartTime: timeOfDay.allow(null, '').optional(),
+        gigEndTime: timeOfDay.allow(null, '').optional(),
+        gigLocation: Joi.string().max(160).allow(null, '').optional(),
+        gigAddress: Joi.string().max(240).allow(null, '').optional(),
+        gigPostCode: Joi.string().max(20).allow(null, '').optional(),
+        isEquipmentRequired: Joi.boolean().allow(null).optional(),
+        skillRequired: skillsArray.allow(null).optional(),
+        durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
+        dressCode: Joi.string().max(120).allow(null, '').optional(),
+        additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
 
@@ -75,6 +100,18 @@ export const updateGigSchema = {
         status: Joi.string()
             .valid(...statusEnum)
             .optional(),
+        displayImage: Joi.string().uri().allow(null, '').optional(),
+        gigTypeId: uuid.optional(),
+        gigStartTime: timeOfDay.allow(null, '').optional(),
+        gigEndTime: timeOfDay.allow(null, '').optional(),
+        gigLocation: Joi.string().max(160).allow(null, '').optional(),
+        gigAddress: Joi.string().max(240).allow(null, '').optional(),
+        gigPostCode: Joi.string().max(20).allow(null, '').optional(),
+        isEquipmentRequired: Joi.boolean().allow(null).optional(),
+        skillRequired: skillsArray.allow(null).optional(),
+        durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
+        dressCode: Joi.string().max(120).allow(null, '').optional(),
+        additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
 
@@ -89,8 +126,9 @@ export const applyToGigSchema = {
         id: uuid.required(),
     }),
     inputSchema: Joi.object({
-        coverMessage: Joi.string().max(2000).allow(null, ''),
+        proposalMessage: Joi.string().max(1000).allow(null, ''),
         proposedRate: Joi.number().min(0).optional(),
+        proposedCurrency: Joi.string().max(8).allow(null, '').optional(),
     }),
 };
 
@@ -104,6 +142,17 @@ export const gigApplicationsSchema = {
         status: Joi.string()
             .valid(...applicationStatusEnum)
             .optional(),
+    }),
+};
+
+export const updateApplicationStatusSchema = {
+    paramsSchema: Joi.object({
+        gigId: uuid.required(),
+        applicationId: uuid.required(),
+    }),
+    inputSchema: Joi.object({
+        status: Joi.string().valid('shortlisted', 'rejected').required(),
+        employerNotes: Joi.string().max(2000).allow(null, '').optional(),
     }),
 };
 
@@ -161,8 +210,8 @@ export const reportTalentSchema = {
     }),
 };
 
-const offerStatusEnum = ['pending', 'accepted', 'declined', 'withdrawn', 'expired'] as const;
-const offerMutableStatusEnum = ['accepted', 'declined', 'withdrawn'] as const;
+const offerStatusEnum = ['pending', 'accepted', 'declined', 'withdrawn', 'expired', 'countered'] as const;
+const offerMutableStatusEnum = ['accepted', 'declined', 'withdrawn', 'countered'] as const;
 
 export const createGigOfferSchema = {
     paramsSchema: Joi.object({
@@ -209,5 +258,15 @@ export const updateGigOfferSchema = {
         status: Joi.string()
             .valid(...offerMutableStatusEnum)
             .required(),
+        counterAmount: Joi.when('status', {
+            is: 'countered',
+            then: Joi.number().min(0).required(),
+            otherwise: Joi.forbidden(),
+        }),
+        counterMessage: Joi.when('status', {
+            is: 'countered',
+            then: Joi.string().max(1000).allow(null, '').optional(),
+            otherwise: Joi.forbidden(),
+        }),
     }),
 };

@@ -16,7 +16,7 @@ jest.mock('~/employers/repository', () => ({
 import { UpsertEmployerProfile } from './index';
 
 describe('UpsertEmployerProfile service', () => {
-    it('creates or updates employer profile', async () => {
+    it('creates or updates employer profile and surfaces totalApplicationsReceived', async () => {
         const employerRepository = {
             upsertEmployerProfile: jest.fn().mockResolvedValue({
                 id: 'employer-1',
@@ -28,6 +28,7 @@ describe('UpsertEmployerProfile service', () => {
                 totalSpent: null,
                 updatedAt: new Date().toISOString(),
             }),
+            countTotalApplicationsReceived: jest.fn().mockResolvedValue(12),
         };
 
         const service = new UpsertEmployerProfile(employerRepository as never);
@@ -47,8 +48,11 @@ describe('UpsertEmployerProfile service', () => {
             organizationName: 'Acme Corp',
             companyWebsite: 'https://acme.com',
         });
+        expect(employerRepository.countTotalApplicationsReceived).toHaveBeenCalledWith('user-1');
         expect(response.message).toBe('Employer Profile Updated Successfully');
         expect(response.data.organizationName).toBe('Acme Corp');
+        expect(response.data.industry).toBe('Tech');
+        expect(response.data.totalApplicationsReceived).toBe(12);
     });
 
     it('handles empty input', async () => {
@@ -57,6 +61,7 @@ describe('UpsertEmployerProfile service', () => {
                 id: 'employer-1',
                 userId: 'user-1',
             }),
+            countTotalApplicationsReceived: jest.fn().mockResolvedValue(0),
         };
 
         const service = new UpsertEmployerProfile(employerRepository as never);

@@ -3,6 +3,51 @@ import { DatabaseEnum, DatabaseTable, Json } from '@/core/types';
 export type DatabasePayment = DatabaseTable['payments']['Row'];
 export type DatabasePayoutRequest = DatabaseTable['payout_requests']['Row'];
 export type DatabasePaymentReleaseOtp = DatabaseTable['payment_release_otps']['Row'];
+export type DatabaseDispute = DatabaseTable['disputes']['Row'];
+export type DatabaseDisputeEvidence = DatabaseTable['dispute_evidence']['Row'];
+export type DatabasePayoutMethod = DatabaseTable['payout_methods']['Row'];
+
+export type PayoutMethodProviderEnum = 'stripe_connect' | 'bank' | 'paypal';
+
+export type PayoutMethod = {
+    id: string;
+    userId: string | null;
+    provider: PayoutMethodProviderEnum;
+    externalAccountId: string | null;
+    displayLabel: string | null;
+    isDefault: boolean;
+    isVerified: boolean;
+    metadata: Json | null;
+    createdAt: string | null;
+};
+
+export type DisputeStatusEnum = 'open' | 'in_review' | 'resolved_talent' | 'resolved_employer' | 'withdrawn';
+export type DisputeEvidenceTypeEnum = 'screenshot' | 'message' | 'document' | 'other';
+
+export type Dispute = {
+    id: string;
+    paymentId: string | null;
+    gigId: string | null;
+    raisedBy: string | null;
+    reason: string;
+    description: string | null;
+    status: DisputeStatusEnum;
+    adminNotes: string | null;
+    resolvedAt: string | null;
+    resolvedBy: string | null;
+    createdAt: string | null;
+    updatedAt: string | null;
+};
+
+export type DisputeEvidence = {
+    id: string;
+    disputeId: string | null;
+    uploadedBy: string | null;
+    evidenceType: DisputeEvidenceTypeEnum | null;
+    fileUrl: string | null;
+    notes: string | null;
+    createdAt: string | null;
+};
 
 export type PaymentStatusEnum = DatabaseEnum['payment_status'];
 export type PaymentProviderEnum = DatabaseEnum['payment_provider'];
@@ -26,6 +71,8 @@ export type Payment = {
     updatedAt: string;
 };
 
+export type PayoutExternalProviderEnum = 'stripe' | 'bank_wire' | 'paypal' | 'manual';
+
 export type PayoutRequest = {
     id: string;
     amount: number;
@@ -36,6 +83,10 @@ export type PayoutRequest = {
     status: PayoutStatusEnum;
     talentId: string;
     updatedAt: string;
+    externalTransferId: string | null;
+    externalProvider: PayoutExternalProviderEnum | null;
+    paidAt: string | null;
+    paidBy: string | null;
 };
 
 export type PaymentReleaseOtp = {

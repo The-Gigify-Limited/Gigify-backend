@@ -24,6 +24,9 @@ export interface GetGigsQueryDto extends ControllerArgsTypes {
         dateTo?: string;
         isRemote?: boolean;
         employerId?: string;
+        gigTypeId?: string;
+        skillRequired?: string;
+        genres?: string[];
     };
 }
 
@@ -41,6 +44,16 @@ export interface CreateGigDto extends ControllerArgsTypes {
         | 'locationLongitude'
         | 'isRemote'
         | 'requiredTalentCount'
+        | 'displayImage'
+        | 'gigTypeId'
+        | 'gigStartTime'
+        | 'gigEndTime'
+        | 'gigLocation'
+        | 'gigAddress'
+        | 'gigPostCode'
+        | 'isEquipmentRequired'
+        | 'skillRequired'
+        | 'additionalNotes'
     >;
 }
 
@@ -63,6 +76,16 @@ export interface UpdateGigDto extends ControllerArgsTypes {
             | 'isRemote'
             | 'status'
             | 'requiredTalentCount'
+            | 'displayImage'
+            | 'gigTypeId'
+            | 'gigStartTime'
+            | 'gigEndTime'
+            | 'gigLocation'
+            | 'gigAddress'
+            | 'gigPostCode'
+            | 'isEquipmentRequired'
+            | 'skillRequired'
+            | 'additionalNotes'
         >
     >;
 }
@@ -72,8 +95,9 @@ export interface ApplyToGigDto extends ControllerArgsTypes {
         id: string;
     };
     input: {
-        coverMessage?: string;
+        proposalMessage?: string;
         proposedRate?: number;
+        proposedCurrency?: string;
     };
 }
 
@@ -95,6 +119,17 @@ export interface UpdateGigStatusDto extends ControllerArgsTypes {
     input: {
         status: GigStatusEnum;
         reason?: string;
+    };
+}
+
+export interface UpdateApplicationStatusDto extends ControllerArgsTypes {
+    params: {
+        gigId: string;
+        applicationId: string;
+    };
+    input: {
+        status: Extract<ApplicationStatusEnum, 'shortlisted' | 'rejected'>;
+        employerNotes?: string | null;
     };
 }
 
@@ -186,6 +221,8 @@ export interface UpdateGigOfferDto extends ControllerArgsTypes {
         offerId: string;
     };
     input: {
-        status: Extract<OfferStatusEnum, 'accepted' | 'declined' | 'withdrawn'>;
+        status: Extract<OfferStatusEnum, 'accepted' | 'declined' | 'withdrawn' | 'countered'>;
+        counterAmount?: number;
+        counterMessage?: string | null;
     };
 }

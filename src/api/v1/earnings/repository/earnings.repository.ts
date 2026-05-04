@@ -65,6 +65,26 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
         return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
+    async findPaymentByStripeIntent(intentId: string): Promise<Payment | null> {
+        // Payment reference holds the PI id once a Stripe webhook has
+        // stamped it, so a direct eq-lookup is the cheap path. Fall back to
+        // a metadata scan only if the reference path misses (older rows).
+        const { data, error } = await supabaseAdmin.from(this.table).select('*').eq('payment_reference', intentId).maybeSingle();
+
+        if (error) throw error;
+        if (data) return this.mapToCamelCase(data);
+
+        const { data: metaRows = [], error: metaError } = await supabaseAdmin
+            .from(this.table)
+            .select('*')
+            .contains('metadata', { stripePaymentIntentId: intentId })
+            .limit(1);
+
+        if (metaError) throw metaError;
+
+        return metaRows && metaRows.length ? this.mapToCamelCase(metaRows[0]) : null;
+    }
+
     async findPendingPaymentByContext(input: { talentId: string; gigId?: string; applicationId?: string }): Promise<Payment | null> {
         let request = supabaseAdmin.from(this.table).select('*').eq('talent_id', input.talentId).in('status', ['pending', 'processing']);
 
@@ -95,18 +115,51 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     }
 
     async getPaymentHistoryForTalent(talentId: string, query: { page?: number | string; pageSize?: number | string }): Promise<Payment[]> {
-        const { offset, rangeEnd } = normalizePagination(query);
+        return this.getPaymentHistoryForUser(talentId, { ...query, direction: 'incoming' });
+    }
 
-        const { data = [], error } = await supabaseAdmin
-            .from(this.table)
-            .select('*')
-            .eq('talent_id', talentId)
-            .order('created_at', { ascending: false })
-            .range(offset, rangeEnd);
+    async getPaymentHistoryForUser(
+        userId: string,
+        query: {
+            page?: number | string;
+            pageSize?: number | string;
+            dateFrom?: string;
+            dateTo?: string;
+            status?: Payment['status'];
+            direction?: 'incoming' | 'outgoing';
+            gigId?: string;
+            paymentIdsFilter?: string[];
+        },
+    ): Promise<Payment[]> {
+        const { offset, rangeEnd } = normalizePagination(query);
+        const direction = query.direction ?? 'incoming';
+
+        let request = supabaseAdmin.from(this.table).select('*');
+
+        if (direction === 'outgoing') {
+            request = request.eq('employer_id', userId);
+        } else {
+            request = request.eq('talent_id', userId);
+        }
+
+        if (query.gigId) request = request.eq('gig_id', query.gigId);
+        if (query.status) request = request.eq('status', query.status);
+        if (query.dateFrom) request = request.gte('created_at', query.dateFrom);
+        if (query.dateTo) request = request.lte('created_at', query.dateTo);
+
+        // paymentIdsFilter lets the service scope to a pre-computed id set
+        // (e.g. the subset currently under open dispute). An empty array means
+        // "no matches", short-circuit to preserve that intent.
+        if (query.paymentIdsFilter) {
+            if (query.paymentIdsFilter.length === 0) return [];
+            request = request.in('id', query.paymentIdsFilter);
+        }
+
+        const { data = [], error } = await request.order('created_at', { ascending: false }).range(offset, rangeEnd);
 
         if (error) throw error;
 
-        return (data ?? []).map(this.mapToCamelCase);
+        return (data ?? []).map((row) => this.mapToCamelCase(row));
     }
 
     async createPayoutRequest(talentId: string, input: { amount: number; currency?: string; note?: string }): Promise<PayoutRequest> {
@@ -177,13 +230,17 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
                 processed_at: input.processedAt,
                 status: input.status,
                 talent_id: input.talentId,
+                external_transfer_id: input.externalTransferId,
+                external_provider: input.externalProvider,
+                paid_at: input.paidAt,
+                paid_by: input.paidBy,
                 updated_at: new Date().toISOString(),
             }).filter(([, value]) => value !== undefined),
         );
 
         const { data, error } = await supabaseAdmin
             .from('payout_requests')
-            // @ts-expect-error — Object.fromEntries returns { [k: string]: ... } which is too wide for Supabase's strict update types
+            // @ts-expect-error, Object.fromEntries returns { [k: string]: ... } which is too wide for Supabase's strict update types
             .update(payload)
             .eq('id', id)
             .select('*')
@@ -231,7 +288,7 @@ export class EarningsRepository extends BaseRepository<DatabasePayment, Payment>
     async updatePaymentReleaseOtp(id: string, input: Partial<PaymentReleaseOtp>): Promise<PaymentReleaseOtp> {
         const { data, error } = await supabaseAdmin
             .from('payment_release_otps')
-            // @ts-expect-error — mapToSnakeCase returns Partial<DatabasePayment> which mismatches the payment_release_otps table schema
+            // @ts-expect-error, mapToSnakeCase returns Partial<DatabasePayment> which mismatches the payment_release_otps table schema
             .update({
                 ...this.mapToSnakeCase(input),
                 updated_at: new Date().toISOString(),

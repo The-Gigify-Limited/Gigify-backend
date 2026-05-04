@@ -27,6 +27,11 @@ const loginSchema = {
     inputSchema: Joi.object().keys({
         email: Joi.string().required(),
         password: Joi.string().required(),
+        // Frontend-only: Supabase refresh TTL is fixed project-wide, so we
+        // record the user's intent and return it back via sessionHint. The
+        // client decides whether to persist the refresh token in
+        // localStorage (persistent) vs sessionStorage (tab-scoped).
+        remember: Joi.boolean().default(false).optional(),
     }),
 };
 

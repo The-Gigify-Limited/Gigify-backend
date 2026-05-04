@@ -8,7 +8,6 @@ export type DatabaseSavedGig = DatabaseTable['saved_gigs']['Row'];
 export type DatabaseServiceCatalog = DatabaseTable['services_catalog']['Row'];
 
 export type GigStatusEnum = DatabaseEnum['gig_status'];
-export type GigFrontendStatus = 'unpublished' | 'active' | 'booked' | 'completed' | 'cancelled';
 export type ApplicationStatusEnum = DatabaseEnum['application_status'];
 export type OfferStatusEnum = DatabaseEnum['offer_status'];
 export type PaymentProviderEnum = DatabaseEnum['payment_provider'];
@@ -31,6 +30,23 @@ export type Gig = {
     requiredTalentCount: number;
     createdAt: string | null;
     updatedAt: string | null;
+    // Renamed/added fields aligned with the frontend's GigBaseSchema
+    // (server/apiTypes/gig.type.ts). The DB columns are gig_start_time,
+    // gig_end_time, gig_type, is_equipment_required, display_image,
+    // gig_address, gig_location, gig_post_code, skill_required.
+    gigTypeId: string | null;
+    gigType: string | null;
+    gigStartTime: string | null;
+    gigEndTime: string | null;
+    gigLocation: string | null;
+    gigAddress: string | null;
+    gigPostCode: string | null;
+    isEquipmentRequired: boolean | null;
+    skillRequired: string[] | null;
+    displayImage: string | null;
+    durationMinutes: number | null;
+    dressCode: string | null;
+    additionalNotes: string | null;
 };
 
 export type GigApplication = {
@@ -38,8 +54,9 @@ export type GigApplication = {
     gigId: string;
     talentId: string;
     status: ApplicationStatusEnum;
-    coverMessage: string | null;
+    proposalMessage: string | null;
     proposedRate: number | null;
+    proposedCurrency: string | null;
     employerNotes: string | null;
     appliedAt: string;
     hiredAt: string | null;
@@ -57,8 +74,20 @@ export type GigOffer = {
     status: OfferStatusEnum;
     expiresAt: string | null;
     respondedAt: string | null;
+    acceptedAt: string | null;
+    declinedAt: string | null;
+    counterAmount: number | null;
+    counterMessage: string | null;
     createdAt: string;
     updatedAt: string;
+};
+
+export type GigType = {
+    id: string;
+    name: string;
+    isActive: boolean;
+    createdAt: string | null;
+    updatedAt: string | null;
 };
 
 export type ServiceCatalog = {

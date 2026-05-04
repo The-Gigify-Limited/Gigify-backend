@@ -4,22 +4,22 @@
  * Generates a PR description from commits + diff.
  * Two modes controlled by the PR_DESC_MODE env var:
  *
- *   "commits"  — free, no API key needed. Formats commit history + file changes.
- *   "ai"       — sends the diff to an LLM (OpenAI or Anthropic) for a rich summary.
+ *   "commits" , free, no API key needed. Formats commit history + file changes.
+ *   "ai"      : sends the diff to an LLM (OpenAI or Anthropic) for a rich summary.
  *
  * Required env vars:
- *   GITHUB_TOKEN          — automatically provided by GitHub Actions
- *   PR_NUMBER             — the pull request number
- *   GITHUB_REPOSITORY     — owner/repo (automatic)
- *   PR_DESC_MODE          — "commits" | "ai"  (default: "commits")
+ *   GITHUB_TOKEN         : automatically provided by GitHub Actions
+ *   PR_NUMBER            : the pull request number
+ *   GITHUB_REPOSITORY    : owner/repo (automatic)
+ *   PR_DESC_MODE         , "commits" | "ai"  (default: "commits")
  *
  * For AI mode, one of:
- *   OPENAI_API_KEY        — OpenAI API key
- *   ANTHROPIC_API_KEY     — Anthropic API key
+ *   OPENAI_API_KEY   : OpenAI API key
+ *   ANTHROPIC_API_KEY   : Anthropic API key
  *
  * Optional:
- *   AI_MODEL              — model override (default: gpt-4o-mini / claude-sonnet-4-20250514)
- *   PR_DESC_MAX_DIFF_CHARS — max diff characters sent to AI (default: 12000)
+ *   AI_MODEL             : model override (default: gpt-4o-mini / claude-sonnet-4-20250514)
+ *   PR_DESC_MAX_DIFF_CHARS, max diff characters sent to AI (default: 12000)
  */
 
 const https = require('https');
@@ -174,7 +174,7 @@ function generateCommitDescription(pr, commits, files) {
         totalDeletions += file.deletions;
     }
 
-    lines.push(`### Changes — \`+${totalAdditions}\` / \`-${totalDeletions}\` across ${files.length} files`);
+    lines.push(`### Changes, \`+${totalAdditions}\` / \`-${totalDeletions}\` across ${files.length} files`);
     lines.push('');
 
     const categoryOrder = ['Routes', 'Services', 'Data Layer', 'Types', 'Templates', 'Tests', 'Database', 'Config', 'CI/CD', 'Docs', 'Other'];

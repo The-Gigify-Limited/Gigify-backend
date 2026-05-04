@@ -19,6 +19,8 @@ export type User = {
     gender: string | null;
     phoneNumber: string | null;
     profileImageUrl: string | null;
+    bannerImageUrl: string | null;
+    referral: string | null;
     fullAddress: string | null;
     locationCity: string | null;
     locationCountry: string | null;
@@ -33,6 +35,10 @@ export type User = {
     createdAt: string | null;
     updatedAt: string | null;
     username: string | null;
+    dateOfBirth: string | null;
+    streetAddress: string | null;
+    acquisitionSource: string | null;
+    bio: string | null;
 };
 
 export type Activity = {
@@ -54,6 +60,13 @@ export type NotificationPreferences = {
     paymentUpdates: boolean;
     messageUpdates: boolean;
     securityAlerts: boolean;
+    smsGigUpdates: boolean;
+    smsPaymentUpdates: boolean;
+    smsSecurityAlerts: boolean;
+    pushGigUpdates: boolean;
+    pushMessageUpdates: boolean;
+    pushPaymentUpdates: boolean;
+    pushSecurityAlerts: boolean;
     createdAt: string | null;
     updatedAt: string | null;
 };

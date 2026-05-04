@@ -6,6 +6,9 @@ jest.mock('@/core', () => {
         ForbiddenError,
         HttpStatus: { OK: 200 },
         UnAuthorizedError,
+        realtimeService: {
+            broadcastToConversation: jest.fn().mockResolvedValue(undefined),
+        },
     };
 });
 

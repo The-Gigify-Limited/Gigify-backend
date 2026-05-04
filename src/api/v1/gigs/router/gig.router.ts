@@ -10,6 +10,7 @@ import {
     getGigApplications,
     getGigById,
     getGigCatalog,
+    getGigTypes,
     getGigDiscoveryFeed,
     getGigOffersForGig,
     getMyGigs,
@@ -20,6 +21,7 @@ import {
     reportTalent,
     saveGig,
     searchGigs,
+    updateApplicationStatus,
     updateGig,
     updateGigOffer,
     updateGigStatus,
@@ -38,6 +40,7 @@ import {
     myGigsSchema,
     reportTalentSchema,
     savedGigsSchema,
+    updateApplicationStatusSchema,
     updateGigSchema,
     updateGigOfferSchema,
     updateGigStatusSchema,
@@ -70,10 +73,107 @@ gigRouter.get(
 
 /**
  * @swagger
+ * /gig/types:
+ *   get:
+ *     tags: [Gigs]
+ *     summary: List the canonical gig types
+ *     description: |
+ *       Returns the active rows from `gig_types`. The frontend renders this
+ *       list as the "Event Type" dropdown on the create-gig form and sends
+ *       the chosen `id` back as `gigTypeId` on `POST /gig`.
+ *     responses:
+ *       200:
+ *         description: Active gig types
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: Gig Types Retrieved Successfully
+ *               data:
+ *                 - id: 11111111-1111-1111-1111-111111111111
+ *                   name: Wedding
+ *                   isActive: true
+ *                 - id: 22222222-2222-2222-2222-222222222222
+ *                   name: Party
+ *                   isActive: true
+ */
+gigRouter.get(
+    '/types',
+    ControlBuilder.builder().setHandler(getGigTypes.handle).handle(),
+);
+
+/**
+ * @swagger
  * /gig/explore:
  *   get:
  *     tags: [Gigs]
  *     summary: Explore open gigs with filters
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: search
+ *         description: Substring match on `title` OR `description`
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: location
+ *         description: Substring match on `venueName` (alias for `location_name`)
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         description: Geo radius (km). Requires latitude + longitude.
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         description: ISO date (inclusive lower bound on `gigDate`)
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         description: ISO date (inclusive upper bound on `gigDate`)
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: genres
+ *         description: Resolved against `services_catalog.name`. Multiple values allowed (`?genres=DJ&genres=Drummer`).
+ *         schema:
+ *           type: array
+ *           items: { type: string, maxLength: 80 }
  *     responses:
  *       200:
  *         description: Gig explore feed
@@ -102,6 +202,68 @@ gigRouter.get(
  *   get:
  *     tags: [Gigs]
  *     summary: Search gigs with keyword and filter support
+ *     description: |
+ *       Same query parameter set as `/gig/explore` and `GET /gig`. The `search`
+ *       param matches against `title` and `description`; combine it with the
+ *       structured filters (`status`, `gigTypeId`, `skillRequired`, `location`,
+ *       `minBudget`/`maxBudget`, `dateFrom`/`dateTo`, geo, etc.) to narrow.
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: location
+ *         description: Substring (ilike) match on `venueName`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
  *     responses:
  *       200:
  *         description: Search results
@@ -114,6 +276,9 @@ gigRouter.get(
  *                   title: Luxury Wedding Afterparty DJ
  *                   budgetAmount: 2200
  *                   currency: GBP
+ *                   gigTypeId: 11111111-1111-1111-1111-111111111111
+ *                   gigType: Wedding
+ *                   skillRequired: ["DJ"]
  */
 gigRouter.get(
     '/search',
@@ -342,6 +507,18 @@ gigRouter.delete(
  *             locationLongitude: 3.472
  *             isRemote: false
  *             requiredTalentCount: 1
+ *             gigTypeId: 11111111-1111-1111-1111-111111111111
+ *             gigStartTime: "21:00"
+ *             gigEndTime: "02:00"
+ *             durationMinutes: 300
+ *             isEquipmentRequired: false
+ *             dressCode: all_black
+ *             additionalNotes: Two set breaks. MC will cue you.
+ *             displayImage: https://cdn.example.com/gigs/afrobeat-night.jpg
+ *             gigLocation: Lekki, Lagos
+ *             gigAddress: 12 Admiralty Way
+ *             gigPostCode: "101231"
+ *             skillRequired: ["Drummer"]
  *     responses:
  *       201:
  *         description: Gig created
@@ -369,6 +546,65 @@ gigRouter.post(
  *   get:
  *     tags: [Gigs]
  *     summary: List gigs with optional filters
+ *     description: Accepts the same filter params as `/gig/explore` and `/gig/search`.
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, open, in_progress, completed, cancelled, expired]
+ *       - in: query
+ *         name: gigTypeId
+ *         description: Filter by a specific gig type. Use the `id` from `GET /gig/types`.
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: skillRequired
+ *         description: Substring (ilike) match on any entry in the gig's `skillRequired` array.
+ *         schema: { type: string, maxLength: 160 }
+ *       - in: query
+ *         name: search
+ *         description: Substring match on `title` OR `description`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: location
+ *         description: Substring (ilike) match on `venueName`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: minBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxBudget
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: dateFrom
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: dateTo
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: isRemote
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: employerId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: serviceId
+ *         schema: { type: string, format: uuid }
+ *       - in: query
+ *         name: latitude
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: longitude
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 100 }
  *     responses:
  *       200:
  *         description: Gig list
@@ -416,6 +652,64 @@ gigRouter.get(
         .checkResourceOwnership('gig', 'id')
         .setValidator(gigApplicationsSchema)
         .setHandler(getGigApplications.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /gig/{gigId}/application/{applicationId}/status:
+ *   patch:
+ *     tags: [Gigs]
+ *     summary: Employer shortlists or rejects a talent's application
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: gigId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: path
+ *         name: applicationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [shortlisted, rejected]
+ *               employerNotes:
+ *                 type: string
+ *           example:
+ *             status: shortlisted
+ *             employerNotes: Great portfolio, booking for interview.
+ *     responses:
+ *       200:
+ *         description: Application status updated
+ *       401:
+ *         description: Unauthenticated
+ *       403:
+ *         description: Caller does not own the gig, or role is not employer
+ *       409:
+ *         description: Invalid transition (e.g. already rejected, already hired)
+ */
+gigRouter.patch(
+    '/:gigId/application/:applicationId/status',
+    ControlBuilder.builder()
+        .only('employer')
+        .checkResourceOwnership('gig', 'gigId')
+        .setValidator(updateApplicationStatusSchema)
+        .setHandler(updateApplicationStatus.handle)
         .handle(),
 );
 
@@ -502,8 +796,9 @@ gigRouter.post(
  *       content:
  *         application/json:
  *           example:
- *             coverMessage: I can deliver a high-energy Afrobeat set and manage transitions smoothly.
+ *             proposalMessage: I can deliver a high-energy Afrobeat set and manage transitions smoothly.
  *             proposedRate: 210000
+ *             proposedCurrency: NGN
  *     responses:
  *       201:
  *         description: Application submitted
@@ -687,6 +982,13 @@ gigRouter.patch(
  *   get:
  *     tags: [Gigs]
  *     summary: Get gig details
+ *     description: |
+ *       Returns the full gig record, including the FE-aligned schema fields
+ *       (`displayImage`, `gigTypeId`, `gigType`, `gigStartTime`, `gigEndTime`,
+ *       `gigLocation`, `gigAddress`, `gigPostCode`, `isEquipmentRequired`,
+ *       `skillRequired`) and the raw DB `status` enum (`draft`, `open`,
+ *       `in_progress`, `completed`, `cancelled`, `expired`, `disputed`) ,
+ *       no longer remapped to `active` / `booked` / `unpublished`.
  *     responses:
  *       200:
  *         description: Gig details
@@ -696,12 +998,38 @@ gigRouter.patch(
  *               message: Gig Retrieved Successfully
  *               data:
  *                 id: 50000000-0000-0000-0000-000000000002
+ *                 employerId: 10000000-0000-0000-0000-000000000002
  *                 title: Lagos Beach Wedding Sax Set
+ *                 description: Wedding sunset sax set on Elegushi beach.
+ *                 budgetAmount: 250000
+ *                 currency: NGN
+ *                 gigDate: 2026-08-12T17:30:00.000Z
+ *                 status: open
+ *                 venueName: Elegushi Beach Resort
+ *                 displayImage: https://cdn.example.com/gigs/sax-night.jpg
+ *                 gigTypeId: 11111111-1111-1111-1111-111111111111
+ *                 gigType: Wedding
+ *                 gigStartTime: "17:30"
+ *                 gigEndTime: "20:00"
+ *                 gigLocation: Lekki, Lagos
+ *                 gigAddress: 12 Beach Road
+ *                 gigPostCode: "101231"
+ *                 isEquipmentRequired: true
+ *                 skillRequired: ["Saxophonist", "Live Band"]
+ *                 additionalNotes: Two 45-minute sets with a 15-minute break.
  *                 remainingTalentSlots: 0
  *                 isSaved: false
  *                 myApplication:
  *                   id: 60000000-0000-0000-0000-000000000002
  *                   status: hired
+ *                 employer:
+ *                   id: 10000000-0000-0000-0000-000000000002
+ *                   firstName: John
+ *                   lastName: Doe
+ *                 employerProfile:
+ *                   organizationName: Pulse Live
+ *                 gigHire: []
+ *                 gigApplicants: []
  */
 gigRouter.get(
     '/:id',
@@ -727,6 +1055,18 @@ gigRouter.get(
  *             title: Afrobeat Night Drummer
  *             budgetAmount: 200000
  *             requiredTalentCount: 2
+ *             gigTypeId: 11111111-1111-1111-1111-111111111111
+ *             gigStartTime: "21:00"
+ *             gigEndTime: "02:00"
+ *             durationMinutes: 300
+ *             isEquipmentRequired: false
+ *             dressCode: all_black
+ *             additionalNotes: Two set breaks. MC will cue you.
+ *             displayImage: https://cdn.example.com/gigs/afrobeat-night.jpg
+ *             gigLocation: Lekki, Lagos
+ *             gigAddress: 12 Admiralty Way
+ *             gigPostCode: "101231"
+ *             skillRequired: ["Drummer"]
  *     responses:
  *       200:
  *         description: Gig updated

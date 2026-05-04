@@ -1,23 +1,168 @@
 import { Router } from 'express';
 import { ControlBuilder } from '@/core';
 import {
+    addAvailability,
+    browseTalents,
     createTalentReview,
+    deleteAvailability,
     deleteTalentPortfolio,
     getAllTalentReviews,
+    getSavedTalents,
     getTalentById,
     getTalentPortfolio,
+    listAvailability,
+    removeSavedTalent,
+    saveTalent,
     updateTalent,
     uploadTalentPortfolio,
 } from '../services';
 import {
+    availabilityCreateSchema,
+    availabilityDeleteSchema,
+    availabilityListSchema,
+    browseTalentsQuerySchema,
     createTalentReviewSchema,
     getUserParamsSchema,
+    savedTalentsQuerySchema,
     talentPortfolioParamSchema,
     talentReviewsQuerySchema,
     updateTalentSchema,
 } from './schema';
 
 export const talentRouter = Router();
+
+/**
+ * @swagger
+ * /talent:
+ *   get:
+ *     tags: [Talent]
+ *     summary: Browse / search the talent directory
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema: { type: integer, minimum: 1, default: 1 }
+ *       - in: query
+ *         name: pageSize
+ *         schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+ *       - in: query
+ *         name: search
+ *         description: Substring (ilike) match on `stage_name`, `primary_role`, OR the talent's `users.first_name` / `users.last_name`.
+ *         schema: { type: string, maxLength: 100 }
+ *       - in: query
+ *         name: primaryRole
+ *         description: Substring (ilike) match on `primary_role` OR exact membership in `skills[]`. Either column matches because many talents store the role as a skill rather than on the dedicated column.
+ *         schema: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: genres
+ *         description: Array of skill labels matched against `skills[]` with overlap (any-match) semantics.
+ *         schema:
+ *           type: array
+ *           items: { type: string, maxLength: 80 }
+ *       - in: query
+ *         name: minRate
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: maxRate
+ *         schema: { type: number, minimum: 0 }
+ *       - in: query
+ *         name: rateCurrency
+ *         schema: { type: string, maxLength: 8 }
+ *       - in: query
+ *         name: minRating
+ *         schema: { type: number, minimum: 0, maximum: 5 }
+ *       - in: query
+ *         name: location
+ *         description: General location filter. Substring (ilike) match against `users.location_city` OR `users.location_country`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: locationCity
+ *         description: Exact match on `users.location_city`. For fuzzy matching across both city and country, use `location` instead.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: locationCountry
+ *         description: Exact match on `users.location_country`.
+ *         schema: { type: string, maxLength: 120 }
+ *       - in: query
+ *         name: lat
+ *         schema: { type: number, minimum: -90, maximum: 90 }
+ *       - in: query
+ *         name: lng
+ *         schema: { type: number, minimum: -180, maximum: 180 }
+ *       - in: query
+ *         name: radiusKm
+ *         description: Geo radius (km) around `lat`/`lng`. Requires all three.
+ *         schema: { type: number, minimum: 1, maximum: 500 }
+ *       - in: query
+ *         name: availableOn
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: sortBy
+ *         schema: { type: string, enum: [rating, priceAsc, priceDesc, recent], default: rating }
+ */
+talentRouter.get(
+    '/',
+    ControlBuilder.builder()
+        .setValidator(browseTalentsQuerySchema)
+        .setHandler(browseTalents.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/saved:
+ *   get:
+ *     tags: [Talent]
+ *     summary: List the current employer's saved talents
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.get(
+    '/saved',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(savedTalentsQuerySchema)
+        .setHandler(getSavedTalents.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/availability:
+ *   post:
+ *     tags: [Talent]
+ *     summary: Mark the current talent unavailable for a window
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.post(
+    '/availability',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('talent')
+        .setValidator(availabilityCreateSchema)
+        .setHandler(addAvailability.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/availability/{id}:
+ *   delete:
+ *     tags: [Talent]
+ *     summary: Delete a manual availability entry (auto rows are read-only)
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.delete(
+    '/availability/:id',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('talent')
+        .setValidator(availabilityDeleteSchema)
+        .setHandler(deleteAvailability.handle)
+        .handle(),
+);
 
 /**
  * @swagger
@@ -45,6 +190,11 @@ export const talentRouter = Router();
  *                 stageName: DJ Maxell
  *                 primaryRole: DJ
  *                 averageRating: 4.8
+ *                 totalGigsCompleted: 12
+ *                 bankName: GTBank
+ *                 accountNumber: "0123456789"
+ *                 portfolios: []
+ *                 reviews: []
  */
 talentRouter.get(
     '/:id',
@@ -73,6 +223,29 @@ talentRouter.get(
  *       required: true
  *       content:
  *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               stageName: { type: string, minLength: 1, maxLength: 60 }
+ *               primaryRole: { type: string, maxLength: 80 }
+ *               biography: { type: string, maxLength: 1000 }
+ *               dateOfBirth: { type: string, format: date }
+ *               minRate: { type: number, minimum: 0 }
+ *               maxRate: { type: number, minimum: 0 }
+ *               rateCurrency: { type: string, maxLength: 8 }
+ *               skills:
+ *                 type: array
+ *                 items: { type: string, maxLength: 80 }
+ *               yearsExperience: { type: integer, minimum: 0 }
+ *               bannerUrl: { type: string, format: uri }
+ *               bankName:
+ *                 type: string
+ *                 maxLength: 120
+ *                 description: Direct-bank-transfer payout account holder bank name (NGN context, not Stripe Connect).
+ *               accountNumber:
+ *                 type: string
+ *                 maxLength: 40
+ *                 description: Direct-bank-transfer payout account number.
  *           example:
  *             stageName: DJ Maxell
  *             primaryRole: DJ
@@ -83,6 +256,8 @@ talentRouter.get(
  *             skills:
  *               - afrobeat
  *               - wedding
+ *             bankName: GTBank
+ *             accountNumber: "0123456789"
  *     responses:
  *       200:
  *         description: Updated talent profile
@@ -94,6 +269,8 @@ talentRouter.get(
  *                 id: 30000000-0000-0000-0000-000000000001
  *                 stageName: DJ Maxell
  *                 primaryRole: DJ
+ *                 bankName: GTBank
+ *                 accountNumber: "0123456789"
  */
 talentRouter.patch(
     '/:id',
@@ -282,5 +459,65 @@ talentRouter.post(
         .isPrivate()
         .setValidator(createTalentReviewSchema)
         .setHandler(createTalentReview.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/save:
+ *   post:
+ *     tags: [Talent]
+ *     summary: Bookmark a talent for the current employer
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.post(
+    '/:id/save',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(getUserParamsSchema)
+        .setHandler(saveTalent.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/save:
+ *   delete:
+ *     tags: [Talent]
+ *     summary: Remove a bookmarked talent
+ *     security:
+ *       - bearerAuth: []
+ */
+talentRouter.delete(
+    '/:id/save',
+    ControlBuilder.builder()
+        .isPrivate()
+        .only('employer')
+        .setValidator(getUserParamsSchema)
+        .setHandler(removeSavedTalent.handle)
+        .handle(),
+);
+
+/**
+ * @swagger
+ * /talent/{id}/availability:
+ *   get:
+ *     tags: [Talent]
+ *     summary: Read a talent's busy windows (for employer availability filters)
+ *     parameters:
+ *       - in: query
+ *         name: from
+ *         schema: { type: string, format: date-time }
+ *       - in: query
+ *         name: to
+ *         schema: { type: string, format: date-time }
+ */
+talentRouter.get(
+    '/:id/availability',
+    ControlBuilder.builder()
+        .setValidator(availabilityListSchema)
+        .setHandler(listAvailability.handle)
         .handle(),
 );

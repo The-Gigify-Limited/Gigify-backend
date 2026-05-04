@@ -1,3 +1,7 @@
+jest.mock('@/app', () => ({
+    dispatch: jest.fn(),
+}));
+
 jest.mock('@/core', () => {
     class BadRequestError extends Error {}
     class ConflictError extends Error {}
@@ -31,6 +35,7 @@ jest.mock('~/notifications/utils/dispatchNotification', () => ({
 
 jest.mock('~/earnings/repository', () => ({
     EarningsRepository: class EarningsRepository {},
+    DisputeRepository: class DisputeRepository {},
 }));
 
 jest.mock('~/gigs/repository', () => ({
@@ -104,11 +109,16 @@ describe('ConfirmPaymentRelease service', () => {
             logActivity: jest.fn().mockResolvedValue(undefined),
         };
 
+        const disputeRepository = {
+            findOpenDisputeForPayment: jest.fn().mockResolvedValue(null),
+        };
+
         const service = new ConfirmPaymentRelease(
             earningsRepository as never,
             gigRepository as never,
             employerRepository as never,
             activityRepository as never,
+            disputeRepository as never,
         );
 
         const response = await service.handle({
@@ -142,5 +152,43 @@ describe('ConfirmPaymentRelease service', () => {
             }),
         );
         expect(response.message).toBe('Payment Released Successfully');
+    });
+
+    it('409s when an open dispute exists on the payment', async () => {
+        const earningsRepository = {
+            getPaymentById: jest.fn().mockResolvedValue({
+                id: 'payment-1',
+                employerId: 'employer-1',
+                talentId: 'talent-1',
+                gigId: 'gig-1',
+                status: 'processing',
+            }),
+            getActivePaymentReleaseOtp: jest.fn(),
+            updatePayment: jest.fn(),
+        };
+        const gigRepository = { getGigById: jest.fn() };
+        const employerRepository = { syncStats: jest.fn() };
+        const activityRepository = { logActivity: jest.fn() };
+        const disputeRepository = {
+            findOpenDisputeForPayment: jest.fn().mockResolvedValue({ id: 'dispute-1', status: 'open' }),
+        };
+
+        const service = new ConfirmPaymentRelease(
+            earningsRepository as never,
+            gigRepository as never,
+            employerRepository as never,
+            activityRepository as never,
+            disputeRepository as never,
+        );
+
+        await expect(
+            service.handle({
+                params: { id: 'payment-1' },
+                input: { otpCode: '123456' },
+                request: { user: { id: 'employer-1' }, headers: {}, ip: '1' },
+            } as never),
+        ).rejects.toThrow('Cannot release payment while a dispute is open');
+
+        expect(earningsRepository.updatePayment).not.toHaveBeenCalled();
     });
 });

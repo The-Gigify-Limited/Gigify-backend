@@ -18,12 +18,17 @@ export class GetEmployerById {
 
         if (!profile) throw new RouteNotFoundError('Employer not found');
 
+        const totalApplicationsReceived = await this.employerRepository.countTotalApplicationsReceived(id);
+
         return {
             code: HttpStatus.OK,
             message: 'Employer Retrieved Successfully',
             data: {
                 user,
-                profile,
+                profile: {
+                    ...profile,
+                    totalApplicationsReceived,
+                },
             },
         };
     };

@@ -1,4 +1,4 @@
-import { ControllerArgs, ForbiddenError, HttpStatus, UnAuthorizedError } from '@/core';
+import { ControllerArgs, ForbiddenError, HttpStatus, UnAuthorizedError, realtimeService } from '@/core';
 import { ConversationParamsDto } from '../../interfaces';
 import { ChatRepository } from '../../repository';
 
@@ -14,7 +14,16 @@ export class MarkConversationRead {
 
         if (!hasAccess) throw new ForbiddenError('You do not have access to this conversation');
 
+        const readAt = new Date().toISOString();
         await this.chatRepository.markConversationAsRead(params.id, userId);
+
+        // Broadcast to the conversation channel so the counterpart's UI can
+        // move message receipts from "delivered" to "read" in realtime
+        // without having to poll.
+        await realtimeService.broadcastToConversation(params.id, 'read_receipt', {
+            userId,
+            readAt,
+        });
 
         return {
             code: HttpStatus.OK,

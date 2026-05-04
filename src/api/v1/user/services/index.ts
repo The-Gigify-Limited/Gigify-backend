@@ -1,3 +1,4 @@
+export { default as advanceOnboardingStep } from './advanceOnboardingStep';
 export { default as createUserReview } from './createUserReview';
 export { default as createKycSession } from './createKycSession';
 export { default as deleteUserById } from './deleteUser';

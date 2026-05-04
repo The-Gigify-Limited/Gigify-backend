@@ -42,6 +42,11 @@ export interface PaymentHistoryQueryDto extends ControllerArgsTypes {
     query: {
         page?: number;
         pageSize?: number;
+        dateFrom?: string;
+        dateTo?: string;
+        status?: 'pending' | 'processing' | 'paid' | 'released' | 'failed' | 'disputed' | 'refunded' | 'cancelled';
+        direction?: 'incoming' | 'outgoing';
+        gigId?: string;
     };
 }
 

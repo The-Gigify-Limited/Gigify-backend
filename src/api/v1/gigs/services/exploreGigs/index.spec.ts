@@ -55,4 +55,41 @@ describe('ExploreGigs service', () => {
             status: 'open',
         });
     });
+
+    it('threads discovery filters through to the repository', async () => {
+        const gigRepository = {
+            getAllGigs: jest.fn().mockResolvedValue([]),
+        };
+
+        const service = new ExploreGigs(gigRepository as never);
+
+        await service.handle({
+            query: {
+                minBudget: 100000,
+                maxBudget: 500000,
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                genres: ['DJ', 'Drummer'],
+                dateFrom: '2026-05-01',
+                dateTo: '2026-06-01',
+                latitude: 6.5244,
+                longitude: 3.3792,
+                radiusKm: 20,
+            },
+        } as never);
+
+        expect(gigRepository.getAllGigs).toHaveBeenCalledWith(
+            expect.objectContaining({
+                minBudget: 100000,
+                maxBudget: 500000,
+                gigTypeId: '11111111-1111-1111-1111-111111111111',
+                genres: ['DJ', 'Drummer'],
+                dateFrom: '2026-05-01',
+                dateTo: '2026-06-01',
+                latitude: 6.5244,
+                longitude: 3.3792,
+                radiusKm: 20,
+                status: 'open',
+            }),
+        );
+    });
 });
