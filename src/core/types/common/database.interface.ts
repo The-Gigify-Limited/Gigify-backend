@@ -196,7 +196,7 @@ export type Database = {
                     location_name: string | null;
                     required_talent_count: number;
                     service_id: string | null;
-                    skill_required: string | null;
+                    skill_required: string[] | null;
                     status: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at: string | null;
@@ -226,7 +226,7 @@ export type Database = {
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
-                    skill_required?: string | null;
+                    skill_required?: string[] | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title: string;
                     updated_at?: string | null;
@@ -256,7 +256,7 @@ export type Database = {
                     location_name?: string | null;
                     required_talent_count?: number;
                     service_id?: string | null;
-                    skill_required?: string | null;
+                    skill_required?: string[] | null;
                     status?: Database['public']['Enums']['gig_status'] | null;
                     title?: string;
                     updated_at?: string | null;

@@ -7,9 +7,13 @@ export class UpsertEmployerProfile {
 
     handle = async ({ input, params, request }: ControllerArgs<UpsertEmployerProfileDto>) => {
         const authUserId = request.user?.id;
+        if (!authUserId) throw new UnAuthorizedError('User not authenticated');
 
-        const profile = await this.employerRepository.upsertEmployerProfile(params.id, input ?? {});
-        const totalApplicationsReceived = await this.employerRepository.countTotalApplicationsReceived(params.id);
+        const userId = params?.id ?? authUserId;
+        if (userId !== authUserId) throw new BadRequestError('You can only update your own profile');
+
+        const profile = await this.employerRepository.upsertEmployerProfile(userId, input ?? {});
+        const totalApplicationsReceived = await this.employerRepository.countTotalApplicationsReceived(userId);
 
         return {
             code: HttpStatus.OK,

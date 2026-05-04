@@ -30,6 +30,11 @@ export const gigFiltersSchema = {
         genres: Joi.array().items(Joi.string().max(80)).single().optional(),
     }),
 };
+// Reusable array of free-form skill labels, accepts a single string and
+// coerces it to a one-element array so existing FE call sites that send
+// `skillRequired: "DJ"` keep working alongside the new `["DJ", "Drummer"]`
+// shape.
+const skillsArray = Joi.array().items(Joi.string().min(1).max(160)).max(20).single();
 
 export const discoveryFeedSchema = {
     querySchema: Joi.object({
@@ -67,7 +72,7 @@ export const createGigSchema = {
         gigAddress: Joi.string().max(240).allow(null, '').optional(),
         gigPostCode: Joi.string().max(20).allow(null, '').optional(),
         isEquipmentRequired: Joi.boolean().allow(null).optional(),
-        skillRequired: Joi.string().max(160).allow(null, '').optional(),
+        skillRequired: skillsArray.allow(null).optional(),
         durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
         dressCode: Joi.string().max(120).allow(null, '').optional(),
         additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
@@ -101,7 +106,7 @@ export const updateGigSchema = {
         gigAddress: Joi.string().max(240).allow(null, '').optional(),
         gigPostCode: Joi.string().max(20).allow(null, '').optional(),
         isEquipmentRequired: Joi.boolean().allow(null).optional(),
-        skillRequired: Joi.string().max(160).allow(null, '').optional(),
+        skillRequired: skillsArray.allow(null).optional(),
         durationMinutes: Joi.number().integer().min(0).max(10_000).allow(null).optional(),
         dressCode: Joi.string().max(120).allow(null, '').optional(),
         additionalNotes: Joi.string().max(2000).allow(null, '').optional(),
